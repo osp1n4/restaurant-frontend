@@ -1,9 +1,9 @@
 /**
  * Servicio API para comunicación con el backend
- * Base URL: http://localhost:3001 (Order Service)
+ * Base URL: http://localhost:3000 (API Gateway)
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 /**
  * Mapea los estados del backend a los estados del frontend
@@ -34,8 +34,8 @@ function mapOrderStatus(status) {
  * @returns {Object} Datos del pedido normalizados
  */
 function normalizeOrderData(orderData) {
-  // El backend puede devolver { order: {...} } o directamente el objeto
-  const order = orderData.order || orderData;
+  // El backend puede devolver { success, message, data: { order: {...} } } o directamente el objeto
+  const order = orderData.data?.order || orderData.order || orderData;
   
   return {
     ...order,
@@ -44,9 +44,11 @@ function normalizeOrderData(orderData) {
     orderNumber: order.orderNumber,
     customer: order.customerName || order.customer,
     customerName: order.customerName || order.customer,
+    customerEmail: order.customerEmail,
     status: mapOrderStatus(order.status),
     items: order.items || [],
     total: order.total || 0,
+    notes: order.notes,
     createdAt: order.createdAt,
     updatedAt: order.updatedAt
   };
@@ -105,7 +107,11 @@ export async function getKitchenOrders() {
 
 /**
  * Crea un nuevo pedido
- * @param {Object} orderData - Datos del pedido (items, customerName, etc.)
+ * @param {Object} orderData - Datos del pedido
+ * @param {string} orderData.customerName - Nombre del cliente (requerido)
+ * @param {string} orderData.customerEmail - Email del cliente (requerido)
+ * @param {Array} orderData.items - Items del pedido (requerido)
+ * @param {string} [orderData.notes] - Notas especiales (opcional)
  * @returns {Promise<Object>} Datos del pedido creado normalizados
  */
 export async function createOrder(orderData) {
@@ -113,8 +119,14 @@ export async function createOrder(orderData) {
     // Normalizar los datos para el backend
     const backendData = {
       customerName: orderData.customerName || orderData.customer,
+      customerEmail: orderData.customerEmail,
       items: orderData.items || []
     };
+
+    // Agregar notas solo si existen
+    if (orderData.notes) {
+      backendData.notes = orderData.notes;
+    }
 
     const response = await fetch(`${API_BASE_URL}/orders`, {
       method: 'POST',
@@ -129,7 +141,7 @@ export async function createOrder(orderData) {
     }
 
     const data = await response.json();
-    // El backend devuelve { message, order: {...} }
+    // El backend devuelve { success, message, data: { order: {...} } }
     return normalizeOrderData(data);
   } catch (error) {
     console.error('Error en createOrder:', error);
