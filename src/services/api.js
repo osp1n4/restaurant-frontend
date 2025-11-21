@@ -82,11 +82,18 @@ export async function getOrderStatus(orderId) {
 
 /**
  * Obtiene los pedidos de cocina
+ * @param {string} status - Estado opcional para filtrar (RECEIVED, PREPARING, READY)
  * @returns {Promise<Array>} Lista de pedidos en cocina
  */
-export async function getKitchenOrders() {
+export async function getKitchenOrders(status) {
   try {
-    const response = await fetch(`${API_BASE_URL}/kitchen/orders`, {
+    const url = status 
+      ? `${API_BASE_URL}/kitchen/orders?status=${status}`
+      : `${API_BASE_URL}/kitchen/orders`;
+    
+    console.log('Fetching kitchen orders from:', url);
+    
+    const response = await fetch(url, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -94,13 +101,212 @@ export async function getKitchenOrders() {
     });
 
     if (!response.ok) {
-      throw new Error(`Error al obtener los pedidos de cocina: ${response.statusText}`);
+      // Intentar obtener el mensaje de error del backend
+      let errorMessage = `Error ${response.status}: ${response.statusText}`;
+      
+      try {
+        const errorData = await response.json();
+        if (errorData.message) {
+          errorMessage = errorData.message;
+        }
+      } catch (e) {
+        // Si no se puede parsear JSON, usar el statusText
+      }
+      
+      // Mensaje más específico para 404
+      if (response.status === 404) {
+        errorMessage = `Endpoint no encontrado. Verifica que el API Gateway esté corriendo en ${API_BASE_URL} y que el endpoint /kitchen/orders esté disponible.`;
+      }
+      
+      const error = new Error(errorMessage);
+      error.status = response.status;
+      error.url = url;
+      throw error;
     }
 
     const data = await response.json();
+    
+    // El backend devuelve { success: true, data: [...], count: ... }
+    if (data.success && data.data) {
+      return data.data;
+    }
+    
+    // Si no tiene success pero tiene data directamente
+    if (Array.isArray(data)) {
+      return data;
+    }
+    
     return data;
   } catch (error) {
+    // Si es un error de red (fetch falló completamente)
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      const networkError = new Error(
+        `Error de conexión. Verifica que el API Gateway esté corriendo en ${API_BASE_URL}`
+      );
+      networkError.originalError = error;
+      throw networkError;
+    }
+    
     console.error('Error en getKitchenOrders:', error);
+    throw error;
+  }
+}
+
+/**
+ * Obtiene un pedido específico de cocina
+ * @param {string} orderId - ID del pedido
+ * @returns {Promise<Object>} Datos del pedido
+ */
+export async function getKitchenOrder(orderId) {
+  try {
+    const url = `${API_BASE_URL}/kitchen/orders/${orderId}`;
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      let errorMessage = `Error ${response.status}: ${response.statusText}`;
+      
+      try {
+        const errorData = await response.json();
+        if (errorData.message) {
+          errorMessage = errorData.message;
+        }
+      } catch (e) {
+        // Si no se puede parsear JSON, usar el statusText
+      }
+      
+      const error = new Error(errorMessage);
+      error.status = response.status;
+      throw error;
+    }
+
+    const data = await response.json();
+    
+    if (data.success && data.data) {
+      return data.data;
+    }
+    
+    return data;
+  } catch (error) {
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      const networkError = new Error(
+        `Error de conexión. Verifica que el API Gateway esté corriendo en ${API_BASE_URL}`
+      );
+      networkError.originalError = error;
+      throw networkError;
+    }
+    
+    console.error('Error en getKitchenOrder:', error);
+    throw error;
+  }
+}
+
+/**
+ * Inicia la preparación de un pedido (RECEIVED → PREPARING)
+ * @param {string} orderId - ID del pedido
+ * @returns {Promise<Object>} Datos del pedido actualizado
+ */
+export async function startPreparingOrder(orderId) {
+  try {
+    const url = `${API_BASE_URL}/kitchen/orders/${orderId}/start-preparing`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      let errorMessage = `Error ${response.status}: ${response.statusText}`;
+      
+      try {
+        const errorData = await response.json();
+        if (errorData.message) {
+          errorMessage = errorData.message;
+        }
+      } catch (e) {
+        // Si no se puede parsear JSON, usar el statusText
+      }
+      
+      const error = new Error(errorMessage);
+      error.status = response.status;
+      throw error;
+    }
+
+    const data = await response.json();
+    
+    if (data.success && data.data) {
+      return data.data;
+    }
+    
+    return data;
+  } catch (error) {
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      const networkError = new Error(
+        `Error de conexión. Verifica que el API Gateway esté corriendo en ${API_BASE_URL}`
+      );
+      networkError.originalError = error;
+      throw networkError;
+    }
+    
+    console.error('Error en startPreparingOrder:', error);
+    throw error;
+  }
+}
+
+/**
+ * Marca un pedido como listo (PREPARING → READY)
+ * @param {string} orderId - ID del pedido
+ * @returns {Promise<Object>} Datos del pedido actualizado
+ */
+export async function markOrderAsReady(orderId) {
+  try {
+    const url = `${API_BASE_URL}/kitchen/orders/${orderId}/ready`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      let errorMessage = `Error ${response.status}: ${response.statusText}`;
+      
+      try {
+        const errorData = await response.json();
+        if (errorData.message) {
+          errorMessage = errorData.message;
+        }
+      } catch (e) {
+        // Si no se puede parsear JSON, usar el statusText
+      }
+      
+      const error = new Error(errorMessage);
+      error.status = response.status;
+      throw error;
+    }
+
+    const data = await response.json();
+    
+    if (data.success && data.data) {
+      return data.data;
+    }
+    
+    return data;
+  } catch (error) {
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      const networkError = new Error(
+        `Error de conexión. Verifica que el API Gateway esté corriendo en ${API_BASE_URL}`
+      );
+      networkError.originalError = error;
+      throw networkError;
+    }
+    
+    console.error('Error en markOrderAsReady:', error);
     throw error;
   }
 }
