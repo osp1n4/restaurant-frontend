@@ -43,7 +43,7 @@ function Home() {
 
       {/* Hero Section con Parallax */}
       <section className="relative min-h-[600px] flex items-center justify-center overflow-hidden">
-        <div 
+        <div
           className="absolute inset-0 z-0"
           style={{
             transform: `translateY(${scrollY * 0.5}px)`,
@@ -57,25 +57,25 @@ function Home() {
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70"></div>
         </div>
-        
+
         <div className="relative z-10 max-w-4xl mx-auto px-4 text-center text-white">
-          <h2 
+          <h2
             className="text-5xl md:text-7xl font-bold mb-6 animate-fade-in-up"
             style={{ animationDelay: '0.2s' }}
           >
             Delicious Kitchen
           </h2>
-          <p 
+          <p
             className="text-xl md:text-2xl mb-8 text-gray-200 animate-fade-in-up"
             style={{ animationDelay: '0.4s' }}
           >
             Freshly Made, Just for You
           </p>
-          <p 
+          <p
             className="text-lg mb-10 max-w-2xl mx-auto text-gray-300 animate-fade-in-up"
             style={{ animationDelay: '0.6s' }}
           >
-            Experience culinary excellence with our expertly crafted dishes, 
+            Experience culinary excellence with our expertly crafted dishes,
             made with the freshest locally sourced ingredients.
           </p>
           <button
@@ -97,8 +97,8 @@ function Home() {
             </h3>
             <div className="w-20 h-1 bg-primary mx-auto mb-6"></div>
             <p className="text-lg text-[#896f61] dark:text-gray-400 max-w-3xl mx-auto leading-relaxed">
-              At Delicious Kitchen, we believe in the power of great food to bring people together. 
-              Every dish is crafted with passion, using only the finest ingredients to create 
+              At Delicious Kitchen, we believe in the power of great food to bring people together.
+              Every dish is crafted with passion, using only the finest ingredients to create
               unforgettable culinary experiences.
             </p>
           </div>
@@ -232,7 +232,7 @@ function Home() {
             </h3>
             <div className="w-20 h-1 bg-primary mx-auto mb-6"></div>
             <p className="text-lg text-[#896f61] dark:text-gray-400 max-w-3xl mx-auto">
-              Our talented chefs bring years of experience and passion to every dish. 
+              Our talented chefs bring years of experience and passion to every dish.
               Trained in the finest culinary traditions, they create exceptional dining experiences.
             </p>
           </div>
@@ -250,7 +250,7 @@ function Home() {
                   <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
                     <h4 className="text-2xl font-bold mb-2">Expert Culinary Artists</h4>
                     <p className="text-gray-200 mb-4">
-                      Our chefs master the art of flavor, combining traditional techniques 
+                      Our chefs master the art of flavor, combining traditional techniques
                       with modern innovation to create unforgettable dishes.
                     </p>
                     <div className="flex items-center gap-2">
@@ -274,7 +274,7 @@ function Home() {
                   <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
                     <h4 className="text-2xl font-bold mb-2">Passionate Professionals</h4>
                     <p className="text-gray-200 mb-4">
-                      Dedicated to perfection, our team ensures every meal is crafted 
+                      Dedicated to perfection, our team ensures every meal is crafted
                       with precision, care, and the finest ingredients.
                     </p>
                     <div className="flex items-center gap-2">
@@ -342,6 +342,28 @@ function Home() {
             className="bg-white text-primary font-bold px-12 py-4 rounded-xl text-lg shadow-2xl hover:bg-gray-100 hover:scale-105 transition-all"
           >
             Order Now
+          </button>
+        </div>
+      </section>
+
+      {/* Customer Reviews Section */}
+      <section className="py-16 bg-white dark:bg-background-dark">
+        <div className="max-w-4xl mx-auto px-4 text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-[#FF6B35]/20 rounded-full mb-4">
+            <span className="material-symbols-outlined text-3xl text-[#FF6B35]">rate_review</span>
+          </div>
+          <h3 className="text-3xl font-bold text-[#181311] dark:text-white mb-4">
+            See What Our Customers Say
+          </h3>
+          <p className="text-lg text-[#896f61] dark:text-gray-400 mb-8 max-w-2xl mx-auto">
+            Read authentic reviews from our satisfied customers and discover why they love dining with us
+          </p>
+          <button
+            onClick={() => navigate('/reviews')}
+            className="bg-[#FF6B35] hover:bg-[#e55d2e] text-white font-semibold px-8 py-3 rounded-lg shadow-md hover:shadow-lg transition-all inline-flex items-center gap-2"
+          >
+            <span className="material-symbols-outlined">star</span>
+            View Customer Reviews
           </button>
         </div>
       </section>
