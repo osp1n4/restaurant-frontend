@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getOrderStatus } from '../services/api';
+import { getOrderStatus, cancelOrder } from '../services/api';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useNotifications } from '../hooks/useNotification';
 import NotificationModal from './NotificationModal';
+import OrderCancelModal from './OrderCancelModal';
 
 /**
  * Componente para mostrar el estado de un pedido específico
@@ -18,6 +19,9 @@ function OrderStatus({ onOrderLoad }) {
   // Estados para modales de notificación
   const [preparingModal, setPreparingModal] = useState(false);
   const [readyModal, setReadyModal] = useState(false);
+  const [cancelModal, setCancelModal] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [cancelError, setCancelError] = useState('');
 
   // Función para obtener el estado del pedido
   const fetchOrderStatus = useCallback(async () => {
@@ -56,10 +60,41 @@ function OrderStatus({ onOrderLoad }) {
     if (notification.eventType === 'order.ready') {
       setReadyModal(true);
     }
-  }, []);
+
+    // Notificación de cancelación
+    if (notification.eventType === 'order.cancelled') {
+      fetchOrderStatus();
+    }
+  }, [fetchOrderStatus]);
 
   // Conectar a notificaciones solo para este pedido
   useNotifications(handleNotification, [orderId]);
+
+  // Manejar cancelación de pedido
+  const handleCancelOrder = async () => {
+    setCancelError('');
+    setIsCancelling(true);
+
+    try {
+      const updatedOrder = await cancelOrder(orderId);
+      setOrder(updatedOrder);
+      setCancelModal(false);
+      
+      // Mostrar modal de éxito
+      setPreparingModal(false);
+      setReadyModal(false);
+      
+      // Opcional: redireccionar después de 2 segundos
+      setTimeout(() => {
+        navigate('/');
+      }, 2000);
+    } catch (err) {
+      setCancelError(err.message || 'Error al cancelar el pedido');
+      console.error('Error cancelando pedido:', err);
+    } finally {
+      setIsCancelling(false);
+    }
+  };
 
   // Manejar aceptar modal de "preparing"
   const handleAcceptPreparing = async () => {
@@ -132,6 +167,7 @@ function OrderStatus({ onOrderLoad }) {
   const isOrderReceived = true;
   const isBeingPrepared = order.status === 'cooking' || order.status === 'ready' || order.status === 'delivered';
   const isReadyForPickup = order.status === 'ready' || order.status === 'delivered';
+  const isCancelled = order.status === 'cancelled';
 
   return (
     <>
@@ -143,43 +179,58 @@ function OrderStatus({ onOrderLoad }) {
         For: {customerName}
       </p>
 
+      {/* Estado cancelado */}
+      {isCancelled && (
+        <div className="mt-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 text-center">
+          <div className="text-red-600 dark:text-red-400 mb-2">
+            <span className="material-symbols-outlined text-5xl">cancel</span>
+          </div>
+          <h3 className="text-red-800 dark:text-red-300 font-semibold text-lg">Pedido Cancelado</h3>
+          <p className="text-red-600 dark:text-red-400 text-sm mt-1">
+            Este pedido ha sido cancelado exitosamente.
+          </p>
+        </div>
+      )}
+
       {/* Timeline / Status Stepper */}
-      <div className="mt-8 rounded-xl bg-card-light dark:bg-card-dark p-6 shadow-sm">
-        <div className="grid grid-cols-[1fr_auto_1fr_auto_1fr] items-center gap-2">
-          {/* Step 1: Order Received */}
-          <div className="flex flex-col items-center gap-2 text-center">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white">
-              <span className="material-symbols-outlined">check</span>
+      {!isCancelled && (
+        <div className="mt-8 rounded-xl bg-card-light dark:bg-card-dark p-6 shadow-sm">
+          <div className="grid grid-cols-[1fr_auto_1fr_auto_1fr] items-center gap-2">
+            {/* Step 1: Order Received */}
+            <div className="flex flex-col items-center gap-2 text-center">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white">
+                <span className="material-symbols-outlined">check</span>
+              </div>
+              <p className="text-xs font-medium text-text-light dark:text-text-dark">Order Received</p>
             </div>
-            <p className="text-xs font-medium text-text-light dark:text-text-dark">Order Received</p>
-          </div>
-          {/* Connector 1 */}
-          <div className={`h-1 flex-grow rounded-full ${isBeingPrepared ? 'bg-primary' : 'bg-border-light dark:bg-border-dark'}`}></div>
-          {/* Step 2: Being Prepared */}
-          <div className="flex flex-col items-center gap-2 text-center">
-            <div className={`relative flex h-10 w-10 items-center justify-center rounded-full ${isBeingPrepared ? 'bg-primary text-white' : 'bg-border-light dark:bg-border-dark text-subtext-light dark:text-subtext-dark'}`}>
-              <span className="material-symbols-outlined">{isReadyForPickup ? 'check' : 'soup_kitchen'}</span>
-              {(order.status === 'cooking' || order.status === 'preparing') && (
-                <div className="absolute h-full w-full animate-ping rounded-full bg-primary opacity-50"></div>
-              )}
+            {/* Connector 1 */}
+            <div className={`h-1 flex-grow rounded-full ${isBeingPrepared ? 'bg-primary' : 'bg-border-light dark:bg-border-dark'}`}></div>
+            {/* Step 2: Being Prepared */}
+            <div className="flex flex-col items-center gap-2 text-center">
+              <div className={`relative flex h-10 w-10 items-center justify-center rounded-full ${isBeingPrepared ? 'bg-primary text-white' : 'bg-border-light dark:bg-border-dark text-subtext-light dark:text-subtext-dark'}`}>
+                <span className="material-symbols-outlined">{isReadyForPickup ? 'check' : 'soup_kitchen'}</span>
+                {(order.status === 'cooking' || order.status === 'preparing') && (
+                  <div className="absolute h-full w-full animate-ping rounded-full bg-primary opacity-50"></div>
+                )}
+              </div>
+              <p className={`text-xs font-medium ${isBeingPrepared ? 'text-primary' : 'text-subtext-light dark:text-subtext-dark'}`}>
+                Being Prepared
+              </p>
             </div>
-            <p className={`text-xs font-medium ${isBeingPrepared ? 'text-primary' : 'text-subtext-light dark:text-subtext-dark'}`}>
-              Being Prepared
-            </p>
-          </div>
-          {/* Connector 2 */}
-          <div className={`h-1 flex-grow rounded-full ${isReadyForPickup ? 'bg-primary' : 'bg-border-light dark:bg-border-dark'}`}></div>
-          {/* Step 3: Ready for Pickup */}
-          <div className="flex flex-col items-center gap-2 text-center">
-            <div className={`flex h-10 w-10 items-center justify-center rounded-full ${isReadyForPickup ? 'bg-primary text-white' : 'bg-border-light dark:bg-border-dark text-subtext-light dark:text-subtext-dark'}`}>
-              <span className="material-symbols-outlined">{isReadyForPickup ? 'check' : 'shopping_bag'}</span>
+            {/* Connector 2 */}
+            <div className={`h-1 flex-grow rounded-full ${isReadyForPickup ? 'bg-primary' : 'bg-border-light dark:bg-border-dark'}`}></div>
+            {/* Step 3: Ready for Pickup */}
+            <div className="flex flex-col items-center gap-2 text-center">
+              <div className={`flex h-10 w-10 items-center justify-center rounded-full ${isReadyForPickup ? 'bg-primary text-white' : 'bg-border-light dark:bg-border-dark text-subtext-light dark:text-subtext-dark'}`}>
+                <span className="material-symbols-outlined">{isReadyForPickup ? 'check' : 'shopping_bag'}</span>
+              </div>
+              <p className={`text-xs font-medium ${isReadyForPickup ? 'text-primary' : 'text-subtext-light dark:text-subtext-dark'}`}>
+                Ready for Pickup
+              </p>
             </div>
-            <p className={`text-xs font-medium ${isReadyForPickup ? 'text-primary' : 'text-subtext-light dark:text-subtext-dark'}`}>
-              Ready for Pickup
-            </p>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Section Header */}
       <h3 className="px-0 pb-2 pt-8 text-lg font-bold leading-tight tracking-[-0.015em] text-text-light dark:text-text-dark">
@@ -218,6 +269,31 @@ function OrderStatus({ onOrderLoad }) {
           <p className="text-subtext-light dark:text-subtext-dark text-center">No hay items en este pedido</p>
         </div>
       )}
+
+      {/* Botón Cancelar Pedido - Solo si está pending */}
+      {order.status === 'pending' && !isCancelled && (
+        <div className="mt-6 flex justify-center">
+          <button
+            onClick={() => setCancelModal(true)}
+            disabled={isCancelling}
+            className="px-6 py-3 bg-red-500 text-white rounded-lg font-semibold hover:bg-red-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+          >
+            {isCancelling ? 'Cancelando...' : 'Cancelar Pedido'}
+          </button>
+        </div>
+      )}
+
+      {/* Modal de confirmación de cancelación */}
+      <OrderCancelModal
+        isOpen={cancelModal}
+        isCancelling={isCancelling}
+        error={cancelError}
+        onConfirm={handleCancelOrder}
+        onClose={() => {
+          setCancelModal(false);
+          setCancelError('');
+        }}
+      />
 
       {/* Modal: Pedido siendo preparado */}
       <NotificationModal

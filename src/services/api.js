@@ -354,3 +354,56 @@ export async function createOrder(orderData) {
     throw error;
   }
 }
+
+/**
+ * Cancela un pedido específico
+ * @param {string} orderId - ID del pedido a cancelar
+ * @returns {Promise<Object>} Datos del pedido actualizado
+ */
+export async function cancelOrder(orderId) {
+  try {
+    const url = `${API_BASE_URL}/orders/${orderId}/cancel`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      let errorMessage = `Error ${response.status}: ${response.statusText}`;
+      
+      try {
+        const errorData = await response.json();
+        if (errorData.message) {
+          errorMessage = errorData.message;
+        }
+      } catch (e) {
+        // Si no se puede parsear JSON, usar el statusText
+      }
+      
+      const error = new Error(errorMessage);
+      error.status = response.status;
+      throw error;
+    }
+
+    const data = await response.json();
+    
+    if (data.success && data.data) {
+      return normalizeOrderData(data.data);
+    }
+    
+    return normalizeOrderData(data);
+  } catch (error) {
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      const networkError = new Error(
+        `Error de conexión. Verifica que el API Gateway esté corriendo en ${API_BASE_URL}`
+      );
+      networkError.originalError = error;
+      throw networkError;
+    }
+    
+    console.error('Error en cancelOrder:', error);
+    throw error;
+  }
+}
