@@ -30,6 +30,20 @@ export default function OrderForm() {
   const [error, setError] = useState('');
   const [touched, setTouched] = useState({ name: false, email: false });
 
+  // Validar formato de email
+  const isValidEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  // Obtener estado de validación del email
+  const getEmailValidationState = () => {
+    if (!touched.email) return 'neutral';
+    if (customerEmail.trim().length === 0) return 'error';
+    if (!isValidEmail(customerEmail)) return 'invalid';
+    return 'valid';
+  };
+
   // Incrementar cantidad de un item
   const increment = (itemId) => {
     setQuantities(prev => ({ ...prev, [itemId]: prev[itemId] + 1 }));
@@ -155,25 +169,60 @@ export default function OrderForm() {
               )}
             </label>
 
-            {/* Campo Email */}
+            {/* Campo Email con validación mejorada */}
             <label className="flex flex-col">
               <p className="text-[#181311] dark:text-gray-300 text-base font-medium leading-normal pb-2">
                 Your Email *
               </p>
-              <input
-                type="email"
-                className={`form-input flex w-full resize-none overflow-hidden rounded-lg text-[#181311] dark:text-white focus:outline-0 focus:ring-0 border ${
-                  touched.email && customerEmail.trim().length === 0
-                    ? 'border-red-500 dark:border-red-500'
-                    : 'border-[#e6dfdb] dark:border-gray-600'
-                } bg-white dark:bg-gray-800 focus:border-primary dark:focus:border-primary h-14 placeholder:text-[#896f61] p-[15px] text-base font-normal leading-normal`}
-                placeholder="your@email.com"
-                value={customerEmail}
-                onChange={(e) => setCustomerEmail(e.target.value)}
-                onBlur={() => setTouched(prev => ({ ...prev, email: true }))}
-              />
+              <div className="relative">
+                <input
+                  type="email"
+                  className={`form-input flex w-full resize-none overflow-hidden rounded-lg text-[#181311] dark:text-white focus:outline-0 focus:ring-0 border ${
+                    getEmailValidationState() === 'error' 
+                      ? 'border-red-500 dark:border-red-500' 
+                      : getEmailValidationState() === 'invalid'
+                      ? 'border-yellow-500 dark:border-yellow-500'
+                      : getEmailValidationState() === 'valid'
+                      ? 'border-green-500 dark:border-green-500'
+                      : 'border-[#e6dfdb] dark:border-gray-600'
+                  } bg-white dark:bg-gray-800 focus:border-primary dark:focus:border-primary h-14 placeholder:text-[#896f61] p-[15px] pr-12 text-base font-normal leading-normal`}
+                  placeholder="your@email.com"
+                  value={customerEmail}
+                  onChange={(e) => setCustomerEmail(e.target.value)}
+                  onBlur={() => setTouched(prev => ({ ...prev, email: true }))}
+                />
+                {/* Icono de validación */}
+                {touched.email && customerEmail.trim().length > 0 && (
+                  <span className={`material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-2xl ${
+                    getEmailValidationState() === 'valid' 
+                      ? 'text-green-500' 
+                      : getEmailValidationState() === 'invalid'
+                      ? 'text-yellow-500'
+                      : 'text-red-500'
+                  }`}>
+                    {getEmailValidationState() === 'valid' ? 'check_circle' : 'error'}
+                  </span>
+                )}
+              </div>
+              
+              {/* Mensajes de validación */}
               {touched.email && customerEmail.trim().length === 0 && (
-                <p className="text-red-500 text-sm mt-1">Email is required</p>
+                <div className="flex items-center gap-1 mt-2">
+                  <span className="material-symbols-outlined text-red-500 text-base">error</span>
+                  <p className="text-red-500 text-sm">Email is required</p>
+                </div>
+              )}
+              {touched.email && customerEmail.trim().length > 0 && !isValidEmail(customerEmail) && (
+                <div className="flex items-center gap-1 mt-2">
+                  <span className="material-symbols-outlined text-yellow-500 text-base">warning</span>
+                  <p className="text-yellow-600 dark:text-yellow-500 text-sm">Please enter a valid email format</p>
+                </div>
+              )}
+              {touched.email && isValidEmail(customerEmail) && (
+                <div className="flex items-center gap-1 mt-2">
+                  <span className="material-symbols-outlined text-green-500 text-base">check_circle</span>
+                  <p className="text-green-600 dark:text-green-500 text-sm font-medium">✓ Email format is correct</p>
+                </div>
               )}
             </label>
 
@@ -248,15 +297,6 @@ export default function OrderForm() {
             </div>
           ))}
         </div>
-
-        {/* Mensaje de error */}
-        {error && (
-          <div className="px-4">
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 px-4 py-3 rounded-lg">
-              {error}
-            </div>
-          </div>
-        )}
       </main>
 
       {/* Footer fijo con resumen y botón */}
