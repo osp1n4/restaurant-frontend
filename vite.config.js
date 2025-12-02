@@ -8,5 +8,10 @@ export default defineConfig({
   // Excluir code.html del escaneo de dependencias
   optimizeDeps: {
     exclude: ['code.html']
+  },
+  server: {
+    port: 5173,
+    strictPort: true,
+    open: false,
   }
 })
