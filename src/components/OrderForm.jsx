@@ -13,7 +13,7 @@ const MENU_ITEMS = [
 
 export default function OrderForm() {
   const navigate = useNavigate();
-  
+
   // Estado del formulario
   const [customerName, setCustomerName] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
@@ -21,7 +21,7 @@ export default function OrderForm() {
   const [quantities, setQuantities] = useState(
     MENU_ITEMS.reduce((acc, item) => ({ ...acc, [item.id]: 0 }), {})
   );
-  
+
   // Estados de UI
   const [showModal, setShowModal] = useState(false);
   const [orderNumber, setOrderNumber] = useState('');
@@ -37,9 +37,9 @@ export default function OrderForm() {
 
   // Decrementar cantidad de un item
   const decrement = (itemId) => {
-    setQuantities(prev => ({ 
-      ...prev, 
-      [itemId]: Math.max(0, prev[itemId] - 1) 
+    setQuantities(prev => ({
+      ...prev,
+      [itemId]: Math.max(0, prev[itemId] - 1)
     }));
   };
 
@@ -62,7 +62,7 @@ export default function OrderForm() {
   const handleSubmit = async () => {
     // Marcar campos como tocados al intentar enviar
     setTouched({ name: true, email: true });
-    
+
     if (!isFormValid()) {
       setError('Please enter your name, email, and select at least one item');
       return;
@@ -90,11 +90,11 @@ export default function OrderForm() {
       };
 
       const response = await createOrder(orderData);
-      
+
       // Guardar datos del pedido
       setOrderNumber(response.orderNumber);
       setOrderId(response.orderId);
-      
+
       // Mostrar modal de éxito
       setShowModal(true);
     } catch (err) {
@@ -108,7 +108,8 @@ export default function OrderForm() {
   // Cerrar modal y redireccionar
   const handleModalClose = () => {
     setShowModal(false);
-    navigate(`/orders/${orderId}`);
+    // ✅ USAR orderNumber (ORD-xxx) en lugar de orderId (MongoDB _id)
+    navigate(`/orders/${orderNumber}`);
   };
 
   const total = calculateTotal();
@@ -131,7 +132,7 @@ export default function OrderForm() {
           <h2 className="text-[#181311] dark:text-white tracking-light text-[28px] font-bold leading-tight px-4 text-left pb-3">
             Your Details
           </h2>
-          
+
           <div className="flex flex-col gap-4 px-4 py-3">
             {/* Campo Nombre */}
             <label className="flex flex-col">

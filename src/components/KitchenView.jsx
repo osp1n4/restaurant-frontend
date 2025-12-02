@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
-import { 
-  getKitchenOrders, 
-  startPreparingOrder, 
-  markOrderAsReady 
+import {
+  getKitchenOrders,
+  startPreparingOrder,
+  markOrderAsReady
 } from '../services/api';
 import { useNotifications } from '../hooks/useNotification';
 import NotificationModal from './NotificationModal';
@@ -19,7 +19,7 @@ function KitchenView() {
   const [error, setError] = useState(null);
   const [filter, setFilter] = useState('');
   const [processing, setProcessing] = useState(new Set());
-  
+
   // Estado para modal de nuevo pedido
   const [newOrderModal, setNewOrderModal] = useState(false);
   const [newOrderNumber, setNewOrderNumber] = useState('');
@@ -33,15 +33,15 @@ function KitchenView() {
       setOrders(data || []);
     } catch (err) {
       console.error('Error al cargar pedidos:', err);
-      
+
       let errorMessage = err.message || 'Error al cargar los pedidos';
-      
+
       if (err.status === 404 || errorMessage.includes('404')) {
         errorMessage = 'Endpoint no encontrado. Verifica que el API Gateway esté corriendo en http://localhost:3000 y que el endpoint /kitchen/orders esté disponible.';
       } else if (errorMessage.includes('conexión') || errorMessage.includes('fetch')) {
         errorMessage = 'No se pudo conectar con el servidor. Verifica que el API Gateway esté corriendo en http://localhost:3000';
       }
-      
+
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -59,8 +59,8 @@ function KitchenView() {
 
     // order.received o order.created - Nuevo pedido
     if (notification.eventType === 'order.received' || notification.eventType === 'order.created') {
-      // Extraer número de pedido del mensaje o usar el orderId
-      const orderNum = notification.orderId || 'N/A';
+      // ✅ USAR orderNumber (ORD-xxx) en lugar de orderId (MongoDB _id)
+      const orderNum = notification.orderNumber || notification.orderId || 'N/A';
       setNewOrderNumber(orderNum);
       setNewOrderModal(true);
     }
@@ -77,38 +77,38 @@ function KitchenView() {
   };
 
   // Manejar inicio de preparación
-  const handleStartPreparing = async (orderId) => {
-    if (processing.has(orderId)) return;
-    
+  const handleStartPreparing = async (orderIdentifier) => {
+    if (processing.has(orderIdentifier)) return;
+
     try {
-      setProcessing(prev => new Set(prev).add(orderId));
-      await startPreparingOrder(orderId);
+      setProcessing(prev => new Set(prev).add(orderIdentifier));
+      await startPreparingOrder(orderIdentifier);
       await loadOrders();
     } catch (err) {
       alert(err.message || 'Error al iniciar la preparación');
     } finally {
       setProcessing(prev => {
         const newSet = new Set(prev);
-        newSet.delete(orderId);
+        newSet.delete(orderIdentifier);
         return newSet;
       });
     }
   };
 
   // Manejar marcar como listo
-  const handleMarkAsReady = async (orderId) => {
-    if (processing.has(orderId)) return;
-    
+  const handleMarkAsReady = async (orderIdentifier) => {
+    if (processing.has(orderIdentifier)) return;
+
     try {
-      setProcessing(prev => new Set(prev).add(orderId));
-      await markOrderAsReady(orderId);
+      setProcessing(prev => new Set(prev).add(orderIdentifier));
+      await markOrderAsReady(orderIdentifier);
       await loadOrders();
     } catch (err) {
       alert(err.message || 'Error al marcar como listo');
     } finally {
       setProcessing(prev => {
         const newSet = new Set(prev);
-        newSet.delete(orderId);
+        newSet.delete(orderIdentifier);
         return newSet;
       });
     }
@@ -146,7 +146,7 @@ function KitchenView() {
                 <OrderCard
                   key={order._id || order.orderId}
                   order={order}
-                  isProcessing={processing.has(order.orderId)}
+                  isProcessing={processing.has(order.orderNumber || order.orderId)}
                   onStartPreparing={handleStartPreparing}
                   onMarkAsReady={handleMarkAsReady}
                 />

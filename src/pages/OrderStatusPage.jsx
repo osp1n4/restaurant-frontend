@@ -39,6 +39,7 @@ function OrderStatusPage() {
         <OrderStatus
           onOrderLoad={setOrderData}
           onRefreshRequest={setRefreshFunction}
+          onOpenReviewModal={() => setShowReviewModal(true)}
         />
       </main>
 
@@ -46,7 +47,6 @@ function OrderStatusPage() {
       <OrderStatusFooter
         order={orderData}
         onRefresh={refreshFunction}
-        onOpenReviewModal={() => setShowReviewModal(true)}
       />
 
       {/* Review Modal */}
@@ -73,9 +73,8 @@ function OrderStatusPage() {
  * Componente del footer con tiempo estimado y botón de refresh
  * @param {Object} order - Datos del pedido
  * @param {Function} onRefresh - Función para refrescar el estado del pedido
- * @param {Function} onOpenReviewModal - Función para abrir el modal de reseña
  */
-function OrderStatusFooter({ order, onRefresh, onOpenReviewModal }) {
+function OrderStatusFooter({ order, onRefresh }) {
   // Calcular tiempo estimado basado en el estado del pedido
   const calculateEstimatedTime = () => {
     if (!order) {
@@ -146,13 +145,6 @@ function OrderStatusFooter({ order, onRefresh, onOpenReviewModal }) {
               <span className="material-symbols-outlined">refresh</span>
               <span>Refresh</span>
             </button>
-            <button
-              onClick={onOpenReviewModal}
-              className="flex cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-full bg-[#FF6B35] px-5 py-3 text-base font-bold leading-normal text-white hover:bg-[#e55d2e] transition-colors"
-            >
-              <span className="material-symbols-outlined">rate_review</span>
-              <span>Add Review</span>
-            </button>
           </div>
         </div>
       </div>
@@ -166,7 +158,6 @@ OrderStatusFooter.propTypes = {
     createdAt: PropTypes.string,
   }),
   onRefresh: PropTypes.func,
-  onOpenReviewModal: PropTypes.func.isRequired,
 };
 
 export default OrderStatusPage;

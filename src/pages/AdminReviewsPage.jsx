@@ -48,7 +48,12 @@ const AdminReviewsPage = () => {
       }
 
       const data = await response.json();
-      setReviews(data.reviews || []);
+
+      console.log('📋 Admin Reviews API Response:', data);
+
+      // El backend responde con { success, data: [...reviews], pagination }
+      const reviewsList = data.data || data.reviews || [];
+      setReviews(reviewsList);
     } catch (err) {
       console.error('Error fetching admin reviews:', err);
       setError(err.message || 'Error al cargar las reseñas');

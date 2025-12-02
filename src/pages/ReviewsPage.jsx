@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import ReviewCard from '../components/ReviewCard';
 
 /**
@@ -19,6 +20,7 @@ import ReviewCard from '../components/ReviewCard';
  * - #CCCCCC: Botones deshabilitados
  */
 const ReviewsPage = () => {
+  const navigate = useNavigate();
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -27,10 +29,6 @@ const ReviewsPage = () => {
 
   const limit = 10;
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-
-  useEffect(() => {
-    fetchReviews();
-  }, [page]);
 
   const fetchReviews = async () => {
     setLoading(true);
@@ -47,8 +45,14 @@ const ReviewsPage = () => {
 
       const data = await response.json();
 
-      setReviews(data.reviews || []);
-      setHasMore(data.hasMore || false);
+      console.log('📋 Reviews API Response:', data);
+
+      // El backend responde con { success, data: [...reviews], pagination }
+      const reviewsList = Array.isArray(data.data) ? data.data : [];
+      const pagination = data.pagination || {};
+
+      setReviews(reviewsList);
+      setHasMore(pagination.page < pagination.totalPages);
     } catch (err) {
       console.error('Error fetching reviews:', err);
       setError(err.message || 'Error al cargar las reseñas');
@@ -56,6 +60,10 @@ const ReviewsPage = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchReviews();
+  }, [page]);
 
   const handlePreviousPage = () => {
     if (page > 1) {
@@ -105,14 +113,24 @@ const ReviewsPage = () => {
   return (
     <div className="min-h-screen bg-[#F5F5F5] py-8 px-4">
       <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="mb-8 text-center">
-          <h1 className="text-4xl font-bold text-[#222222] mb-2">
-            Customer Reviews
-          </h1>
-          <p className="text-[#666666] text-lg">
-            Read about our customers' experiences
-          </p>
+        {/* Header with Back Button */}
+        <div className="mb-8">
+          <button
+            onClick={() => navigate('/')}
+            className="flex items-center gap-2 text-[#FF6B35] hover:text-[#e55d2e] font-medium mb-6 transition-colors"
+          >
+            <span className="material-symbols-outlined">arrow_back</span>
+            <span>Back to Home</span>
+          </button>
+
+          <div className="text-center">
+            <h1 className="text-4xl font-bold text-[#222222] mb-2">
+              Customer Reviews
+            </h1>
+            <p className="text-[#666666] text-lg">
+              Read about our customers' experiences
+            </p>
+          </div>
         </div>
 
         {/* Empty State */}
@@ -131,7 +149,7 @@ const ReviewsPage = () => {
             {/* Reviews Grid */}
             <div className="space-y-4 mb-8">
               {reviews.map((review) => (
-                <ReviewCard key={review._id} review={review} />
+                <ReviewCard key={review.id || review._id} review={review} />
               ))}
             </div>
 
