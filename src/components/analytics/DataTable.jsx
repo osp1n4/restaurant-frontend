@@ -45,7 +45,7 @@ function DataTable({ data = [] }) {
                   onClick={() => handleSort('period')}
                   className="flex items-center gap-1 hover:text-primary transition-colors"
                 >
-                  Period <span className="material-symbols-outlined text-base">swap_vert</span>
+                  PERIOD <span className="material-symbols-outlined text-base">swap_vert</span>
                 </button>
               </th>
               <th className="px-6 py-3" scope="col">
@@ -53,7 +53,7 @@ function DataTable({ data = [] }) {
                   onClick={() => handleSort('totalOrders')}
                   className="flex items-center gap-1 hover:text-primary transition-colors"
                 >
-                  TOTAL ÓRDEN <span className="material-symbols-outlined text-base">swap_vert</span>
+                  TOTAL ORDERS <span className="material-symbols-outlined text-base">swap_vert</span>
                 </button>
               </th>
               <th className="px-6 py-3" scope="col">
@@ -61,20 +61,20 @@ function DataTable({ data = [] }) {
                   onClick={() => handleSort('totalRevenue')}
                   className="flex items-center gap-1 hover:text-primary transition-colors"
                 >
-                  TOTAL INGRESO <span className="material-symbols-outlined text-base">swap_vert</span>
+                  TOTAL INCOME <span className="material-symbols-outlined text-base">swap_vert</span>
                 </button>
               </th>
-              <th className="px-6 py-3" scope="col">ID del producto</th>
-              <th className="px-6 py-3" scope="col">Nombre del producto</th>
-              <th className="px-6 py-3" scope="col">Cantidad</th>
-              <th className="px-6 py-3" scope="col">Tiempo promedio de preparación</th>
+              <th className="px-6 py-3" scope="col">Product ID</th>
+              <th className="px-6 py-3" scope="col">Product Name</th>
+              <th className="px-6 py-3" scope="col">Quantity</th>
+              <th className="px-6 py-3" scope="col">Average Preparation Time</th>
             </tr>
           </thead>
           <tbody>
             {paginatedData.length === 0 ? (
               <tr>
                 <td colSpan="7" className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
-                  No hay datos disponibles
+                  No data available
                 </td>
               </tr>
             ) : (

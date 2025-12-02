@@ -11,9 +11,9 @@ function Sidebar() {
 
   const menuItems = [
     { path: '/', icon: 'grid_view', label: 'Dashboard', filled: false },
-    { path: '/order', icon: 'receipt_long', label: 'Pedidos', filled: false },
-    { path: '/kitchen', icon: 'soup_kitchen', label: 'Cocina', filled: false },
-    { path: '/dashboard/analytics', icon: 'analytics', label: 'Reportes', filled: true }
+    { path: '/order', icon: 'receipt_long', label: 'Orders', filled: false },
+    { path: '/kitchen', icon: 'soup_kitchen', label: 'Kitchen', filled: false },
+    { path: '/dashboard/analytics', icon: 'analytics', label: 'Reports', filled: true }
   ];
 
   const isActive = (path) => location.pathname === path;
@@ -29,10 +29,10 @@ function Sidebar() {
             </div>
             <div className="flex flex-col">
               <h1 className="text-[#111813] dark:text-white text-base font-medium leading-normal">
-                Restaurante Admin
+                Restaurant Admin
               </h1>
               <p className="text-[#63886f] dark:text-gray-400 text-sm font-normal leading-normal">
-                Panel de Gestión
+                Management Panel
               </p>
             </div>
           </div>
@@ -67,14 +67,14 @@ function Sidebar() {
         <div className="flex flex-col gap-1">
           <button className="flex items-center gap-3 px-3 py-2 text-[#111813] dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all">
             <span className="material-symbols-outlined text-2xl">settings</span>
-            <p className="text-sm font-medium leading-normal">Ajustes</p>
+            <p className="text-sm font-medium leading-normal">Settings</p>
           </button>
           <button
             onClick={() => navigate('/')}
             className="flex items-center gap-3 px-3 py-2 text-[#111813] dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all"
           >
             <span className="material-symbols-outlined text-2xl">logout</span>
-            <p className="text-sm font-medium leading-normal">Salir</p>
+            <p className="text-sm font-medium leading-normal">Logout</p>
           </button>
         </div>
       </div>

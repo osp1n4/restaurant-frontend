@@ -93,7 +93,7 @@ function SalesAnalyticsDashboard() {
                   Dashboard de Analíticas
                 </p>
                 <p className="text-[#63886f] dark:text-gray-400 text-base font-normal leading-normal">
-                  Reportes, métricas y exportes para toma de decisiones.
+                  Reports, metrics and exports for decision making.
                 </p>
               </div>
               <span className="inline-flex items-center justify-center rounded-lg h-10 px-4 bg-primary/20 dark:bg-primary/30 text-[#111813] dark:text-white text-sm font-bold leading-normal tracking-[0.015em]">
@@ -146,28 +146,28 @@ function SalesAnalyticsDashboard() {
                     format="number"
                   />
                   <StatCard
-                    title="TOTAL INGRESO"
+                    title="TOTAL INCOME"
                     value={data.summary?.totalRevenue || 0}
                     change={8.1}
                     icon="payments"
                     format="currency"
                   />
                   <StatCard
-                    title="PRODUCTOS VENDIDOS"
+                    title="PRODUCTS SOLD"
                     value={data.productsSold?.reduce((sum, p) => sum + p.quantity, 0) || 0}
                     change={3.0}
                     icon="inventory_2"
                     format="number"
                   />
                   <StatCard
-                    title="TOP PRODUCTO"
+                    title="TOP PRODUCT"
                     value={data.topNProducts?.[0]?.name || 'N/A'}
                     change={null}
                     icon="star"
                     format="text"
                   />
                   <StatCard
-                    title="TIEMPO PROMEDIO DE PREPARACIÓN"
+                    title="AVERAGE PREPARATION TIME"
                     value={data.summary?.avgPrepTime || 'N/A'}
                     change={-1.5}
                     isPositive={false}
@@ -180,14 +180,14 @@ function SalesAnalyticsDashboard() {
                 <div className="mt-8 grid grid-cols-1 lg:grid-cols-5 gap-8">
                   <LineChart
                     data={getLineChartData()}
-                    title="TOTAL ÓRDEN POR PERIODO"
-                    subtitle={`Últimos 30 días`}
+                    title="TOTAL ORDER PER PERIOD"
+                    subtitle={`Last 30 days`}
                     value={data.summary?.totalOrders}
                     change={12.5}
                   />
                   <BarChart
                     data={getBarChartData()}
-                    title="TOP N PRODUCTOS MÁS VENDIDOS"
+                    title="TOP N PRODUCTS SOLD"
                     value={data.productsSold?.reduce((sum, p) => sum + p.quantity, 0) || 0}
                     change={8.2}
                   />
