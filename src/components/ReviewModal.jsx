@@ -83,11 +83,12 @@ export default function ReviewModal({
         body: JSON.stringify(reviewData)
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to submit review');
+        const errorData = await response.json().catch(() => ({ message: 'Failed to submit review' }));
+        throw new Error(errorData.message || 'Failed to submit review');
       }
+
+      const data = await response.json();
 
       // Mostrar mensaje de éxito
       setSubmitSuccess(true);

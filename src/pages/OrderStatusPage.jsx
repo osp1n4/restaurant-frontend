@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import PropTypes from 'prop-types';
 import OrderStatus from '../components/OrderStatus';
 import ReviewModal from '../components/ReviewModal';
 
@@ -51,9 +52,17 @@ function OrderStatusPage() {
       {/* Review Modal */}
       {showReviewModal && orderData && (
         <ReviewModal
-          orderId={orderData.orderId || orderData._id}
-          customerName={orderData.customerName || orderData.customer}
+          isOpen={showReviewModal}
           onClose={() => setShowReviewModal(false)}
+          orderData={{
+            orderId: orderData.orderId || orderData._id,
+            orderNumber: orderData.orderNumber,
+            customerName: orderData.customerName || orderData.customer,
+            customerEmail: orderData.customerEmail || ''
+          }}
+          onSubmit={() => {
+            setShowReviewModal(false);
+          }}
         />
       )}
     </div>
@@ -91,19 +100,19 @@ function OrderStatusFooter({ order, onRefresh, onOpenReviewModal }) {
         break;
       case 'ready':
         // Estado READY: listo para recoger
-        return "Listo para recoger";
+        return "Ready for Pickup";
       case 'delivered':
         // Estado DELIVERED: ya entregado
-        return "Entregado";
+        return "Delivered";
       case 'cancelled':
         // Estado CANCELLED: cancelado
-        return "Cancelado";
+        return "Cancelled";
       default:
         estimatedMinutes = 12;
     }
 
     if (estimatedMinutes <= 0) {
-      return "Pronto";
+      return "Soon";
     }
 
     return `${estimatedMinutes} ${estimatedMinutes === 1 ? 'minute' : 'minutes'}`;
@@ -117,12 +126,9 @@ function OrderStatusFooter({ order, onRefresh, onOpenReviewModal }) {
       onRefresh();
     } else {
       // Fallback: recargar la página si no hay función de refresh
-      window.location.reload();
+      globalThis.location.reload();
     }
   };
-
-  // Mostrar botón de reseña solo si el pedido está entregado
-  const showReviewButton = order && order.status === 'delivered';
 
   return (
     <div className="fixed bottom-0 left-0 right-0 border-t border-border-light dark:border-border-dark bg-background-light/80 dark:bg-background-dark/80 p-4 backdrop-blur-sm">
@@ -132,28 +138,35 @@ function OrderStatusFooter({ order, onRefresh, onOpenReviewModal }) {
             <p className="text-sm text-subtext-light dark:text-subtext-dark">Estimated time remaining</p>
             <p className="text-2xl font-bold text-primary">{estimatedTime}</p>
           </div>
-          <button
-            onClick={handleRefresh}
-            className="flex cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-full bg-primary px-5 py-3 text-base font-bold leading-normal text-white hover:bg-primary/90 transition-colors"
-          >
-            <span className="material-symbols-outlined">refresh</span>
-            <span>Refresh</span>
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={handleRefresh}
+              className="flex cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-full bg-primary px-5 py-3 text-base font-bold leading-normal text-white hover:bg-primary/90 transition-colors"
+            >
+              <span className="material-symbols-outlined">refresh</span>
+              <span>Refresh</span>
+            </button>
+            <button
+              onClick={onOpenReviewModal}
+              className="flex cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-full bg-[#FF6B35] px-5 py-3 text-base font-bold leading-normal text-white hover:bg-[#e55d2e] transition-colors"
+            >
+              <span className="material-symbols-outlined">rate_review</span>
+              <span>Add Review</span>
+            </button>
+          </div>
         </div>
-
-        {/* Botón para dejar reseña - solo si está entregado */}
-        {showReviewButton && (
-          <button
-            onClick={onOpenReviewModal}
-            className="w-full flex items-center justify-center gap-2 bg-[#FF6B35] hover:bg-[#e55d2e] text-white font-semibold px-5 py-3 rounded-lg transition-colors shadow-md"
-          >
-            <span className="material-symbols-outlined">rate_review</span>
-            <span>Leave a Review</span>
-          </button>
-        )}
       </div>
     </div>
   );
 }
+
+OrderStatusFooter.propTypes = {
+  order: PropTypes.shape({
+    status: PropTypes.string,
+    createdAt: PropTypes.string,
+  }),
+  onRefresh: PropTypes.func,
+  onOpenReviewModal: PropTypes.func.isRequired,
+};
 
 export default OrderStatusPage;
