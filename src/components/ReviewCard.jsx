@@ -47,7 +47,10 @@ export default function ReviewCard({ review }) {
 
         {/* Overall Rating Badge */}
         <div className="flex items-center gap-1 bg-[#FF6B35]/10 px-3 py-1 rounded-full">
-          <span className="material-symbols-outlined text-[#FF6B35] text-xl">
+          <span
+            className="material-symbols-outlined text-xl"
+            style={{ color: '#FF6B35' }}
+          >
             star
           </span>
           <span className="font-bold text-[#FF6B35]">
