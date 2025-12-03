@@ -16,7 +16,8 @@ function Sidebar() {
   let menuItems = [
     { path: '/users', icon: 'person', label: 'User Management', filled: false, roles: ['ADMIN'] },
     { path: '/kitchen', icon: 'soup_kitchen', label: 'Kitchen', filled: false, roles: ['ADMIN', 'KITCHEN'] },
-    { path: '/dashboard/analytics', icon: 'analytics', label: 'Reports', filled: true, roles: ['ADMIN'] }
+    { path: '/dashboard/analytics', icon: 'analytics', label: 'Reports', filled: true, roles: ['ADMIN'] },
+    { path: '/admin/reviews', icon: 'reviews', label: 'Review Management', filled: false, roles: ['ADMIN'] }
   ];
 
   // Only show items allowed for the current role

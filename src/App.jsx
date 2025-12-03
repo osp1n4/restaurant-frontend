@@ -57,9 +57,7 @@ function App() {
           } />
         </Route>
         <Route path="/reviews" element={
-          <ProtectedRoute>
             <ReviewsPage />
-          </ProtectedRoute>
         } />
         <Route path="/admin/reviews" element={
           <ProtectedRoute requireAdmin={true}>

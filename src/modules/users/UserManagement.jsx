@@ -7,7 +7,6 @@ import { deactivateUser } from "./usersService";
 import DefaultUserAvatar from "./DefaultUserAvatar";
 import Pagination from "./Pagination";
 import { getUsers } from "./usersService";
-import SideNav from "./SideNav";
 import { useNavigate } from "react-router-dom";
 
 const statusColors = {
