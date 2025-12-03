@@ -185,9 +185,9 @@ function OrderStatus({ onOrderLoad }) {
           <div className="text-red-600 dark:text-red-400 mb-2">
             <span className="material-symbols-outlined text-5xl">cancel</span>
           </div>
-          <h3 className="text-red-800 dark:text-red-300 font-semibold text-lg">Pedido Cancelado</h3>
+          <h3 className="text-red-800 dark:text-red-300 font-semibold text-lg">Order Cancelled</h3>
           <p className="text-red-600 dark:text-red-400 text-sm mt-1">
-            Este pedido ha sido cancelado exitosamente.
+            This order has been successfully cancelled.
           </p>
         </div>
       )}
@@ -278,7 +278,7 @@ function OrderStatus({ onOrderLoad }) {
             disabled={isCancelling}
             className="px-6 py-3 bg-red-500 text-white rounded-lg font-semibold hover:bg-red-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
           >
-            {isCancelling ? 'Cancelando...' : 'Cancelar Pedido'}
+            {isCancelling ? 'Cancelling...' : 'Cancel Order'}
           </button>
         </div>
       )}
@@ -299,20 +299,20 @@ function OrderStatus({ onOrderLoad }) {
       <NotificationModal
         isOpen={preparingModal}
         type="warning"
-        title="¡Tu pedido está en preparación!"
-        message="La cocina está preparando tu pedido en este momento."
+        title="Your Order is Being Prepared!"
+        message="The kitchen is preparing your order right now."
         onAccept={handleAcceptPreparing}
-        acceptText="Entendido"
+        acceptText="Got It"
       />
 
       {/* Modal: Pedido listo */}
       <NotificationModal
         isOpen={readyModal}
         type="success"
-        title="¡Tu pedido está listo!"
-        message="Tu pedido está listo para recoger. ¡Buen provecho!"
+        title="Your Order is Ready!"
+        message="Your order is ready for pickup. Enjoy your meal!"
         onAccept={handleAcceptReady}
-        acceptText="Recoger Pedido"
+        acceptText="Pick Up Order"
       />
     </>
   );

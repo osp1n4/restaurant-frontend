@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 
 // Usar process.env para que Jest no falle al parsear import.meta
-const NOTIFICATION_URL = process.env.VITE_NOTIFICATION_URL || 'http://localhost:3003/notifications/stream';
+const NOTIFICATION_URL = import.meta.env.VITE_NOTIFICATIONS_URL;
 
 /**
  * Hook para conectar con el servicio de notificaciones SSE
