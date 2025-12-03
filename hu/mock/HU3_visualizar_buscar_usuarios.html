@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>User Management Screen</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#ff6933",
+            "background-light": "#f8f6f5",
+            "background-dark": "#23140f",
+          },
+          fontFamily: {
+            "display": ["Inter"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+  </style>
+</head>
+<body class="font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col bg-background-light dark:bg-background-dark group/design-root overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-row">
+<!-- SideNavBar -->
+<aside class="flex h-screen min-h-[700px] w-64 flex-col justify-between border-r border-gray-200/50 dark:border-gray-800/50 bg-white dark:bg-[#1C1411] p-4 sticky top-0">
+<div class="flex flex-col gap-4">
+<div class="flex gap-3 items-center">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" data-alt="Company Logo" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC3TJZho0q5BgghECIBfRlfPTKr2yPFLOm6ym-nDS0h8ofzroJZpEPT6mMDeJwtrz85xl1SFx0HoLezu4PZwoCeXn3utA3OOxCzDpQEhARRE4uoRT8vM1ounnujTDJXg_ZlePgzQIAY7fOJKEwb9Ivh6sqPqVaRSgouwd1dG3FmhHbUyvAAyhUtEhy0w9LCXW29x0qvFPUyVjyBpfP4Pz2TfjOGPzIcWdxVkKPJR1vEj0_nCbHrqMp8qaW94jzU2mjpXdD7mdoHgwR3");'></div>
+<div class="flex flex-col">
+<h1 class="text-[#181210] dark:text-white text-base font-medium leading-normal">Admin Panel</h1>
+<p class="text-[#8d6a5e] dark:text-gray-400 text-sm font-normal leading-normal">WebApp Inc.</p>
+</div>
+</div>
+<nav class="flex flex-col gap-2 mt-4">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800/50 transition-colors" href="#">
+<span class="material-symbols-outlined text-gray-800 dark:text-gray-200">dashboard</span>
+<p class="text-sm font-medium leading-normal">Dashboard</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary" href="#">
+<span class="material-symbols-outlined !font-bold">group</span>
+<p class="text-sm font-bold leading-normal">User Management</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800/50 transition-colors" href="#">
+<span class="material-symbols-outlined text-gray-800 dark:text-gray-200">settings</span>
+<p class="text-sm font-medium leading-normal">Settings</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800/50 transition-colors" href="#">
+<span class="material-symbols-outlined text-gray-800 dark:text-gray-200">bar_chart</span>
+<p class="text-sm font-medium leading-normal">Reports</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800/50 transition-colors" href="#">
+<span class="material-symbols-outlined text-gray-800 dark:text-gray-200">article</span>
+<p class="text-sm font-medium leading-normal">Content</p>
+</a>
+</nav>
+</div>
+<div class="flex flex-col gap-4">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800/50 transition-colors" href="#">
+<span class="material-symbols-outlined text-gray-800 dark:text-gray-200">help</span>
+<p class="text-sm font-medium leading-normal">Support</p>
+</a>
+<button class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-primary/90 transition-colors">
+<span class="material-symbols-outlined mr-2">logout</span>
+<span class="truncate">Logout</span>
+</button>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 p-8">
+<div class="layout-content-container flex flex-col w-full">
+<!-- PageHeading -->
+<header class="flex flex-wrap justify-between gap-4 items-center mb-6">
+<div class="flex flex-col gap-1">
+<p class="text-[#181210] dark:text-white text-3xl font-bold leading-tight tracking-tight">User Management</p>
+<p class="text-[#8d6a5e] dark:text-gray-400 text-base font-normal leading-normal">Manage all users, their roles, and system access.</p>
+</div>
+<button class="flex min-w-[84px] items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-primary/90 transition-colors shadow-sm">
+<span class="material-symbols-outlined mr-2">add</span>
+<span class="truncate">Add New User</span>
+</button>
+</header>
+<!-- Search and Filters -->
+<div class="flex flex-wrap items-center gap-4 mb-4">
+<!-- SearchBar -->
+<div class="flex-grow min-w-[20rem]">
+<label class="flex flex-col min-w-40 h-12 w-full">
+<div class="flex w-full flex-1 items-stretch rounded-lg h-full bg-[#f5f1f0] dark:bg-[#2A1C16] shadow-sm">
+<div class="text-[#8d6a5e] dark:text-gray-400 flex items-center justify-center pl-4">
+<span class="material-symbols-outlined">search</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden text-[#181210] dark:text-white focus:outline-0 focus:ring-0 border-none bg-transparent h-full placeholder:text-[#8d6a5e] dark:placeholder:text-gray-500 px-4 pl-2 text-sm font-normal leading-normal" placeholder="Search by name or email..." value=""/>
+</div>
+</label>
+</div>
+<!-- Chips -->
+<div class="flex gap-3">
+<button class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-[#f5f1f0] dark:bg-[#2A1C16] px-4 shadow-sm hover:bg-gray-200 dark:hover:bg-gray-700/50 transition-colors">
+<p class="text-[#181210] dark:text-gray-300 text-sm font-medium leading-normal">Role</p>
+<span class="material-symbols-outlined text-[#181210] dark:text-gray-300 text-base">expand_more</span>
+</button>
+<button class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-[#f5f1f0] dark:bg-[#2A1C16] px-4 shadow-sm hover:bg-gray-200 dark:hover:bg-gray-700/50 transition-colors">
+<p class="text-[#181210] dark:text-gray-300 text-sm font-medium leading-normal">Status</p>
+<span class="material-symbols-outlined text-[#181210] dark:text-gray-300 text-base">expand_more</span>
+</button>
+</div>
+</div>
+<!-- Table -->
+<div class="w-full @container">
+<div class="flex overflow-hidden rounded-xl border border-[#e7deda] dark:border-gray-800 bg-white dark:bg-[#1C1411] shadow-md">
+<table class="flex-1">
+<thead class="bg-[#f5f1f0] dark:bg-[#2A1C16]">
+<tr>
+<th class="px-6 py-4 text-left text-[#181210] dark:text-gray-300 text-xs font-medium uppercase tracking-wider">User</th>
+<th class="px-6 py-4 text-left text-[#181210] dark:text-gray-300 text-xs font-medium uppercase tracking-wider">Email</th>
+<th class="px-6 py-4 text-left text-[#181210] dark:text-gray-300 text-xs font-medium uppercase tracking-wider">Role</th>
+<th class="px-6 py-4 text-left text-[#181210] dark:text-gray-300 text-xs font-medium uppercase tracking-wider">Status</th>
+<th class="px-6 py-4 text-left text-[#181210] dark:text-gray-300 text-xs font-medium uppercase tracking-wider">
+                      Actions
+                    </th>
+</tr>
+</thead>
+<tbody class="divide-y divide-[#e7deda] dark:divide-gray-800">
+<tr class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-10" data-alt="User avatar for Olivia Rhye" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDG1NoukEgM9Sc3mmuT9s7IQso3i_WSHDjTX1R6GZI4MJMS-YPj9FzCkSOjpUPy4QbpPSjbdjpvSqTHtvVRV9gA4UXnvym1FDMKFpH0frDSMTUCO0qBd3MICMdOLqP6aX_kf3CAUugL8mB3ZsircnJHQxoAR72NQUzdurxOPzq5H3BbTvh0HBub3yb0QfWSvDusa8wLMYEO5lb7Eo88gCI3mmjAAH6MQDSvZaL1NtGvflrpz3TzDOgHKthTytfPHJrnoVN-7JJFD-I_");'></div>
+<span class="text-[#181210] dark:text-white text-sm font-medium">Olivia Rhye</span>
+</div>
+</td>
+<td class="px-6 py-4 text-[#8d6a5e] dark:text-gray-400 text-sm font-normal">olivia@example.com</td>
+<td class="px-6 py-4 text-[#8d6a5e] dark:text-gray-400 text-sm font-normal">Admin</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300">Active</span>
+</td>
+<td class="px-6 py-4 text-sm font-medium">
+<div class="flex items-center gap-2">
+<button class="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"><span class="material-symbols-outlined text-lg">edit</span></button>
+<button class="p-2 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-500 transition-colors"><span class="material-symbols-outlined text-lg">delete</span></button>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-10" data-alt="User avatar for Phoenix Baker" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCRZcH6uLu0Eng0HRrfcrcDcgposS-DEuEgwL85UN-44pYYiaftkMMvDyrzc6twdjPZsmpSh4v17paycBHbRQ-4SNNU0WYCZ4d5tK5Npd2LhGoHff271Ij2eysmXmgHtI0ziVdYFRnUKwJPwPyFahOUpgkta94be84LDuew8nxwksmgQQCCy0QazlCLMq-gCdQPbxMHdjPTSbW-Gmwksa28TdKFSWTAyMbc_xyXpmq1Nr82UjozAVfKQeCBdz8tYt3ClgzrfsYn3oFj");'></div>
+<span class="text-[#181210] dark:text-white text-sm font-medium">Phoenix Baker</span>
+</div>
+</td>
+<td class="px-6 py-4 text-[#8d6a5e] dark:text-gray-400 text-sm font-normal">phoenix@example.com</td>
+<td class="px-6 py-4 text-[#8d6a5e] dark:text-gray-400 text-sm font-normal">Editor</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300">Active</span>
+</td>
+<td class="px-6 py-4 text-sm font-medium">
+<div class="flex items-center gap-2">
+<button class="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"><span class="material-symbols-outlined text-lg">edit</span></button>
+<button class="p-2 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-500 transition-colors"><span class="material-symbols-outlined text-lg">delete</span></button>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-10" data-alt="User avatar for Lana Steiner" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAtypi67mRiqiPR-aiGFW1RomAldnHZTnG-ZQ-9RdTsCSOUNJxi2kIeplybuCeAf5RjKq0nElX2K96tnwBwMn3l_UwyXV5-IpUmB-VB_8aX0k2NuOVIBzwf6498cKWKMTq1HPxEnyf7Wy71ZU26NxmL9uS-Qv7CUyzpzLrGfHDny7Wx3boNjPFbEM8cLcxgN4GjxRpxwW7UYFOyJSlsia8EWaH6nuiPcF5kng8qzOAFORVCZTHcl-awj19FZ_Zf2djIVMYUZ-ei1F-L");'></div>
+<span class="text-[#181210] dark:text-white text-sm font-medium">Lana Steiner</span>
+</div>
+</td>
+<td class="px-6 py-4 text-[#8d6a5e] dark:text-gray-400 text-sm font-normal">lana@example.com</td>
+<td class="px-6 py-4 text-[#8d6a5e] dark:text-gray-400 text-sm font-normal">Viewer</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700/50 text-gray-800 dark:text-gray-300">Inactive</span>
+</td>
+<td class="px-6 py-4 text-sm font-medium">
+<div class="flex items-center gap-2">
+<button class="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"><span class="material-symbols-outlined text-lg">edit</span></button>
+<button class="p-2 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-500 transition-colors"><span class="material-symbols-outlined text-lg">delete</span></button>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-10" data-alt="User avatar for Drew Cano" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAQ3BabPGxDTe7H4cwx5C1i859cdE-z1Cgrif9KVa0fAFV0-Y-szeMfvI9YYIDoMP3QYHAJex9tOKGSzEtwASIVBuoLbzBBFwXg0pxFWFRuUPkGyKy5OW67yXfAs5Fu3JH__5Y45udE_nRe65Gc_9KNJYjHwYEbXG2b5bdcq-l9yRiAsaClzEVoXxLZfagFsHTM7SffovrroGe53D5U_qMflREu3ELvVCDGwcA3HGAW05w89dNADpCoDz00MD5LAnyn1IOOAIIfk60c");'></div>
+<span class="text-[#181210] dark:text-white text-sm font-medium">Drew Cano</span>
+</div>
+</td>
+<td class="px-6 py-4 text-[#8d6a5e] dark:text-gray-400 text-sm font-normal">drew@example.com</td>
+<td class="px-6 py-4 text-[#8d6a5e] dark:text-gray-400 text-sm font-normal">Editor</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300">Active</span>
+</td>
+<td class="px-6 py-4 text-sm font-medium">
+<div class="flex items-center gap-2">
+<button class="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"><span class="material-symbols-outlined text-lg">edit</span></button>
+<button class="p-2 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-500 transition-colors"><span class="material-symbols-outlined text-lg">delete</span></button>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-10" data-alt="User avatar for Demi Wilkinson" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCBarYQLUk1vQ0tETcbNcLCOf0VDj14owVkZMg_cwRvBzPuBXAhznKBvC9C2GuBsWGWvdOfqYXVdj9mwRfdXGcG4RTbw8qIMEnC4Hgh-s6MM4PudyMD38P7GcpKbGdfY871E3_3fV1LUlBWwWsVUmDp3fil70X13D7JQuBh8YzQurCMWH41li_fQfTCVxfII4CDDs0ffpsxhjYtkmfTHLlpNXMiWdjcIZxu5LmxWWaMOts2VVGFcjeR_UZ8xLCnfC5x9uGO_OdtiZdO");'></div>
+<span class="text-[#181210] dark:text-white text-sm font-medium">Demi Wilkinson</span>
+</div>
+</td>
+<td class="px-6 py-4 text-[#8d6a5e] dark:text-gray-400 text-sm font-normal">demi@example.com</td>
+<td class="px-6 py-4 text-[#8d6a5e] dark:text-gray-400 text-sm font-normal">Viewer</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-300">Pending</span>
+</td>
+<td class="px-6 py-4 text-sm font-medium">
+<div class="flex items-center gap-2">
+<button class="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"><span class="material-symbols-outlined text-lg">edit</span></button>
+<button class="p-2 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-500 transition-colors"><span class="material-symbols-outlined text-lg">delete</span></button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Pagination -->
+<div class="flex justify-between items-center mt-6">
+<p class="text-sm text-[#8d6a5e] dark:text-gray-400">
+                Showing <span class="font-medium text-[#181210] dark:text-white">1</span> to <span class="font-medium text-[#181210] dark:text-white">5</span> of <span class="font-medium text-[#181210] dark:text-white">128</span> results
+             </p>
+<div class="flex gap-2">
+<button class="flex items-center justify-center h-10 px-4 rounded-lg bg-white dark:bg-[#1C1411] border border-[#e7deda] dark:border-gray-800 text-[#181210] dark:text-white text-sm font-medium hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                   Previous
+                </button>
+<button class="flex items-center justify-center h-10 px-4 rounded-lg bg-white dark:bg-[#1C1411] border border-[#e7deda] dark:border-gray-800 text-[#181210] dark:text-white text-sm font-medium hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                   Next
+                </button>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+</body></html>
