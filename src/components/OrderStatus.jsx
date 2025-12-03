@@ -283,6 +283,17 @@ function OrderStatus({ onOrderLoad }) {
         </div>
       )}
 
+      {/* Mensaje informativo para otros estados */}
+      {order.status !== 'pending' && !isCancelled && (
+        <div className="mt-6 flex justify-center">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            {order.status === 'cooking' ? 'Order is being prepared - cannot be cancelled' : ''}
+            {order.status === 'ready' ? 'Order is ready for pickup' : ''}
+            {order.status === 'delivered' ? 'Order has been delivered' : ''}
+          </p>
+        </div>
+      )}
+
       {/* Modal de confirmación de cancelación */}
       <OrderCancelModal
         isOpen={cancelModal}
