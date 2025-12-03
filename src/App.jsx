@@ -13,6 +13,7 @@ import UserManagement from './modules/users/UserManagement';
 import UserForm from './modules/users/UserForm';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from './components/MainLayout';
+import ProtectedRoute from './components/ProtectedRoute';
 
 
 function App() {
@@ -26,17 +27,45 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/order" element={<OrderPage />} />
-        <Route element={<MainLayout />}>
-          <Route path="/kitchen" element={<Kitchen />} />
-          <Route path="/dashboard/analytics" element={<SalesAnalyticsDashboard />} />
-          <Route path="/users" element={<UserManagement />} />
-          <Route path="/users/new" element={<UserForm />} />
-          <Route path="/users/:id" element={<UserForm />} />
-        </Route>
         <Route path="/orders/:orderId" element={<OrderStatusPage />} />
-        <Route path="/reviews" element={<ReviewsPage />} />
-        <Route path="/admin/reviews" element={<AdminReviewsPage />} />
         <Route path="/login" element={<LoginWithRedirect />} />
+        <Route element={<MainLayout />}>
+          <Route path="/kitchen" element={
+            <ProtectedRoute allowedRoles={["ADMIN", "KITCHEN"]}>
+              <Kitchen />
+            </ProtectedRoute>
+          } />
+          <Route path="/dashboard/analytics" element={
+            <ProtectedRoute requireAdmin={true}>
+              <SalesAnalyticsDashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/users" element={
+            <ProtectedRoute requireAdmin={true}>
+              <UserManagement />
+            </ProtectedRoute>
+          } />
+          <Route path="/users/new" element={
+            <ProtectedRoute requireAdmin={true}>
+              <UserForm />
+            </ProtectedRoute>
+          } />
+          <Route path="/users/:id" element={
+            <ProtectedRoute requireAdmin={true}>
+              <UserForm />
+            </ProtectedRoute>
+          } />
+        </Route>
+        <Route path="/reviews" element={
+          <ProtectedRoute>
+            <ReviewsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/reviews" element={
+          <ProtectedRoute requireAdmin={true}>
+            <AdminReviewsPage />
+          </ProtectedRoute>
+        } />
       </Routes>
     </Router>
   );

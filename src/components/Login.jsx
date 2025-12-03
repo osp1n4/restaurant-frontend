@@ -1,17 +1,20 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
+import { useNavigate } from "react-router-dom";
+import { AuthContext } from '../context/AuthContext.jsx';
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebaseConfig";
 
-function Login({ onLogin, navigate }) {
+function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const { login } = useContext(AuthContext);
+  const navigate = useNavigate();
 
-  const validateAdminRole = (claims) => {
-    return claims.admin === true || 
-           claims.role === "ADMIN" || 
-           claims.role === "admin";
+  const validateAllowedRole = (claims) => {
+    const role = (claims.role || '').toUpperCase();
+    return role === "ADMIN" || role === "KITCHEN";
   };
 
   const handleAuthError = (error) => {
@@ -25,14 +28,22 @@ function Login({ onLogin, navigate }) {
   };
 
   const handleSuccessfulLogin = (user, tokenResult) => {
-    if (typeof onLogin === "function") {
-        // Guardar usuario en localStorage para el menú lateral
-        localStorage.setItem('user', JSON.stringify({ email: user.email }));
-        onLogin(user, tokenResult);
-    }
-    
-    if (navigate) {
+    // Guardar usuario en localStorage para el menú lateral
+    localStorage.setItem('user', JSON.stringify({ email: user.email, role: tokenResult.claims.role }));
+    // Actualizar el estado global de autenticación
+    login({
+      email: user.email,
+      role: tokenResult.claims.role || (tokenResult.claims.admin ? 'admin' : undefined),
+      ...tokenResult.claims
+    });
+    // Redirigir según el rol
+    const role = (tokenResult.claims.role || '').toUpperCase();
+    if (role === 'ADMIN') {
       navigate("/users");
+    } else if (role === 'KITCHEN') {
+      navigate("/kitchen");
+    } else {
+      navigate("/");
     }
   };
 
@@ -53,11 +64,11 @@ function Login({ onLogin, navigate }) {
 
     try {
       const { user, tokenResult } = await authenticateUser(email, password);
-      const isAdmin = validateAdminRole(tokenResult.claims);
+      const isAllowed = validateAllowedRole(tokenResult.claims);
       
-      console.log("Es admin:", isAdmin);
+      console.log("Rol permitido:", isAllowed);
 
-      if (isAdmin) {
+      if (isAllowed) {
         handleSuccessfulLogin(user, tokenResult);
       } else {
         handleUnauthorizedAccess(tokenResult.claims);

@@ -1,5 +1,6 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import PropTypes from 'prop-types';
+import { useContext } from 'react';
+import { AuthContext } from '../../context/AuthContext.jsx';
 
 /**
  * Componente de navegación lateral (Sidebar)
@@ -8,13 +9,18 @@ import PropTypes from 'prop-types';
 function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useContext(AuthContext);
 
-  const menuItems = [
-    { path: '/users', icon: 'grid_view', label: 'User Management', filled: false },
-    { path: '/order', icon: 'receipt_long', label: 'Orders', filled: false },
-    { path: '/kitchen', icon: 'soup_kitchen', label: 'Kitchen', filled: false },
-    { path: '/dashboard/analytics', icon: 'analytics', label: 'Reports', filled: true }
+  // Define allowed menu items by role
+  const role = (user?.role || '').toUpperCase();
+  let menuItems = [
+    { path: '/users', icon: 'person', label: 'User Management', filled: false, roles: ['ADMIN'] },
+    { path: '/kitchen', icon: 'soup_kitchen', label: 'Kitchen', filled: false, roles: ['ADMIN', 'KITCHEN'] },
+    { path: '/dashboard/analytics', icon: 'analytics', label: 'Reports', filled: true, roles: ['ADMIN'] }
   ];
+
+  // Only show items allowed for the current role
+  menuItems = menuItems.filter(item => item.roles.includes(role));
 
   const isActive = (path) => location.pathname === path;
 
