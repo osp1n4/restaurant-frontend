@@ -248,14 +248,14 @@ function Home() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent">
                   <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
-                    <h4 className="text-2xl font-bold mb-2">Expert Culinary Artists</h4>
+                    <h4 className="text-2xl font-bold mb-2 text-[#FF6B35]">Expert Culinary Artists</h4>
                     <p className="text-gray-200 mb-4">
                       Our chefs master the art of flavor, combining traditional techniques
                       with modern innovation to create unforgettable dishes.
                     </p>
                     <div className="flex items-center gap-2">
                       <span className="material-symbols-outlined text-primary">star</span>
-                      <span className="text-sm">Michelin-Trained Excellence</span>
+                      <span className="text-sm text-[#FF6B35]">Michelin-Trained Excellence</span>
                     </div>
                   </div>
                 </div>
@@ -272,14 +272,14 @@ function Home() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent">
                   <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
-                    <h4 className="text-2xl font-bold mb-2">Passionate Professionals</h4>
+                    <h4 className="text-2xl font-bold mb-2 text-[#FF6B35]">Passionate Professionals</h4>
                     <p className="text-gray-200 mb-4">
                       Dedicated to perfection, our team ensures every meal is crafted
                       with precision, care, and the finest ingredients.
                     </p>
                     <div className="flex items-center gap-2">
                       <span className="material-symbols-outlined text-primary">restaurant</span>
-                      <span className="text-sm">Award-Winning Team</span>
+                      <span className="text-sm text-[#FF6B35] ">Award-Winning Team</span>
                     </div>
                   </div>
                 </div>

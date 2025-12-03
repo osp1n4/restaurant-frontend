@@ -81,12 +81,17 @@ export default function StarRating({
               transition-all duration-200
               ${readonly ? 'cursor-default' : 'cursor-pointer hover:scale-110'}
               focus:outline-none
-              ${isFilled(starValue) ? 'text-[#FF6B35]' : 'text-[#CCCCCC]'}
             `}
             aria-label={`Rate ${starValue} stars`}
           >
             {/* Estrella llena o vacía */}
-            <span className="material-symbols-outlined" style={{ fontSize: 'inherit' }}>
+            <span
+              className="material-symbols-outlined"
+              style={{
+                fontSize: 'inherit',
+                color: isFilled(starValue) ? '#FF6B35' : '#CCCCCC',
+              }}
+            >
               {isFilled(starValue) ? 'star' : 'star_outline'}
             </span>
           </button>
