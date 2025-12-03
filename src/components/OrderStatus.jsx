@@ -1,8 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getOrderStatus, cancelOrder } from '../services/api';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getOrderStatus } from '../services/api';
-import { useParams } from 'react-router-dom';
 import { useNotifications } from '../hooks/useNotification';
 import NotificationModal from './NotificationModal';
 import OrderCancelModal from './OrderCancelModal';
@@ -15,6 +13,7 @@ import OrderCancelModal from './OrderCancelModal';
  */
 function OrderStatus({ onOrderLoad, onRefreshRequest, onOpenReviewModal }) {
   const { orderId } = useParams();
+  const navigate = useNavigate();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -114,13 +113,16 @@ function OrderStatus({ onOrderLoad, onRefreshRequest, onOpenReviewModal }) {
     if (notification.eventType === 'order.ready') {
       console.log('🎉 🔥 MOSTRANDO MODAL READY 🔥');
       setReadyModal(true);
+      fetchOrderStatus();
     }
 
     // Notificación de cancelación
     if (notification.eventType === 'order.cancelled') {
       fetchOrderStatus();
     }
-  }, [fetchOrderStatus]);
+
+    console.log('=========================================\n');
+  }, [orderId, order, fetchOrderStatus]);
 
   // Conectar a notificaciones - RECIBIR TODAS (sin filtro)
   useNotifications(handleNotification, []);
