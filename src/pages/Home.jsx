@@ -27,7 +27,7 @@ function Home() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="material-symbols-outlined text-3xl text-primary">restaurant</span>
-              <h1 className="text-xl font-bold text-[#181311] dark:text-white">
+              <h1 className="text-xl font-bold text-primary dark:text-primary">
                 Delicious Kitchen
               </h1>
             </div>
@@ -60,7 +60,7 @@ function Home() {
 
         <div className="relative z-10 max-w-4xl mx-auto px-4 text-center text-white">
           <h2
-            className="text-5xl md:text-7xl font-bold mb-6 animate-fade-in-up"
+            className="text-5xl md:text-7xl font-bold mb-6 animate-fade-in-up text-primary"
             style={{ animationDelay: '0.2s' }}
           >
             Delicious Kitchen
@@ -129,7 +129,7 @@ function Home() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <div className="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                    <h4 className="text-xl font-bold mb-2">Smash Burger</h4>
+                    <h4 className="text-xl font-bold mb-2 text-primary">Smash Burger</h4>
                     <p className="text-sm text-gray-200">
                       Juicy beef patty with melted cheese, fresh veggies, and our special sauce
                     </p>
@@ -152,7 +152,7 @@ function Home() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <div className="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                    <h4 className="text-xl font-bold mb-2">Creamy Carbonara</h4>
+                    <h4 className="text-xl font-bold mb-2 text-primary">Creamy Carbonara</h4>
                     <p className="text-sm text-gray-200">
                       Traditional Italian pasta with crispy bacon, eggs, and parmesan
                     </p>
@@ -175,7 +175,7 @@ function Home() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <div className="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                    <h4 className="text-xl font-bold mb-2">Caesar Salad</h4>
+                    <h4 className="text-xl font-bold mb-2 text-primary">Caesar Salad</h4>
                     <p className="text-sm text-gray-200">
                       Fresh greens with grilled chicken, lemon vinaigrette, and croutons
                     </p>
@@ -198,7 +198,7 @@ function Home() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <div className="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                    <h4 className="text-xl font-bold mb-2">Margherita Pizza</h4>
+                    <h4 className="text-xl font-bold mb-2 text-primary">Margherita Pizza</h4>
                     <p className="text-sm text-gray-200">
                       Classic pizza with fresh mozzarella, tomatoes, and basil
                     </p>
@@ -362,7 +362,7 @@ function Home() {
             onClick={() => navigate('/reviews')}
             className="bg-[#FF6B35] hover:bg-[#e55d2e] text-white font-semibold px-8 py-3 rounded-lg shadow-md hover:shadow-lg transition-all inline-flex items-center gap-2"
           >
-            <span className="material-symbols-outlined">star</span>
+            <span className="material-symbols-outlined text-white">star</span>
             View Customer Reviews
           </button>
         </div>
@@ -375,7 +375,7 @@ function Home() {
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <span className="material-symbols-outlined text-3xl text-primary">restaurant</span>
-                <h4 className="text-xl font-bold">Delicious Kitchen</h4>
+                <h4 className="text-xl font-bold text-primary">Delicious Kitchen</h4>
               </div>
               <p className="text-gray-400">
                 Freshly Made, Just for You
@@ -383,20 +383,20 @@ function Home() {
             </div>
 
             <div>
-              <h4 className="text-lg font-bold mb-4">Contact</h4>
+              <h4 className="text-lg font-bold mb-4 text-primary">Contact</h4>
               <p className="text-gray-400 mb-2">Phone: +123-423-1261</p>
               <p className="text-gray-400">Email: info@deliciouskitchen.com</p>
             </div>
 
             <div>
-              <h4 className="text-lg font-bold mb-4">Hours</h4>
+              <h4 className="text-lg font-bold mb-4 text-primary">Hours</h4>
               <p className="text-gray-400 mb-2">Mon - Fri: 11am - 10pm</p>
               <p className="text-gray-400">Sat - Sun: 10am - 11pm</p>
             </div>
           </div>
 
-          <div className="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 Delicious Kitchen. All rights reserved.</p>
+          <div className="border-t border-gray-700 mt-8 pt-8 text-center">
+            <p className="text-gray-300">&copy; 2024 Delicious Kitchen. All rights reserved.</p>
           </div>
         </div>
       </footer>
