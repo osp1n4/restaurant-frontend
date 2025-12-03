@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getOrderStatus, cancelOrder } from '../services/api';
 import { useParams, useNavigate } from 'react-router-dom';
+import { getOrderStatus } from '../services/api';
+import { useParams } from 'react-router-dom';
 import { useNotifications } from '../hooks/useNotification';
 import NotificationModal from './NotificationModal';
 import OrderCancelModal from './OrderCancelModal';
@@ -8,20 +10,30 @@ import OrderCancelModal from './OrderCancelModal';
 /**
  * Componente para mostrar el estado de un pedido específico
  * @param {Function} onOrderLoad - Callback que se ejecuta cuando se carga el pedido
+ * @param {Function} onRefreshRequest - Callback para pasar la función de refresh al padre
+ * @param {Function} onOpenReviewModal - Callback para abrir el modal de review
  */
-function OrderStatus({ onOrderLoad }) {
+function OrderStatus({ onOrderLoad, onRefreshRequest, onOpenReviewModal }) {
   const { orderId } = useParams();
-  const navigate = useNavigate();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+
   // Estados para modales de notificación
   const [preparingModal, setPreparingModal] = useState(false);
   const [readyModal, setReadyModal] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   const [cancelError, setCancelError] = useState('');
+
+  // Log cambios en estados de modales
+  useEffect(() => {
+    console.log('🎭 Estado preparingModal cambió a:', preparingModal);
+  }, [preparingModal]);
+
+  useEffect(() => {
+    console.log('🎭 Estado readyModal cambió a:', readyModal);
+  }, [readyModal]);
 
   // Función para obtener el estado del pedido
   const fetchOrderStatus = useCallback(async () => {
@@ -34,7 +46,7 @@ function OrderStatus({ onOrderLoad }) {
         onOrderLoad(orderData);
       }
     } catch (err) {
-      setError(err.message || 'Error al cargar el estado del pedido');
+      setError(err.message || 'Error loading order status');
     } finally {
       setLoading(false);
     }
@@ -47,17 +59,60 @@ function OrderStatus({ onOrderLoad }) {
     }
   }, [orderId, fetchOrderStatus]);
 
+  // Pasar la función de refresh al padre
+  useEffect(() => {
+    if (onRefreshRequest) {
+      onRefreshRequest(fetchOrderStatus);
+    }
+  }, [onRefreshRequest, fetchOrderStatus]);
+
   // Manejar notificaciones SSE
   const handleNotification = useCallback((notification) => {
-    console.log('📬 Notificación para este pedido:', notification);
+    console.log('🔔 ============ NOTIFICACIÓN RECIBIDA ============');
+    console.log('📦 Notificación completa:', JSON.stringify(notification, null, 2));
+    console.log('🔍 notification.orderId:', notification.orderId);
+    console.log('🔍 notification.orderNumber:', notification.orderNumber);
+    console.log('🔍 notification.eventType:', notification.eventType);
+    console.log('📍 orderId del URL:', orderId);
+    console.log('📍 order state:', order);
+
+    // SIMPLIFICADO: Solo comparar con el orderId del URL (que puede ser _id o orderNumber)
+    const match1 = notification.orderId === orderId;
+    const match2 = notification.orderNumber === orderId;
+    const match3 = order && notification.orderId === order._id;
+    const match4 = order && notification.orderNumber === order.orderNumber;
+    const match5 = order && notification.orderId === order.orderNumber;
+
+    console.log('🔎 Comparaciones:');
+    console.log('  match1 (notification.orderId === orderId):', match1, `(${notification.orderId} === ${orderId})`);
+    console.log('  match2 (notification.orderNumber === orderId):', match2, `(${notification.orderNumber} === ${orderId})`);
+    console.log('  match3 (notification.orderId === order._id):', match3, `(${notification.orderId} === ${order?._id})`);
+    console.log('  match4 (notification.orderNumber === order.orderNumber):', match4, `(${notification.orderNumber} === ${order?.orderNumber})`);
+    console.log('  match5 (notification.orderId === order.orderNumber):', match5, `(${notification.orderId} === ${order?.orderNumber})`);
+
+    const isMyOrder = match1 || match2 || match3 || match4 || match5;
+
+    console.log('🎯 Resultado final isMyOrder:', isMyOrder);
+
+    if (!isMyOrder) {
+      console.log('⏭️ ❌ Notificación NO es para mi orden, ignorando');
+      console.log('=========================================\n');
+      return;
+    }
+
+    console.log('✅ ✅ ✅ Notificación ES para mi orden!');
+    console.log('📢 Tipo de evento:', notification.eventType);
 
     // order.preparing - Tu pedido está siendo preparado
     if (notification.eventType === 'order.preparing') {
+      console.log('👨‍🍳 🔥 MOSTRANDO MODAL PREPARING 🔥');
       setPreparingModal(true);
+      fetchOrderStatus();
     }
-    
+
     // order.ready - Tu pedido está listo
     if (notification.eventType === 'order.ready') {
+      console.log('🎉 🔥 MOSTRANDO MODAL READY 🔥');
       setReadyModal(true);
     }
 
@@ -67,8 +122,8 @@ function OrderStatus({ onOrderLoad }) {
     }
   }, [fetchOrderStatus]);
 
-  // Conectar a notificaciones solo para este pedido
-  useNotifications(handleNotification, [orderId]);
+  // Conectar a notificaciones - RECIBIR TODAS (sin filtro)
+  useNotifications(handleNotification, []);
 
   // Manejar cancelación de pedido
   const handleCancelOrder = async () => {
@@ -97,17 +152,21 @@ function OrderStatus({ onOrderLoad }) {
   };
 
   // Manejar aceptar modal de "preparing"
-  const handleAcceptPreparing = async () => {
+  const handleAcceptPreparing = () => {
     setPreparingModal(false);
-    // Refrescar estado del pedido
-    await fetchOrderStatus();
   };
 
-  // Manejar aceptar modal de "ready"
-  const handleAcceptReady = () => {
+  // Manejar "Pick Up Order" - solo cerrar modal, NO navegar
+  const handlePickUpOrder = () => {
     setReadyModal(false);
-    // Redirigir al home
-    navigate('/');
+  };
+
+  // Manejar "Add Review" - cerrar modal y abrir ReviewModal
+  const handleAddReview = () => {
+    setReadyModal(false);
+    if (onOpenReviewModal) {
+      onOpenReviewModal();
+    }
   };
 
   // Función para obtener el icono según el nombre del item
@@ -133,7 +192,7 @@ function OrderStatus({ onOrderLoad }) {
       <div className="flex justify-center items-center min-h-[400px]">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-subtext-light dark:text-subtext-dark">Cargando estado del pedido...</p>
+          <p className="text-subtext-light dark:text-subtext-dark">Loading order status...</p>
         </div>
       </div>
     );
@@ -154,17 +213,16 @@ function OrderStatus({ onOrderLoad }) {
   if (!order) {
     return (
       <div className="bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark rounded-lg p-6 text-center">
-        <p className="text-subtext-light dark:text-subtext-dark">No se encontró el pedido</p>
+        <p className="text-subtext-light dark:text-subtext-dark">Order not found</p>
       </div>
     );
   }
 
-  // Obtener el número de pedido o ID para mostrar
+  // Get order number or ID to display
   const displayOrderId = order.orderNumber || order.orderId || order._id || 'N/A';
-  const customerName = order.customerName || order.customer || 'Cliente';
+  const customerName = order.customerName || order.customer || 'Customer';
 
-  // Determinar estados del timeline basado en el status normalizado
-  const isOrderReceived = true;
+  // Determine timeline states based on normalized status
   const isBeingPrepared = order.status === 'cooking' || order.status === 'ready' || order.status === 'delivered';
   const isReadyForPickup = order.status === 'ready' || order.status === 'delivered';
   const isCancelled = order.status === 'cancelled';
@@ -241,8 +299,8 @@ function OrderStatus({ onOrderLoad }) {
       {order.items && order.items.length > 0 ? (
         <div className="flex flex-col gap-3">
           {order.items.map((item, index) => (
-            <div 
-              key={index} 
+            <div
+              key={index}
               className="flex items-center gap-4 rounded-lg bg-card-light dark:bg-card-dark p-4 shadow-sm"
             >
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/20 text-primary">
@@ -298,21 +356,23 @@ function OrderStatus({ onOrderLoad }) {
       {/* Modal: Pedido siendo preparado */}
       <NotificationModal
         isOpen={preparingModal}
-        type="warning"
-        title="¡Tu pedido está en preparación!"
-        message="La cocina está preparando tu pedido en este momento."
+        type="info"
+        title="Your order is being prepared!"
+        message="Your order is being prepared by our team. We'll let you know when it's ready."
         onAccept={handleAcceptPreparing}
-        acceptText="Entendido"
+        acceptText="Got it"
       />
 
-      {/* Modal: Pedido listo */}
+      {/* Modal: Order ready for pickup */}
       <NotificationModal
         isOpen={readyModal}
         type="success"
-        title="¡Tu pedido está listo!"
-        message="Tu pedido está listo para recoger. ¡Buen provecho!"
-        onAccept={handleAcceptReady}
-        acceptText="Recoger Pedido"
+        title="Your order is ready!"
+        message="Your order is ready for pickup. Enjoy your meal!"
+        onAccept={handlePickUpOrder}
+        acceptText="Pick Up Order"
+        onCancel={handleAddReview}
+        cancelText="Add Review"
       />
     </>
   );

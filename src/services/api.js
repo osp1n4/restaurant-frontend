@@ -37,7 +37,7 @@ function mapOrderStatus(status) {
 function normalizeOrderData(orderData) {
   // El backend puede devolver { success, message, data: { order: {...} } } o directamente el objeto
   const order = orderData.data?.order || orderData.order || orderData;
-  
+
   return {
     ...order,
     // Mapear campos del backend al formato del frontend
@@ -88,12 +88,12 @@ export async function getOrderStatus(orderId) {
  */
 export async function getKitchenOrders(status) {
   try {
-    const url = status 
+    const url = status
       ? `${API_BASE_URL}/kitchen/orders?status=${status}`
       : `${API_BASE_URL}/kitchen/orders`;
-    
+
     console.log('Fetching kitchen orders from:', url);
-    
+
     const response = await fetch(url, {
       method: 'GET',
       headers: {
@@ -104,7 +104,7 @@ export async function getKitchenOrders(status) {
     if (!response.ok) {
       // Intentar obtener el mensaje de error del backend
       let errorMessage = `Error ${response.status}: ${response.statusText}`;
-      
+
       try {
         const errorData = await response.json();
         if (errorData.message) {
@@ -113,12 +113,12 @@ export async function getKitchenOrders(status) {
       } catch (e) {
         // Si no se puede parsear JSON, usar el statusText
       }
-      
+
       // Mensaje más específico para 404
       if (response.status === 404) {
         errorMessage = `Endpoint no encontrado. Verifica que el API Gateway esté corriendo en ${API_BASE_URL} y que el endpoint /kitchen/orders esté disponible.`;
       }
-      
+
       const error = new Error(errorMessage);
       error.status = response.status;
       error.url = url;
@@ -126,17 +126,17 @@ export async function getKitchenOrders(status) {
     }
 
     const data = await response.json();
-    
+
     // El backend devuelve { success: true, data: [...], count: ... }
     if (data.success && data.data) {
       return data.data;
     }
-    
+
     // Si no tiene success pero tiene data directamente
     if (Array.isArray(data)) {
       return data;
     }
-    
+
     return data;
   } catch (error) {
     // Si es un error de red (fetch falló completamente)
@@ -147,7 +147,7 @@ export async function getKitchenOrders(status) {
       networkError.originalError = error;
       throw networkError;
     }
-    
+
     console.error('Error en getKitchenOrders:', error);
     throw error;
   }
@@ -170,7 +170,7 @@ export async function getKitchenOrder(orderId) {
 
     if (!response.ok) {
       let errorMessage = `Error ${response.status}: ${response.statusText}`;
-      
+
       try {
         const errorData = await response.json();
         if (errorData.message) {
@@ -179,18 +179,18 @@ export async function getKitchenOrder(orderId) {
       } catch (e) {
         // Si no se puede parsear JSON, usar el statusText
       }
-      
+
       const error = new Error(errorMessage);
       error.status = response.status;
       throw error;
     }
 
     const data = await response.json();
-    
+
     if (data.success && data.data) {
       return data.data;
     }
-    
+
     return data;
   } catch (error) {
     if (error instanceof TypeError && error.message.includes('fetch')) {
@@ -200,7 +200,7 @@ export async function getKitchenOrder(orderId) {
       networkError.originalError = error;
       throw networkError;
     }
-    
+
     console.error('Error en getKitchenOrder:', error);
     throw error;
   }
@@ -223,7 +223,7 @@ export async function startPreparingOrder(orderId) {
 
     if (!response.ok) {
       let errorMessage = `Error ${response.status}: ${response.statusText}`;
-      
+
       try {
         const errorData = await response.json();
         if (errorData.message) {
@@ -232,18 +232,18 @@ export async function startPreparingOrder(orderId) {
       } catch (e) {
         // Si no se puede parsear JSON, usar el statusText
       }
-      
+
       const error = new Error(errorMessage);
       error.status = response.status;
       throw error;
     }
 
     const data = await response.json();
-    
+
     if (data.success && data.data) {
       return data.data;
     }
-    
+
     return data;
   } catch (error) {
     if (error instanceof TypeError && error.message.includes('fetch')) {
@@ -253,7 +253,7 @@ export async function startPreparingOrder(orderId) {
       networkError.originalError = error;
       throw networkError;
     }
-    
+
     console.error('Error en startPreparingOrder:', error);
     throw error;
   }
@@ -276,7 +276,7 @@ export async function markOrderAsReady(orderId) {
 
     if (!response.ok) {
       let errorMessage = `Error ${response.status}: ${response.statusText}`;
-      
+
       try {
         const errorData = await response.json();
         if (errorData.message) {
@@ -285,18 +285,18 @@ export async function markOrderAsReady(orderId) {
       } catch (e) {
         // Si no se puede parsear JSON, usar el statusText
       }
-      
+
       const error = new Error(errorMessage);
       error.status = response.status;
       throw error;
     }
 
     const data = await response.json();
-    
+
     if (data.success && data.data) {
       return data.data;
     }
-    
+
     return data;
   } catch (error) {
     if (error instanceof TypeError && error.message.includes('fetch')) {
@@ -306,7 +306,7 @@ export async function markOrderAsReady(orderId) {
       networkError.originalError = error;
       throw networkError;
     }
-    
+
     console.error('Error en markOrderAsReady:', error);
     throw error;
   }
@@ -405,6 +405,159 @@ export async function cancelOrder(orderId) {
     }
     
     console.error('Error en cancelOrder:', error);
+    throw error;
+  }
+}
+
+// ==================== REVIEW API FUNCTIONS ====================
+
+/**
+ * Crea una nueva reseña para un pedido
+ * @param {Object} reviewData - Datos de la reseña
+ * @param {string} reviewData.orderId - ID del pedido (requerido)
+ * @param {string} reviewData.customerName - Nombre del cliente (requerido)
+ * @param {number} reviewData.overallRating - Calificación general 1-5 (requerido)
+ * @param {number} reviewData.foodRating - Calificación de comida 1-5 (requerido)
+ * @param {string} [reviewData.comment] - Comentario opcional (max 500 chars)
+ * @returns {Promise<Object>} Datos de la reseña creada
+ */
+export async function createReview(reviewData) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/reviews`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(reviewData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || `Error al crear la reseña: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error en createReview:', error);
+    throw error;
+  }
+}
+
+/**
+ * Obtiene las reseñas públicas aprobadas con paginación
+ * @param {number} [page=1] - Número de página
+ * @param {number} [limit=10] - Cantidad de reseñas por página
+ * @returns {Promise<Object>} { reviews: [...], total: number, page: number, hasMore: boolean }
+ */
+export async function getPublicReviews(page = 1, limit = 10) {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/reviews?page=${page}&limit=${limit}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Error al obtener reseñas: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error en getPublicReviews:', error);
+    throw error;
+  }
+}
+
+/**
+ * Obtiene todas las reseñas (admin) con paginación
+ * @param {number} [page=1] - Número de página
+ * @param {number} [limit=50] - Cantidad de reseñas por página
+ * @returns {Promise<Object>} { reviews: [...], total: number, page: number }
+ */
+export async function getAllReviews(page = 1, limit = 50) {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/reviews/admin/reviews?page=${page}&limit=${limit}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Error al obtener todas las reseñas: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error en getAllReviews:', error);
+    throw error;
+  }
+}
+
+/**
+ * Obtiene una reseña específica por ID
+ * @param {string} reviewId - ID de la reseña
+ * @returns {Promise<Object>} Datos de la reseña
+ */
+export async function getReviewById(reviewId) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/reviews/${reviewId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error al obtener la reseña: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error en getReviewById:', error);
+    throw error;
+  }
+}
+
+/**
+ * Actualiza el estado de una reseña (admin)
+ * @param {string} reviewId - ID de la reseña
+ * @param {string} status - Nuevo estado: 'approved', 'hidden', 'pending'
+ * @returns {Promise<Object>} Datos de la reseña actualizada
+ */
+export async function updateReviewStatus(reviewId, status) {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/reviews/${reviewId}/status`,
+      {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status }),
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || `Error al actualizar la reseña: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error en updateReviewStatus:', error);
     throw error;
   }
 }

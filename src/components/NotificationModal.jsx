@@ -1,14 +1,19 @@
 /**
  * Modal para mostrar notificaciones al usuario
  */
-export default function NotificationModal({ 
-  isOpen, 
-  type = 'info', 
-  title, 
-  message, 
+export default function NotificationModal({
+  isOpen,
+  type = 'info',
+  title,
+  message,
   onAccept,
-  acceptText = 'Aceptar'
+  acceptText = 'Aceptar',
+  onCancel,
+  cancelText = 'Cancelar'
 }) {
+  // Log para debugging
+  console.log('🎭 NotificationModal render:', { isOpen, type, title });
+
   if (!isOpen) return null;
 
   // Iconos y colores según el tipo
@@ -41,24 +46,34 @@ export default function NotificationModal({
             {icon}
           </span>
         </div>
-        
+
         {/* Título */}
         <h3 className="text-xl font-bold text-[#181311] dark:text-white mb-2">
           {title}
         </h3>
-        
+
         {/* Mensaje */}
         <p className="text-gray-600 dark:text-gray-300 mb-6">
           {message}
         </p>
-        
-        {/* Botón */}
-        <button
-          onClick={onAccept}
-          className="bg-primary text-white font-bold py-3 px-6 rounded-lg w-full hover:bg-primary/90 transition-colors"
-        >
-          {acceptText}
-        </button>
+
+        {/* Botones */}
+        <div className="flex gap-3 w-full">
+          <button
+            onClick={onAccept}
+            className={`bg-primary text-white font-bold py-3 px-6 rounded-lg ${onCancel ? 'flex-1' : 'w-full'} hover:bg-primary/90 transition-colors`}
+          >
+            {acceptText}
+          </button>
+          {onCancel && (
+            <button
+              onClick={onCancel}
+              className="bg-primary text-white font-bold py-3 px-6 rounded-lg flex-1 hover:bg-primary/90 transition-colors"
+            >
+              {cancelText}
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

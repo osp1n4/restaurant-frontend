@@ -4,6 +4,8 @@ import Kitchen from './pages/Kitchen';
 import OrderPage from './pages/OrderPage';
 import OrderStatusPage from './pages/OrderStatusPage';
 import SalesAnalyticsDashboard from './views/SalesAnalyticsDashboard';
+import ReviewsPage from './pages/ReviewsPage';
+import AdminReviewsPage from './pages/AdminReviewsPage';
 
 function App() {
   return (
@@ -14,6 +16,8 @@ function App() {
         <Route path="/kitchen" element={<Kitchen />} />
         <Route path="/orders/:orderId" element={<OrderStatusPage />} />
         <Route path="/dashboard/analytics" element={<SalesAnalyticsDashboard />} />
+        <Route path="/reviews" element={<ReviewsPage />} />
+        <Route path="/admin/reviews" element={<AdminReviewsPage />} />
       </Routes>
     </Router>
   );

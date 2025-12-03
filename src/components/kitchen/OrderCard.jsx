@@ -1,9 +1,9 @@
-import { 
-  formatTimeAgo, 
-  getStatusBadgeColor, 
-  getStatusText, 
+import {
+  formatTimeAgo,
+  getStatusBadgeColor,
+  getStatusText,
   getReferenceTime,
-  calculateOrderTotal 
+  calculateOrderTotal
 } from '../../utils/kitchenUtils';
 
 /**
@@ -20,7 +20,7 @@ function OrderCard({ order, isProcessing, onStartPreparing, onMarkAsReady }) {
       <div className="flex items-start justify-between mb-3 sm:mb-4 flex-shrink-0">
         <div className="flex-1 min-w-0">
           <h3 className="text-lg sm:text-xl font-bold text-gray-900 truncate">
-            Order #{order.orderId ? String(order.orderId).slice(-4) : 'N/A'}
+            Order #{order.orderNumber || order.orderId || 'N/A'}
           </h3>
           <p className="text-gray-600 text-xs sm:text-sm mt-1 truncate">
             {order.customerName || 'N/A'}
@@ -64,7 +64,7 @@ function OrderCard({ order, isProcessing, onStartPreparing, onMarkAsReady }) {
           })}
         </ul>
       </div>
-      
+
       {/* Total Price */}
       {order.items && order.items.length > 0 && (
         <div className="mb-3 sm:mb-4 pt-2 border-t border-gray-100 flex-shrink-0">
@@ -89,7 +89,7 @@ function OrderCard({ order, isProcessing, onStartPreparing, onMarkAsReady }) {
 
         {order.status === 'RECEIVED' && (
           <button
-            onClick={() => onStartPreparing(order.orderId)}
+            onClick={() => onStartPreparing(order.orderNumber || order.orderId)}
             disabled={isProcessing}
             className="px-3 py-1.5 sm:px-4 sm:py-2 bg-orange-500 text-white rounded-lg text-xs sm:text-sm font-medium hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
           >
@@ -99,7 +99,7 @@ function OrderCard({ order, isProcessing, onStartPreparing, onMarkAsReady }) {
 
         {order.status === 'PREPARING' && (
           <button
-            onClick={() => onMarkAsReady(order.orderId)}
+            onClick={() => onMarkAsReady(order.orderNumber || order.orderId)}
             disabled={isProcessing}
             className="px-3 py-1.5 sm:px-4 sm:py-2 bg-orange-500 text-white rounded-lg text-xs sm:text-sm font-medium hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
           >
@@ -121,4 +121,3 @@ function OrderCard({ order, isProcessing, onStartPreparing, onMarkAsReady }) {
 }
 
 export default OrderCard;
-

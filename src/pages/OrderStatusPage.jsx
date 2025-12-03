@@ -1,6 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import PropTypes from 'prop-types';
 import OrderStatus from '../components/OrderStatus';
+import ReviewModal from '../components/ReviewModal';
 
 /**
  * Página para ver el estado de un pedido específico
@@ -10,13 +12,14 @@ function OrderStatusPage() {
   const navigate = useNavigate();
   const [orderData, setOrderData] = useState(null);
   const [refreshFunction, setRefreshFunction] = useState(null);
+  const [showReviewModal, setShowReviewModal] = useState(false);
 
   return (
     <div className="relative flex min-h-screen w-full flex-col group/design-root bg-background-light dark:bg-background-dark">
       {/* Top App Bar */}
       <div className="sticky top-0 z-10 flex items-center justify-between bg-background-light/80 dark:bg-background-dark/80 p-4 pb-2 backdrop-blur-sm">
         <div className="flex size-12 shrink-0 items-center justify-start">
-          <button 
+          <button
             onClick={() => navigate(-1)}
             className="flex items-center justify-center"
           >
@@ -33,14 +36,35 @@ function OrderStatusPage() {
 
       {/* Main Content */}
       <main className="flex-grow px-4 pb-28 pt-4">
-        <OrderStatus 
-          onOrderLoad={setOrderData} 
+        <OrderStatus
+          onOrderLoad={setOrderData}
           onRefreshRequest={setRefreshFunction}
+          onOpenReviewModal={() => setShowReviewModal(true)}
         />
       </main>
 
       {/* Bottom Bar / Footer */}
-      <OrderStatusFooter order={orderData} onRefresh={refreshFunction} />
+      <OrderStatusFooter
+        order={orderData}
+        onRefresh={refreshFunction}
+      />
+
+      {/* Review Modal */}
+      {showReviewModal && orderData && (
+        <ReviewModal
+          isOpen={showReviewModal}
+          onClose={() => setShowReviewModal(false)}
+          orderData={{
+            orderId: orderData.orderId || orderData._id,
+            orderNumber: orderData.orderNumber,
+            customerName: orderData.customerName || orderData.customer,
+            customerEmail: orderData.customerEmail || ''
+          }}
+          onSubmit={() => {
+            setShowReviewModal(false);
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -75,19 +99,19 @@ function OrderStatusFooter({ order, onRefresh }) {
         break;
       case 'ready':
         // Estado READY: listo para recoger
-        return "Listo para recoger";
+        return "Ready for Pickup";
       case 'delivered':
         // Estado DELIVERED: ya entregado
-        return "Entregado";
+        return "Delivered";
       case 'cancelled':
         // Estado CANCELLED: cancelado
-        return "Cancelado";
+        return "Cancelled";
       default:
         estimatedMinutes = 12;
     }
 
     if (estimatedMinutes <= 0) {
-      return "Pronto";
+      return "Soon";
     }
 
     return `${estimatedMinutes} ${estimatedMinutes === 1 ? 'minute' : 'minutes'}`;
@@ -101,30 +125,39 @@ function OrderStatusFooter({ order, onRefresh }) {
       onRefresh();
     } else {
       // Fallback: recargar la página si no hay función de refresh
-      window.location.reload();
+      globalThis.location.reload();
     }
   };
 
   return (
     <div className="fixed bottom-0 left-0 right-0 border-t border-border-light dark:border-border-dark bg-background-light/80 dark:bg-background-dark/80 p-4 backdrop-blur-sm">
       <div className="mx-auto max-w-md">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-3">
           <div>
             <p className="text-sm text-subtext-light dark:text-subtext-dark">Estimated time remaining</p>
             <p className="text-2xl font-bold text-primary">{estimatedTime}</p>
           </div>
-          <button 
-            onClick={handleRefresh}
-            className="flex cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-full bg-primary px-5 py-3 text-base font-bold leading-normal text-white hover:bg-primary/90 transition-colors"
-          >
-            <span className="material-symbols-outlined">refresh</span>
-            <span>Refresh</span>
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={handleRefresh}
+              className="flex cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-full bg-primary px-5 py-3 text-base font-bold leading-normal text-white hover:bg-primary/90 transition-colors"
+            >
+              <span className="material-symbols-outlined">refresh</span>
+              <span>Refresh</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-export default OrderStatusPage;
+OrderStatusFooter.propTypes = {
+  order: PropTypes.shape({
+    status: PropTypes.string,
+    createdAt: PropTypes.string,
+  }),
+  onRefresh: PropTypes.func,
+};
 
+export default OrderStatusPage;

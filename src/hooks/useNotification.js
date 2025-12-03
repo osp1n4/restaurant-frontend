@@ -11,7 +11,7 @@ export function useNotifications(onNotification, orderIds = []) {
   const reconnectTimeoutRef = useRef(null);
   const reconnectAttempts = useRef(0);
   const maxReconnectAttempts = 5;
-  
+
   // ✅ Usar ref para evitar cambios en cada render
   const onNotificationRef = useRef(onNotification);
   const orderIdsRef = useRef(orderIds);
@@ -42,20 +42,27 @@ export function useNotifications(onNotification, orderIds = []) {
         eventSource.onmessage = (event) => {
           try {
             const notification = JSON.parse(event.data);
-            console.log('📩 Notificación recibida:', notification);
+            console.log('📩 SSE: Notificación recibida en hook:', notification);
 
             // Filtrar por orderId si se especificó
             const currentOrderIds = orderIdsRef.current;
+            console.log('🔍 SSE: Filtro de orderIds:', currentOrderIds);
+
             if (currentOrderIds.length > 0) {
+              console.log('🔍 SSE: Buscando orderId:', notification.orderId, 'en:', currentOrderIds);
               if (currentOrderIds.includes(notification.orderId)) {
+                console.log('✅ SSE: Notificación coincide con filtro, pasando al handler');
                 onNotificationRef.current(notification);
+              } else {
+                console.log('⏭️ SSE: Notificación NO coincide con filtro, ignorando');
               }
             } else {
               // Si no hay filtro, pasar todas las notificaciones
+              console.log('✅ SSE: Sin filtro, pasando notificación al handler');
               onNotificationRef.current(notification);
             }
           } catch (error) {
-            console.error('Error al parsear notificación:', error);
+            console.error('❌ SSE: Error al parsear notificación:', error);
           }
         };
 
@@ -67,7 +74,7 @@ export function useNotifications(onNotification, orderIds = []) {
           if (reconnectAttempts.current < maxReconnectAttempts) {
             const delay = Math.min(1000 * Math.pow(2, reconnectAttempts.current), 10000);
             console.log(`⏳ Reintentando conexión en ${delay}ms...`);
-            
+
             reconnectTimeoutRef.current = setTimeout(() => {
               reconnectAttempts.current++;
               connect();
