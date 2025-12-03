@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useSalesAnalytics } from '../../hooks/useSalesAnalytics';
-import Sidebar from '../../components/analytics/Sidebar';
 import FilterToolbar from '../../components/analytics/FilterToolbar';
 import StatCard from '../../components/analytics/StatCard';
 import LineChart from '../../components/analytics/LineChart';
@@ -80,8 +79,6 @@ function SalesAnalyticsDashboard() {
   return (
     <div className="relative flex min-h-screen w-full flex-col bg-background-light dark:bg-background-dark">
       <div className="flex h-full w-full">
-        {/* Sidebar Navigation */}
-        <Sidebar />
 
         {/* Main Content */}
         <main className="flex-1 p-6 lg:p-8 overflow-auto">

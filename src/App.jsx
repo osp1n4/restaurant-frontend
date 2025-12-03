@@ -12,6 +12,7 @@ import Login from './components/Login';
 import UserManagement from './modules/users/UserManagement';
 import UserForm from './modules/users/UserForm';
 import { useNavigate } from 'react-router-dom';
+import MainLayout from './components/MainLayout';
 
 
 function App() {
@@ -25,15 +26,17 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/order" element={<OrderPage />} />
-        <Route path="/kitchen" element={<Kitchen />} />
+        <Route element={<MainLayout />}>
+          <Route path="/kitchen" element={<Kitchen />} />
+          <Route path="/dashboard/analytics" element={<SalesAnalyticsDashboard />} />
+          <Route path="/users" element={<UserManagement />} />
+          <Route path="/users/new" element={<UserForm />} />
+          <Route path="/users/:id" element={<UserForm />} />
+        </Route>
         <Route path="/orders/:orderId" element={<OrderStatusPage />} />
-        <Route path="/dashboard/analytics" element={<SalesAnalyticsDashboard />} />
         <Route path="/reviews" element={<ReviewsPage />} />
         <Route path="/admin/reviews" element={<AdminReviewsPage />} />
         <Route path="/login" element={<LoginWithRedirect />} />
-        <Route path="/users" element={<UserManagement />} />
-        <Route path="/users/new" element={<UserForm />} />
-        <Route path="/users/:id" element={<UserForm />} />
       </Routes>
     </Router>
   );

@@ -10,7 +10,7 @@ function Sidebar() {
   const location = useLocation();
 
   const menuItems = [
-    { path: '/', icon: 'grid_view', label: 'Dashboard', filled: false },
+    { path: '/users', icon: 'grid_view', label: 'User Management', filled: false },
     { path: '/order', icon: 'receipt_long', label: 'Orders', filled: false },
     { path: '/kitchen', icon: 'soup_kitchen', label: 'Kitchen', filled: false },
     { path: '/dashboard/analytics', icon: 'analytics', label: 'Reports', filled: true }

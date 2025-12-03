@@ -129,228 +129,140 @@ export default function OrderForm() {
   const total = calculateTotal();
 
   return (
-    <div className="relative flex h-auto min-h-screen w-full flex-col bg-background-light dark:bg-background-dark pb-32">
-      {/* Header */}
-      <div className="flex items-center bg-white dark:bg-background-dark p-4 pb-2 justify-between sticky top-0 z-10">
-        <div className="text-[#181311] dark:text-white flex size-12 shrink-0 items-center justify-center">
-          <span className="material-symbols-outlined text-3xl">restaurant</span>
-        </div>
-        <h2 className="text-[#181311] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1">
-          Delicious Kitchen
-        </h2>
-      </div>
-
-      <main className="flex flex-col gap-4">
-        {/* Sección de detalles del cliente */}
-        <div className="bg-white dark:bg-background-dark pt-5">
-          <h2 className="text-[#181311] dark:text-white tracking-light text-[28px] font-bold leading-tight px-4 text-left pb-3">
-            Your Details
-          </h2>
-
-          <div className="flex flex-col gap-4 px-4 py-3">
-            {/* Campo Nombre */}
-            <label className="flex flex-col">
-              <p className="text-[#181311] dark:text-gray-300 text-base font-medium leading-normal pb-2">
-                Your Name *
-              </p>
-              <input
-                type="text"
-                className={`form-input flex w-full resize-none overflow-hidden rounded-lg text-[#181311] dark:text-white focus:outline-0 focus:ring-0 border ${
-                  touched.name && customerName.trim().length === 0
-                    ? 'border-red-500 dark:border-red-500'
-                    : 'border-[#e6dfdb] dark:border-gray-600'
-                } bg-white dark:bg-gray-800 focus:border-primary dark:focus:border-primary h-14 placeholder:text-[#896f61] p-[15px] text-base font-normal leading-normal`}
-                placeholder="Enter your name"
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-                onBlur={() => setTouched(prev => ({ ...prev, name: true }))}
-              />
-              {touched.name && customerName.trim().length === 0 && (
-                <p className="text-red-500 text-sm mt-1">Name is required</p>
-              )}
-            </label>
-
-            {/* Campo Email con validación mejorada */}
-            <label className="flex flex-col">
-              <p className="text-[#181311] dark:text-gray-300 text-base font-medium leading-normal pb-2">
-                Your Email *
-              </p>
-              <div className="relative">
-                <input
-                  type="email"
-                  className={`form-input flex w-full resize-none overflow-hidden rounded-lg text-[#181311] dark:text-white focus:outline-0 focus:ring-0 border ${
-                    getEmailValidationState() === 'error' 
-                      ? 'border-red-500 dark:border-red-500' 
-                      : getEmailValidationState() === 'invalid'
-                      ? 'border-yellow-500 dark:border-yellow-500'
-                      : getEmailValidationState() === 'valid'
-                      ? 'border-green-500 dark:border-green-500'
-                      : 'border-[#e6dfdb] dark:border-gray-600'
-                  } bg-white dark:bg-gray-800 focus:border-primary dark:focus:border-primary h-14 placeholder:text-[#896f61] p-[15px] pr-12 text-base font-normal leading-normal`}
-                  placeholder="your@email.com"
-                  value={customerEmail}
-                  onChange={(e) => setCustomerEmail(e.target.value)}
-                  onBlur={() => setTouched(prev => ({ ...prev, email: true }))}
-                />
-                {/* Icono de validación */}
-                {touched.email && customerEmail.trim().length > 0 && (
-                  <span className={`material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-2xl ${
-                    getEmailValidationState() === 'valid' 
-                      ? 'text-green-500' 
-                      : getEmailValidationState() === 'invalid'
-                      ? 'text-yellow-500'
-                      : 'text-red-500'
-                  }`}>
-                    {getEmailValidationState() === 'valid' ? 'check_circle' : 'error'}
-                  </span>
-                )}
-              </div>
-              
-              {/* Mensajes de validación */}
-              {touched.email && customerEmail.trim().length === 0 && (
-                <div className="flex items-center gap-1 mt-2">
-                  <span className="material-symbols-outlined text-red-500 text-base">error</span>
-                  <p className="text-red-500 text-sm">Email is required</p>
-                </div>
-              )}
-              {touched.email && customerEmail.trim().length > 0 && !isValidEmail(customerEmail) && (
-                <div className="flex items-center gap-1 mt-2">
-                  <span className="material-symbols-outlined text-yellow-500 text-base">warning</span>
-                  <p className="text-yellow-600 dark:text-yellow-500 text-sm">Please enter a valid email format</p>
-                </div>
-              )}
-              {touched.email && isValidEmail(customerEmail) && (
-                <div className="flex items-center gap-1 mt-2">
-                  <span className="material-symbols-outlined text-green-500 text-base">check_circle</span>
-                  <p className="text-green-600 dark:text-green-500 text-sm font-medium">✓ Email format is correct</p>
-                </div>
-              )}
-            </label>
-
-            {/* Campo Notas */}
-            <label className="flex flex-col">
-              <p className="text-[#181311] dark:text-gray-300 text-base font-medium leading-normal pb-2">
-                Special Notes (optional)
-              </p>
-              <textarea
-                className="form-input flex w-full resize-none overflow-hidden rounded-lg text-[#181311] dark:text-white focus:outline-0 focus:ring-0 border border-[#e6dfdb] dark:border-gray-600 bg-white dark:bg-gray-800 focus:border-primary dark:focus:border-primary placeholder:text-[#896f61] p-[15px] text-base font-normal leading-normal"
-                placeholder="Allergies, preferences, special instructions..."
-                rows="3"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-              />
-            </label>
+    <div className="min-h-screen flex items-center justify-center bg-background-light dark:bg-background-dark">
+      <div className="w-full max-w-4xl mx-auto bg-white dark:bg-background-dark rounded-2xl shadow-xl p-12 md:p-16 flex flex-col gap-10">
+        {/* Header minimalista */}
+        <div className="flex items-center gap-3 mb-2">
+          <div className="flex items-center justify-center rounded-full size-10 bg-primary">
+            <span className="material-symbols-outlined text-2xl text-white">restaurant</span>
           </div>
+          <h2 className="text-[#181311] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">Delicious Kitchen</h2>
+        </div>
+
+        {/* Sección de detalles del cliente */}
+        <div className="flex flex-col gap-4">
+          <label className="flex flex-col">
+            <span className="text-[#181311] dark:text-gray-300 text-base font-medium pb-2">Your Name *</span>
+            <input
+              type="text"
+              className={`form-input w-full rounded-lg text-[#181311] dark:text-white border ${
+                touched.name && customerName.trim().length === 0
+                  ? 'border-red-500 dark:border-red-500'
+                  : 'border-[#e6dfdb] dark:border-gray-600'
+              } bg-white dark:bg-gray-800 focus:border-primary h-12 px-4 text-base`}
+              placeholder="Enter your name"
+              value={customerName}
+              onChange={(e) => setCustomerName(e.target.value)}
+              onBlur={() => setTouched(prev => ({ ...prev, name: true }))}
+            />
+            {touched.name && customerName.trim().length === 0 && (
+              <span className="text-red-500 text-sm mt-1">Name is required</span>
+            )}
+          </label>
+          <label className="flex flex-col">
+            <span className="text-[#181311] dark:text-gray-300 text-base font-medium pb-2">Your Email *</span>
+            <input
+              type="email"
+              className={`form-input w-full rounded-lg text-[#181311] dark:text-white border ${
+                getEmailValidationState() === 'error'
+                  ? 'border-red-500 dark:border-red-500'
+                  : getEmailValidationState() === 'invalid'
+                  ? 'border-yellow-500 dark:border-yellow-500'
+                  : getEmailValidationState() === 'valid'
+                  ? 'border-green-500 dark:border-green-500'
+                  : 'border-[#e6dfdb] dark:border-gray-600'
+              } bg-white dark:bg-gray-800 focus:border-primary h-12 px-4 text-base`}
+              placeholder="your@email.com"
+              value={customerEmail}
+              onChange={(e) => setCustomerEmail(e.target.value)}
+              onBlur={() => setTouched(prev => ({ ...prev, email: true }))}
+            />
+            {touched.email && customerEmail.trim().length === 0 && (
+              <span className="text-red-500 text-sm mt-1">Email is required</span>
+            )}
+            {touched.email && customerEmail.trim().length > 0 && !isValidEmail(customerEmail) && (
+              <span className="text-yellow-600 dark:text-yellow-500 text-sm mt-1">Please enter a valid email format</span>
+            )}
+            {touched.email && isValidEmail(customerEmail) && (
+              <span className="text-green-600 dark:text-green-500 text-sm mt-1">✓ Email format is correct</span>
+            )}
+          </label>
+          <label className="flex flex-col">
+            <span className="text-[#181311] dark:text-gray-300 text-base font-medium pb-2">Special Notes (optional)</span>
+            <textarea
+              className="form-input w-full rounded-lg text-[#181311] dark:text-white border border-[#e6dfdb] dark:border-gray-600 bg-white dark:bg-gray-800 focus:border-primary px-4 py-2 text-base"
+              placeholder="Allergies, preferences, special instructions..."
+              rows="2"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+            />
+          </label>
         </div>
 
         {/* Sección del menú */}
-        <div className="bg-white dark:bg-background-dark pt-5">
-          <h2 className="text-[#181311] dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3">
-            What are you craving?
-          </h2>
-
-          {/* Lista de items del menú */}
+        <div className="flex flex-col gap-3">
+          <span className="text-[#181311] dark:text-white text-base font-bold pb-2">What are you craving?</span>
           {MENU_ITEMS.map((item) => (
-            <div
-              key={item.id}
-              className="flex items-center gap-4 bg-white dark:bg-background-dark px-4 min-h-[72px] py-2 justify-between"
-            >
-              <div className="flex items-center gap-4">
-                <div className="flex items-center justify-center rounded-lg bg-primary/20 shrink-0 size-12">
-                  <span className="material-symbols-outlined text-3xl text-primary">
-                    {item.icon}
-                  </span>
-                </div>
-                <div className="flex flex-col justify-center">
-                  <p className="text-[#181311] dark:text-white text-base font-medium leading-normal line-clamp-1">
-                    {item.name}
-                  </p>
-                  <p className="text-[#896f61] dark:text-gray-400 text-sm font-normal leading-normal line-clamp-2">
-                    ${item.price.toLocaleString('es-CO')}
-                  </p>
-                </div>
+            <div key={item.id} className="flex items-center justify-between gap-4 bg-background-light dark:bg-gray-900 rounded-lg px-3 py-2">
+              <div className="flex items-center gap-3">
+                <span className="material-symbols-outlined text-2xl text-primary bg-primary/20 rounded-lg p-2">{item.icon}</span>
+                <span className="text-[#181311] dark:text-white text-base font-medium">{item.name}</span>
+                <span className="text-[#896f61] dark:text-gray-400 text-sm font-normal">${item.price.toLocaleString('es-CO')}</span>
               </div>
-
-              {/* Controles de cantidad */}
-              <div className="shrink-0">
-                <div className="flex items-center gap-2 text-[#181311] dark:text-white">
-                  <button
-                    onClick={() => decrement(item.id)}
-                    className="text-base font-medium leading-normal flex h-7 w-7 items-center justify-center rounded-full bg-background-light dark:bg-gray-700 cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
-                    disabled={quantities[item.id] === 0}
-                  >
-                    -
-                  </button>
-                  <input
-                    type="number"
-                    className="text-base font-medium leading-normal w-4 p-0 text-center bg-transparent focus:outline-0 focus:ring-0 focus:border-none border-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                    value={quantities[item.id]}
-                    readOnly
-                  />
-                  <button
-                    onClick={() => increment(item.id)}
-                    className="text-base font-medium leading-normal flex h-7 w-7 items-center justify-center rounded-full bg-background-light dark:bg-gray-700 cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
-                  >
-                    +
-                  </button>
-                </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => decrement(item.id)}
+                  className="h-7 w-7 flex items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-white font-bold text-lg disabled:bg-gray-100 disabled:text-gray-400"
+                  disabled={quantities[item.id] === 0}
+                >-
+                </button>
+                <span className="w-6 text-center">{quantities[item.id]}</span>
+                <button
+                  onClick={() => increment(item.id)}
+                  className="h-7 w-7 flex items-center justify-center rounded-full bg-primary text-white font-bold text-lg"
+                >+
+                </button>
               </div>
             </div>
           ))}
         </div>
-      </main>
 
-      {/* Footer fijo con resumen y botón */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow-lg px-4 py-3">
-        <div className="max-w-md mx-auto flex items-center justify-between gap-4">
-          <div className="flex flex-col">
+        {/* Footer resumen y botón */}
+        <div className="flex flex-col gap-2 pt-4">
+          <div className="flex items-center justify-between">
             <span className="text-sm text-gray-500 dark:text-gray-400">Total</span>
-            <span className="text-2xl font-bold text-[#181311] dark:text-white">
-              ${total.toLocaleString('es-CO')}
-            </span>
+            <span className="text-xl font-bold text-[#181311] dark:text-white">${total.toLocaleString('es-CO')}</span>
           </div>
           <button
             onClick={handleSubmit}
             disabled={!isFormValid() || isLoading}
-            className="bg-primary text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50 disabled:bg-gray-400 disabled:cursor-not-allowed w-48 transition-colors"
+            className="bg-primary text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50 disabled:bg-gray-400 disabled:cursor-not-allowed w-full transition-colors"
           >
             {isLoading ? 'Processing...' : 'Place Order'}
           </button>
         </div>
-      </div>
 
-      {/* Modal de éxito */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-background-dark w-full max-w-sm rounded-xl shadow-lg p-6 text-center flex flex-col items-center animate-fadeIn">
-            <div className="flex items-center justify-center size-16 bg-green-100 rounded-full mb-4">
-              <span className="material-symbols-outlined text-4xl text-green-600">
-                check_circle
-              </span>
+        {/* Modal de éxito */}
+        {showModal && (
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
+            <div className="bg-white dark:bg-background-dark w-full max-w-sm rounded-xl shadow-lg p-6 text-center flex flex-col items-center animate-fadeIn">
+              <div className="flex items-center justify-center size-16 bg-green-100 rounded-full mb-4">
+                <span className="material-symbols-outlined text-4xl text-green-600">check_circle</span>
+              </div>
+              <h3 className="text-xl font-bold text-[#181311] dark:text-white mb-2">Order Placed Successfully!</h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-4">Your order is being prepared.</p>
+              <div className="bg-background-light dark:bg-gray-800 rounded-lg p-3 w-full">
+                <span className="text-sm text-gray-500 dark:text-gray-400">Your Order Number</span>
+                <p className="text-lg font-mono font-bold text-[#181311] dark:text-white tracking-wider">{orderNumber}</p>
+              </div>
+              <button
+                onClick={handleModalClose}
+                className="mt-6 bg-primary text-white font-bold py-3 px-6 rounded-lg w-full hover:bg-primary/90 transition-colors"
+              >View Order Status</button>
             </div>
-            <h3 className="text-xl font-bold text-[#181311] dark:text-white mb-2">
-              Order Placed Successfully!
-            </h3>
-            <p className="text-gray-600 dark:text-gray-300 mb-4">
-              Your order is being prepared.
-            </p>
-            <div className="bg-background-light dark:bg-gray-800 rounded-lg p-3 w-full">
-              <span className="text-sm text-gray-500 dark:text-gray-400">
-                Your Order Number
-              </span>
-              <p className="text-lg font-mono font-bold text-[#181311] dark:text-white tracking-wider">
-                {orderNumber}
-              </p>
-            </div>
-            <button
-              onClick={handleModalClose}
-              className="mt-6 bg-primary text-white font-bold py-3 px-6 rounded-lg w-full hover:bg-primary/90 transition-colors"
-            >
-              View Order Status
-            </button>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

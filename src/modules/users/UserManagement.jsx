@@ -43,8 +43,7 @@ const UserManagement = () => {
   const navigate = useNavigate();
   return (
     <div className="relative flex h-auto min-h-screen w-full flex-col bg-[#f8f6f4] dark:bg-background-dark group/design-root overflow-x-hidden">
-      <div className="layout-container flex h-full grow flex-row">
-        <SideNav />
+      <div className="layout-container flex h-full grow flex-row">  
         <main className="flex-1 p-8">
           <div className="layout-content-container flex flex-col w-full">
             {/* Header */}

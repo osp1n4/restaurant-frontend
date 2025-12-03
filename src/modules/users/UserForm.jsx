@@ -4,8 +4,8 @@ import { useNavigate, useParams } from "react-router-dom";
 
 const roles = [
   { label: "Admin", value: "ADMIN" },
-  { label: "Editor", value: "EDITOR" },
-  { label: "Viewer", value: "VIEWER" },
+  { label: "Kitchen", value: "KITCHEN" },
+  { label: "Waiter", value: "WAITER" },
 ];
 
 const initialState = {
@@ -13,7 +13,7 @@ const initialState = {
   email: "",
   password: "",
   confirmPassword: "",
-  role: "EDITOR",
+  role: "ADMIN",
 };
 
 

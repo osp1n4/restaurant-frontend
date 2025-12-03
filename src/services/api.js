@@ -3,8 +3,8 @@
  * Base URL: http://localhost:3000 (API Gateway)
  */
 
-// Usar process.env para compatibilidad con Jest; Vite inyecta VITE_API_URL en build si aplica.
-const API_BASE_URL = process.env.VITE_API_URL || 'http://localhost:3000';
+// Usar import.meta.env para Vite
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 /**
  * Mapea los estados del backend a los estados del frontend
