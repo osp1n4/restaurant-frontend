@@ -54,27 +54,23 @@ function SalesAnalyticsDashboard() {
   };
 
   /**
-   * Preparar datos para tabla combinando series y productos
+   * Preparar datos para tabla
+   * Muestra productos vendidos con información del periodo de consulta
+   * Los productos están ordenados por cantidad total vendida en todo el rango
    */
   const getTableData = () => {
-    if (!data?.series || !data?.productsSold) return [];
+    if (!data?.productsSold || data.productsSold.length === 0) return [];
     
-    const tableRows = [];
-    data.series.forEach(seriesItem => {
-      data.productsSold.forEach(product => {
-        tableRows.push({
-          period: seriesItem.period,
-          totalOrders: seriesItem.totalOrders,
-          totalRevenue: seriesItem.totalRevenue,
-          productId: product.productId,
-          productName: product.name,
-          quantity: product.quantity,
-          avgPrepTime: seriesItem.avgPrepTime
-        });
-      });
-    });
-    
-    return tableRows;
+    // Mostrar cada producto una vez con su información global
+    // No hacer producto cartesiano para evitar filas duplicadas
+    return data.productsSold.map(product => ({
+      period: `${filters.from} al ${filters.to}`,
+      totalOrders: data.summary?.totalOrders || 0,
+      totalRevenue: data.summary?.totalRevenue || 0,
+      productId: product.productId,
+      productName: product.name,
+      quantity: product.quantity
+    }));
   };
 
   return (
@@ -137,25 +133,25 @@ function SalesAnalyticsDashboard() {
             {!loading && !error && data && (
               <>
                 {/* Stats Cards */}
-                <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+                <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                   <StatCard
                     title="TOTAL ÓRDEN"
                     value={data.summary?.totalOrders || 0}
-                    change={5.2}
+                    change={data.summary?.totalOrdersChange ?? null}
                     icon="shopping_cart"
                     format="number"
                   />
                   <StatCard
                     title="TOTAL INCOME"
                     value={data.summary?.totalRevenue || 0}
-                    change={8.1}
+                    change={data.summary?.totalRevenueChange ?? null}
                     icon="payments"
                     format="currency"
                   />
                   <StatCard
                     title="PRODUCTS SOLD"
                     value={data.productsSold?.reduce((sum, p) => sum + p.quantity, 0) || 0}
-                    change={3.0}
+                    change={data.summary?.totalProductsSoldChange ?? null}
                     icon="inventory_2"
                     format="number"
                   />
@@ -165,14 +161,6 @@ function SalesAnalyticsDashboard() {
                     change={null}
                     icon="star"
                     format="text"
-                  />
-                  <StatCard
-                    title="AVERAGE PREPARATION TIME"
-                    value={data.summary?.avgPrepTime || 'N/A'}
-                    change={-1.5}
-                    isPositive={false}
-                    icon="schedule"
-                    format={data.summary?.avgPrepTime ? 'time' : 'text'}
                   />
                 </div>
 

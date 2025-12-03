@@ -4,8 +4,11 @@ import PropTypes from 'prop-types';
  * Componente reutilizable para tarjetas de estadísticas
  * Muestra métricas individuales con título, valor y variación porcentual
  */
-function StatCard({ title, value, change, isPositive = true, icon, format = 'number' }) {
+function StatCard({ title, value, change, icon, format = 'number' }) {
   const formattedValue = formatValue(value, format);
+  
+  // Detectar automáticamente si el cambio es positivo o negativo
+  const isPositive = change >= 0;
   const changeColor = isPositive ? 'text-[#078829] dark:text-green-400' : 'text-[#e72a08] dark:text-red-400';
   
   return (
@@ -25,7 +28,7 @@ function StatCard({ title, value, change, isPositive = true, icon, format = 'num
       </p>
       {change !== null && change !== undefined && (
         <p className={`${changeColor} text-base font-medium leading-normal`}>
-          {isPositive ? '+' : ''}{change}%
+          {change >= 0 ? '+' : ''}{change}%
         </p>
       )}
       {change === null && (
@@ -58,7 +61,6 @@ StatCard.propTypes = {
   title: PropTypes.string.isRequired,
   value: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
   change: PropTypes.number,
-  isPositive: PropTypes.bool,
   icon: PropTypes.string,
   format: PropTypes.oneOf(['number', 'currency', 'time', 'text'])
 };

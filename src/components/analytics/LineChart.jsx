@@ -77,12 +77,19 @@ function generatePathPoints(data) {
   const height = 150;
   const padding = 10;
   
+  // Si solo hay 1 punto, crear una línea horizontal en el centro
+  if (data.length === 1) {
+    const value = data[0].value || 0;
+    const y = height / 2; // Centrado verticalmente
+    return `M0 ${y} L${width} ${y}`;
+  }
+  
   const maxValue = Math.max(...data.map(d => d.value || 0)) || 1;
   const minValue = Math.min(...data.map(d => d.value || 0)) || 0;
   const range = maxValue - minValue || 1;
   
   const points = data.map((point, index) => {
-    const x = (index / (data.length - 1 || 1)) * width;
+    const x = (index / (data.length - 1)) * width;
     const normalizedValue = ((point.value - minValue) / range);
     const y = height - padding - (normalizedValue * (height - 2 * padding));
     
