@@ -408,3 +408,163 @@ export async function cancelOrder(orderId) {
     throw error;
   }
 }
+
+/**
+ * Obtiene las analíticas de ventas
+ * @param {Object} filters - Filtros para las analíticas
+ * @param {string} filters.from - Fecha inicial (YYYY-MM-DD)
+ * @param {string} filters.to - Fecha final (YYYY-MM-DD)
+ * @param {string} filters.groupBy - Agrupación (day|week|month|year)
+ * @param {number} [filters.top] - Top N productos (opcional)
+ * @returns {Promise<Object>} Datos de analíticas
+ */
+export async function getAnalytics(filters) {
+  try {
+    const params = new URLSearchParams({
+      from: filters.from,
+      to: filters.to,
+      groupBy: filters.groupBy
+    });
+
+    if (filters.top) {
+      params.append('top', filters.top);
+    }
+
+    const url = `${API_BASE_URL}/admin/analytics?${params.toString()}`;
+    
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      // Manejo especial para 204 (No Content)
+      if (response.status === 204) {
+        return {
+          message: 'No hay datos disponibles para el período seleccionado',
+          range: { from: filters.from, to: filters.to, groupBy: filters.groupBy },
+          summary: { totalOrders: 0, totalRevenue: 0, avgPrepTime: null },
+          series: [],
+          productsSold: [],
+          topNProducts: []
+        };
+      }
+
+      let errorMessage = `Error ${response.status}: ${response.statusText}`;
+      
+      try {
+        const errorData = await response.json();
+        if (errorData.message) {
+          errorMessage = errorData.message;
+        }
+      } catch (e) {
+        // Si no se puede parsear JSON, usar el statusText
+      }
+      
+      const error = new Error(errorMessage);
+      error.status = response.status;
+      throw error;
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      const networkError = new Error(
+        `Error de conexión. Verifica que el API Gateway esté corriendo en ${API_BASE_URL}`
+      );
+      networkError.originalError = error;
+      throw networkError;
+    }
+    
+    console.error('Error en getAnalytics:', error);
+    throw error;
+  }
+}
+
+/**
+ * Exporta las analíticas a CSV
+ * @param {Object} params - Parámetros para exportación
+ * @param {string} params.from - Fecha inicial (YYYY-MM-DD)
+ * @param {string} params.to - Fecha final (YYYY-MM-DD)
+ * @param {string} params.groupBy - Agrupación (day|week|month|year)
+ * @param {number} [params.top] - Top N productos (opcional)
+ * @param {Array<string>} [params.columns] - Columnas a exportar (opcional)
+ * @returns {Promise<void>} Descarga el archivo CSV
+ */
+export async function exportAnalyticsCSV(params) {
+  try {
+    const body = {
+      from: params.from,
+      to: params.to,
+      groupBy: params.groupBy
+    };
+
+    if (params.top) {
+      body.top = params.top;
+    }
+
+    if (params.columns && params.columns.length > 0) {
+      body.columns = params.columns;
+    }
+
+    const response = await fetch(`${API_BASE_URL}/admin/analytics/export`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      let errorMessage = `Error ${response.status}: ${response.statusText}`;
+      
+      try {
+        const errorData = await response.json();
+        if (errorData.message) {
+          errorMessage = errorData.message;
+        }
+      } catch (e) {
+        // Si no se puede parsear JSON, usar el statusText
+      }
+      
+      throw new Error(errorMessage);
+    }
+
+    // Crear blob y descargar
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    
+    // Extraer filename del header Content-Disposition si existe
+    const contentDisposition = response.headers.get('Content-Disposition');
+    let filename = 'analytics-export.csv';
+    if (contentDisposition) {
+      const filenameMatch = contentDisposition.match(/filename="?(.+)"?/);
+      if (filenameMatch && filenameMatch[1]) {
+        filename = filenameMatch[1];
+      }
+    }
+    
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  } catch (error) {
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      const networkError = new Error(
+        `Error de conexión. Verifica que el API Gateway esté corriendo en ${API_BASE_URL}`
+      );
+      networkError.originalError = error;
+      throw networkError;
+    }
+    
+    console.error('Error en exportAnalyticsCSV:', error);
+    throw error;
+  }
+}
