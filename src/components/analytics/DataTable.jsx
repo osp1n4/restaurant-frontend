@@ -67,13 +67,12 @@ function DataTable({ data = [] }) {
               <th className="px-6 py-3" scope="col">Product ID</th>
               <th className="px-6 py-3" scope="col">Product Name</th>
               <th className="px-6 py-3" scope="col">Quantity</th>
-              <th className="px-6 py-3" scope="col">Average Preparation Time</th>
             </tr>
           </thead>
           <tbody>
             {paginatedData.length === 0 ? (
               <tr>
-                <td colSpan="7" className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                <td colSpan="6" className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
                   No data available
                 </td>
               </tr>
@@ -91,7 +90,6 @@ function DataTable({ data = [] }) {
                   <td className="px-6 py-4">{row.productId || 'N/A'}</td>
                   <td className="px-6 py-4">{row.productName || 'N/A'}</td>
                   <td className="px-6 py-4">{row.quantity || 0}</td>
-                  <td className="px-6 py-4">{row.avgPrepTime ? `${row.avgPrepTime} min` : 'N/A'}</td>
                 </tr>
               ))
             )}
@@ -167,7 +165,6 @@ DataTable.propTypes = {
       productId: PropTypes.string,
       productName: PropTypes.string,
       quantity: PropTypes.number,
-      avgPrepTime: PropTypes.number
     })
   )
 };

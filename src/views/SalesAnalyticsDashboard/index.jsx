@@ -134,25 +134,25 @@ function SalesAnalyticsDashboard() {
             {!loading && !error && data && (
               <>
                 {/* Stats Cards */}
-                <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+                <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                   <StatCard
                     title="TOTAL ÓRDEN"
                     value={data.summary?.totalOrders || 0}
-                    change={5.2}
+                    change={data.summary?.totalOrdersChange ?? null}
                     icon="shopping_cart"
                     format="number"
                   />
                   <StatCard
                     title="TOTAL INCOME"
                     value={data.summary?.totalRevenue || 0}
-                    change={8.1}
+                    change={data.summary?.totalRevenueChange ?? null}
                     icon="payments"
                     format="currency"
                   />
                   <StatCard
                     title="PRODUCTS SOLD"
                     value={data.productsSold?.reduce((sum, p) => sum + p.quantity, 0) || 0}
-                    change={3.0}
+                    change={data.summary?.totalProductsSoldChange ?? null}
                     icon="inventory_2"
                     format="number"
                   />
@@ -162,14 +162,6 @@ function SalesAnalyticsDashboard() {
                     change={null}
                     icon="star"
                     format="text"
-                  />
-                  <StatCard
-                    title="AVERAGE PREPARATION TIME"
-                    value={data.summary?.avgPrepTime || 'N/A'}
-                    change={-1.5}
-                    isPositive={false}
-                    icon="schedule"
-                    format={data.summary?.avgPrepTime ? 'time' : 'text'}
                   />
                 </div>
 
