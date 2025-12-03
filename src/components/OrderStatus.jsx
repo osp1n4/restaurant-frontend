@@ -245,9 +245,9 @@ function OrderStatus({ onOrderLoad, onRefreshRequest, onOpenReviewModal }) {
           <div className="text-red-600 dark:text-red-400 mb-2">
             <span className="material-symbols-outlined text-5xl">cancel</span>
           </div>
-          <h3 className="text-red-800 dark:text-red-300 font-semibold text-lg">Pedido Cancelado</h3>
+          <h3 className="text-red-800 dark:text-red-300 font-semibold text-lg">Order Cancelled</h3>
           <p className="text-red-600 dark:text-red-400 text-sm mt-1">
-            Este pedido ha sido cancelado exitosamente.
+            This order has been successfully cancelled.
           </p>
         </div>
       )}
@@ -338,8 +338,19 @@ function OrderStatus({ onOrderLoad, onRefreshRequest, onOpenReviewModal }) {
             disabled={isCancelling}
             className="px-6 py-3 bg-red-500 text-white rounded-lg font-semibold hover:bg-red-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
           >
-            {isCancelling ? 'Cancelando...' : 'Cancelar Pedido'}
+            {isCancelling ? 'Cancelling...' : 'Cancel Order'}
           </button>
+        </div>
+      )}
+
+      {/* Mensaje informativo para otros estados */}
+      {order.status !== 'pending' && !isCancelled && (
+        <div className="mt-6 flex justify-center">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            {order.status === 'cooking' ? 'Order is being prepared - cannot be cancelled' : ''}
+            {order.status === 'ready' ? 'Order is ready for pickup' : ''}
+            {order.status === 'delivered' ? 'Order has been delivered' : ''}
+          </p>
         </div>
       )}
 
@@ -358,11 +369,11 @@ function OrderStatus({ onOrderLoad, onRefreshRequest, onOpenReviewModal }) {
       {/* Modal: Pedido siendo preparado */}
       <NotificationModal
         isOpen={preparingModal}
-        type="info"
-        title="Your order is being prepared!"
-        message="Your order is being prepared by our team. We'll let you know when it's ready."
+        type="warning"
+        title="Your Order is Being Prepared!"
+        message="The kitchen is preparing your order right now."
         onAccept={handleAcceptPreparing}
-        acceptText="Got it"
+        acceptText="Got It"
       />
 
       {/* Modal: Order ready for pickup */}
