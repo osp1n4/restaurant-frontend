@@ -50,8 +50,6 @@ const AdminReviewsPage = () => {
 
       const data = await response.json();
 
-      console.log('📋 Admin Reviews API Response:', data);
-
       // El backend responde con { success, data: [...reviews], pagination }
       const reviewsList = data.data || data.reviews || [];
       setReviews(reviewsList);
@@ -82,9 +80,19 @@ const AdminReviewsPage = () => {
 
     const newStatus = actionType === 'approve' ? 'approved' : 'hidden';
 
+    // Obtener el ID de la review (MongoDB devuelve 'id' tras toJSON)
+    const reviewId = selectedReview.id || selectedReview._id;
+
+    if (!reviewId) {
+      console.error('Error: No review ID found:', selectedReview);
+      alert('Error: No se pudo encontrar el ID de la reseña');
+      setProcessing(false);
+      return;
+    }
+
     try {
       const response = await fetch(
-        `${API_BASE_URL}/reviews/${selectedReview._id}/status`,
+        `${API_BASE_URL}/reviews/${reviewId}/status`,
         {
           method: 'PATCH',
           headers: {
@@ -101,7 +109,7 @@ const AdminReviewsPage = () => {
       // Update local state
       setReviews((prev) =>
         prev.map((review) =>
-          review._id === selectedReview._id
+          (review.id === reviewId || review._id === reviewId)
             ? { ...review, status: newStatus }
             : review
         )
@@ -230,7 +238,7 @@ const AdminReviewsPage = () => {
               <div className="space-y-4">
                 {reviews.map((review) => (
                   <div
-                    key={review._id}
+                    key={review.id || review._id}
                     className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6"
                   >
                     <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
@@ -283,11 +291,11 @@ const AdminReviewsPage = () => {
                     <div className="grid grid-cols-2 gap-4 mb-4">
                       <div>
                         <p className="text-sm text-[#666666] mb-2">Overall Rating</p>
-                        <StarRating rating={review.overallRating} readonly size="sm" />
+                        <StarRating rating={review.ratings?.overall || review.rating || 5} readonly size="sm" />
                       </div>
                       <div>
                         <p className="text-sm text-[#666666] mb-2">Food Quality</p>
-                        <StarRating rating={review.foodRating} readonly size="sm" />
+                        <StarRating rating={review.ratings?.food || review.rating || 5} readonly size="sm" />
                       </div>
                     </div>
 
