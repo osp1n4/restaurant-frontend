@@ -86,7 +86,10 @@ function Sidebar() {
         {/* Bottom Actions */}
         <div className="flex flex-col gap-1">
           <div className="flex items-center ">
-            <span className="material-symbols-outlined text-2xl">language</span>
+         
+          </div>
+          <button className="flex items-center gap-3 px-3 py-2 text-[#111813] dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all">
+               <span className="material-symbols-outlined text-2xl">language</span>
             <select
               value={i18n.language}
               onChange={handleLanguageChange}
@@ -95,10 +98,6 @@ function Sidebar() {
               <option value="en">EN</option>
               <option value="es">ES</option>
             </select>
-          </div>
-          <button className="flex items-center gap-3 px-3 py-2 text-[#111813] dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all">
-            <span className="material-symbols-outlined text-2xl">settings</span>
-            <p className="text-sm font-medium leading-normal">Settings</p>
           </button>
           <button
             onClick={() => navigate('/')}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from 'react-i18next';
 import { createUser, getUsers, updateUser, deleteUser } from "./usersService";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -18,6 +19,7 @@ const initialState = {
 
 
 const UserForm = () => {
+  const { t } = useTranslation();
   const [form, setForm] = useState(initialState);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -42,27 +44,27 @@ const UserForm = () => {
             role: user.role || user.customClaims?.role || "EDITOR",
           });
         } else {
-          setError("Usuario no encontrado");
+          setError(t('users.notFound', 'Usuario no encontrado'));
         }
         setLoading(false);
       }).catch(() => {
-        setError("Error al cargar usuario");
+        setError(t('users.loadError', 'Error al cargar usuario'));
         setLoading(false);
       });
     }
   }, [id, isEdit]);
 
   const handleDelete = async () => {
-    if (!window.confirm('¿Estás seguro de que deseas eliminar este usuario? Esta acción no se puede deshacer.')) return;
+    if (!window.confirm(t('users.deleteConfirm', '¿Estás seguro de que deseas eliminar este usuario? Esta acción no se puede deshacer.'))) return;
     setDeleteLoading(true);
     setError("");
     setSuccess("");
     try {
       await deleteUser(id);
-      setSuccess("Usuario eliminado exitosamente.");
+      setSuccess(t('users.deleteSuccess', 'Usuario eliminado exitosamente.'));
       setTimeout(() => navigate("/users"), 1200);
     } catch (err) {
-      setError("Error al eliminar usuario. " + (err.message || ""));
+      setError(t('users.deleteError', 'Error al eliminar usuario. ') + (err.message || ""));
     } finally {
       setDeleteLoading(false);
     }
@@ -76,20 +78,20 @@ const UserForm = () => {
 
   const validate = () => {
     if (!form.name || !form.email || !form.role) {
-      return "Todos los campos son obligatorios.";
+      return t('users.requiredFields', 'Todos los campos son obligatorios.');
     }
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email)) {
-      return "El correo no es válido.";
+      return t('users.invalidEmail', 'El correo no es válido.');
     }
     if (!isEdit) {
       if (!form.password || !form.confirmPassword) {
-        return "La contraseña es obligatoria.";
+        return t('users.passwordRequired', 'La contraseña es obligatoria.');
       }
       if (form.password.length < 6) {
-        return "La contraseña debe tener al menos 6 caracteres.";
+        return t('users.passwordMinLength', 'La contraseña debe tener al menos 6 caracteres.');
       }
       if (form.password !== form.confirmPassword) {
-        return "Las contraseñas no coinciden.";
+        return t('users.passwordsNoMatch', 'Las contraseñas no coinciden.');
       }
     }
     return null;
@@ -111,7 +113,7 @@ const UserForm = () => {
           name: form.name,
           role: form.role,
         });
-        setSuccess("Usuario actualizado exitosamente.");
+        setSuccess(t('users.updateSuccess', 'Usuario actualizado exitosamente.'));
       } else {
         await createUser({
           name: form.name,
@@ -119,11 +121,11 @@ const UserForm = () => {
           password: form.password,
           role: form.role,
         });
-        setSuccess("Usuario creado exitosamente.");
+        setSuccess(t('users.createSuccess', 'Usuario creado exitosamente.'));
       }
       setTimeout(() => navigate("/users"), 1200);
     } catch (err) {
-      setError((isEdit ? "Error al actualizar usuario. " : "Error al crear usuario. ") + (err.message || ""));
+      setError((isEdit ? t('users.updateError', 'Error al actualizar usuario. ') : t('users.createError', 'Error al crear usuario. ')) + (err.message || ""));
     } finally {
       setLoading(false);
     }
@@ -139,25 +141,25 @@ const UserForm = () => {
   return (
     <div className="layout-content-container flex flex-col w-full max-w-4xl mx-auto">
       <header className="flex flex-col gap-1 mb-8">
-        <p className="text-[#222222] dark:text-white text-3xl font-bold leading-tight tracking-tight">{isEdit ? 'Edit User' : 'Add User'}</p>
-        <p className="text-[#666666] dark:text-gray-400 text-base font-normal leading-normal">{isEdit ? 'Edit the details of the user.' : 'Fill in the details to add a new user.'}</p>
+        <p className="text-[#222222] dark:text-white text-3xl font-bold leading-tight tracking-tight">{isEdit ? t('users.editTitle', 'Editar usuario') : t('users.addTitle', 'Agregar usuario')}</p>
+        <p className="text-[#666666] dark:text-gray-400 text-base font-normal leading-normal">{isEdit ? t('users.editSubtitle', 'Edita los datos del usuario.') : t('users.addSubtitle', 'Completa los datos para agregar un nuevo usuario.')}</p>
       </header>
       <div className="bg-white dark:bg-[#1C1411] p-8 rounded-lg shadow-md border border-gray-200 dark:border-gray-800">
         <form className="space-y-6" onSubmit={handleSubmit}>
           <div>
-            <label className="block text-sm font-medium text-[#222222] dark:text-gray-300" htmlFor="name">Full Name</label>
+            <label className="block text-sm font-medium text-[#222222] dark:text-gray-300" htmlFor="name">{t('users.fullName', 'Nombre completo')}</label>
             <div className="mt-2">
-              <input className="block w-full rounded-md border-0 py-2 px-3 text-[#222222] dark:text-white bg-[#F5F5F5] dark:bg-gray-800/50 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-700 placeholder:text-[#666666] focus:ring-2 focus:ring-inset focus:ring-primary" id="name" name="name" placeholder="e.g., John Doe" type="text" value={form.name} onChange={handleChange} />
+              <input className="block w-full rounded-md border-0 py-2 px-3 text-[#222222] dark:text-white bg-[#F5F5F5] dark:bg-gray-800/50 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-700 placeholder:text-[#666666] focus:ring-2 focus:ring-inset focus:ring-primary" id="name" name="name" placeholder={t('users.fullNamePlaceholder', 'Ej: Juan Pérez')} type="text" value={form.name} onChange={handleChange} />
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#222222] dark:text-gray-300" htmlFor="email">Email Address</label>
+            <label className="block text-sm font-medium text-[#222222] dark:text-gray-300" htmlFor="email">{t('users.emailLabel', 'Correo electrónico')}</label>
             <div className="mt-2">
               <input
                 className="block w-full rounded-md border-0 py-2 px-3 text-[#222222] dark:text-white bg-[#F5F5F5] dark:bg-gray-800/50 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-700 placeholder:text-[#666666] focus:ring-2 focus:ring-inset focus:ring-primary"
                 id="email"
                 name="email"
-                placeholder="you@example.com"
+                placeholder={t('users.emailPlaceholder', 'correo@ejemplo.com')}
                 type="email"
                 value={form.email}
                 onChange={handleChange}
@@ -168,25 +170,25 @@ const UserForm = () => {
           {!isEdit && (
             <>
               <div>
-                <label className="block text-sm font-medium text-[#222222] dark:text-gray-300" htmlFor="password">Password</label>
+                <label className="block text-sm font-medium text-[#222222] dark:text-gray-300" htmlFor="password">{t('users.passwordLabel', 'Contraseña')}</label>
                 <div className="mt-2">
-                  <input className="block w-full rounded-md border-0 py-2 px-3 text-[#222222] dark:text-white bg-[#F5F5F5] dark:bg-gray-800/50 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-700 placeholder:text-[#666666] focus:ring-2 focus:ring-inset focus:ring-primary" id="password" name="password" placeholder="Enter a strong password" type="password" value={form.password} onChange={handleChange} />
+                  <input className="block w-full rounded-md border-0 py-2 px-3 text-[#222222] dark:text-white bg-[#F5F5F5] dark:bg-gray-800/50 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-700 placeholder:text-[#666666] focus:ring-2 focus:ring-inset focus:ring-primary" id="password" name="password" placeholder={t('users.passwordPlaceholder', 'Ingresa una contraseña segura')} type="password" value={form.password} onChange={handleChange} />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-[#222222] dark:text-gray-300" htmlFor="confirmPassword">Confirm Password</label>
+                <label className="block text-sm font-medium text-[#222222] dark:text-gray-300" htmlFor="confirmPassword">{t('users.confirmPasswordLabel', 'Confirmar contraseña')}</label>
                 <div className="mt-2">
-                  <input className="block w-full rounded-md border-0 py-2 px-3 text-[#222222] dark:text-white bg-[#F5F5F5] dark:bg-gray-800/50 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-700 placeholder:text-[#666666] focus:ring-2 focus:ring-inset focus:ring-primary" id="confirmPassword" name="confirmPassword" placeholder="Re-enter password" type="password" value={form.confirmPassword} onChange={handleChange} />
+                  <input className="block w-full rounded-md border-0 py-2 px-3 text-[#222222] dark:text-white bg-[#F5F5F5] dark:bg-gray-800/50 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-700 placeholder:text-[#666666] focus:ring-2 focus:ring-inset focus:ring-primary" id="confirmPassword" name="confirmPassword" placeholder={t('users.confirmPasswordPlaceholder', 'Repite la contraseña')} type="password" value={form.confirmPassword} onChange={handleChange} />
                 </div>
               </div>
             </>
           )}
           <div>
-            <label className="block text-sm font-medium text-[#222222] dark:text-gray-300" htmlFor="role">Role</label>
+            <label className="block text-sm font-medium text-[#222222] dark:text-gray-300" htmlFor="role">{t('users.roleLabel', 'Rol')}</label>
             <div className="mt-2">
               <select className="block w-full rounded-md border-0 py-2 px-3 text-[#222222] dark:text-white bg-[#F5F5F5] dark:bg-gray-800/50 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-700 focus:ring-2 focus:ring-inset focus:ring-primary" id="role" name="role" value={form.role} onChange={handleChange}>
                 {roles.map((r) => (
-                  <option key={r.value} value={r.value}>{r.label}</option>
+                  <option key={r.value} value={r.value}>{t(r.labelKey)}</option>
                 ))}
               </select>
             </div>
@@ -196,7 +198,7 @@ const UserForm = () => {
           )}
           <div className="flex items-center justify-end gap-4 pt-4 border-t border-gray-200 dark:border-gray-800">
             <button className="flex min-w-[84px] items-center justify-center overflow-hidden rounded-md h-10 px-4 bg-[#F5F5F5] dark:bg-gray-700 text-[#222222] dark:text-gray-200 text-sm font-medium leading-normal tracking-[0.015em] hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors shadow-sm" type="button" onClick={handleCancel}>
-              <span className="truncate">Cancel</span>
+              <span className="truncate">{t('users.cancel', 'Cancelar')}</span>
             </button>
             {isEdit && (
               <button
@@ -205,11 +207,11 @@ const UserForm = () => {
                 onClick={handleDelete}
                 disabled={deleteLoading}
               >
-                <span className="truncate">{deleteLoading ? 'Eliminando...' : 'Eliminar'}</span>
+                <span className="truncate">{deleteLoading ? t('users.deleting', 'Eliminando...') : t('users.delete', 'Eliminar')}</span>
               </button>
             )}
             <button className="flex min-w-[84px] items-center justify-center overflow-hidden rounded-md h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-primary/90 transition-colors shadow-sm" type="submit" disabled={loading}>
-              <span className="truncate">{loading ? 'Guardando...' : 'Save'}</span>
+              <span className="truncate">{loading ? t('users.saving', 'Guardando...') : t('users.save', 'Guardar')}</span>
             </button>
           </div>
         </form>

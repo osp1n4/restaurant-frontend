@@ -1,10 +1,12 @@
 import PropTypes from 'prop-types';
+import { useTranslation } from 'react-i18next';
 
 /**
  * Componente de barra de herramientas con filtros
  * Permite seleccionar rango de fechas, agrupación y exportar CSV
  */
 function FilterToolbar({ filters, onFilterChange, onQuery, onExport, loading }) {
+  const { t } = useTranslation();
   const handleInputChange = (field, value) => {
     onFilterChange({ [field]: value });
   };
@@ -18,7 +20,7 @@ function FilterToolbar({ filters, onFilterChange, onQuery, onExport, loading }) 
             className="text-xs font-medium text-gray-500 dark:text-gray-400"
             htmlFor="from-date"
           >
-            From
+            {t('analytics.from', 'From')}
           </label>
           <input
             className="w-full mt-1 px-3 py-2 bg-background-light dark:bg-background-dark border border-gray-300 dark:border-gray-700 rounded-md text-sm text-[#111813] dark:text-white focus:ring-primary focus:border-primary"
@@ -35,7 +37,7 @@ function FilterToolbar({ filters, onFilterChange, onQuery, onExport, loading }) 
             className="text-xs font-medium text-gray-500 dark:text-gray-400"
             htmlFor="to-date"
           >
-            Until
+            {t('analytics.to', 'Until')}
           </label>
           <input
             className="w-full mt-1 px-3 py-2 bg-background-light dark:bg-background-dark border border-gray-300 dark:border-gray-700 rounded-md text-sm text-[#111813] dark:text-white focus:ring-primary focus:border-primary"
@@ -52,7 +54,7 @@ function FilterToolbar({ filters, onFilterChange, onQuery, onExport, loading }) 
             className="text-xs font-medium text-gray-500 dark:text-gray-400"
             htmlFor="group-by"
           >
-            Group by
+            {t('analytics.groupBy', 'Group by')}
           </label>
           <select
             className="w-full mt-1 pl-3 pr-10 py-2 bg-background-light dark:bg-background-dark border border-gray-300 dark:border-gray-700 rounded-md text-sm text-[#111813] dark:text-white focus:ring-primary focus:border-primary"
@@ -60,10 +62,10 @@ function FilterToolbar({ filters, onFilterChange, onQuery, onExport, loading }) 
             value={filters.groupBy}
             onChange={(e) => handleInputChange('groupBy', e.target.value)}
           >
-            <option value="day">Day</option>
-            <option value="week">Week</option>
-            <option value="month">Month</option>
-            <option value="year">Year</option>
+            <option value="day">{t('analytics.day', 'Day')}</option>
+            <option value="week">{t('analytics.week', 'Week')}</option>
+            <option value="month">{t('analytics.month', 'Month')}</option>
+            <option value="year">{t('analytics.year', 'Year')}</option>
           </select>
         </div>
       </div>
@@ -76,7 +78,7 @@ function FilterToolbar({ filters, onFilterChange, onQuery, onExport, loading }) 
           className="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 bg-transparent text-[#111813] dark:text-white border border-gray-300 dark:border-gray-700 gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-4 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
         >
           <span className="material-symbols-outlined text-xl">ios_share</span>
-          <span className="truncate">Export CSV</span>
+          <span className="truncate">{t('analytics.exportCsv', 'Export CSV')}</span>
         </button>
         <button
           onClick={onQuery}
@@ -84,7 +86,7 @@ function FilterToolbar({ filters, onFilterChange, onQuery, onExport, loading }) 
           className="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 bg-primary text-black gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-4 hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
         >
           <span className="material-symbols-outlined text-xl">query_stats</span>
-          <span className="truncate">{loading ? 'Cargando...' : 'View metrics'}</span>
+          <span className="truncate">{loading ? t('analytics.loading', 'Loading analytics...') : t('analytics.viewMetrics', 'View metrics')}</span>
         </button>
       </div>
     </div>

@@ -2,6 +2,7 @@
 
 
 import React, { useEffect, useState } from "react";
+import { useTranslation } from 'react-i18next';
 import { deactivateUser } from "./usersService";
 
 import DefaultUserAvatar from "./DefaultUserAvatar";
@@ -16,12 +17,16 @@ const statusColors = {
 };
 
 const UserManagement = () => {
+  const { t } = useTranslation();
   const [users, setUsers] = useState([]);
+  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showDeactivateModal, setShowDeactivateModal] = useState(false);
   const [userToDeactivate, setUserToDeactivate] = useState(null);
   const [deactivating, setDeactivating] = useState(false);
+  const [roleFilter, setRoleFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
   // TODO: agregar filtros y paginación real
 
   useEffect(() => {
@@ -40,6 +45,30 @@ const UserManagement = () => {
   }, []);
 
   const navigate = useNavigate();
+  // Obtener roles y estados únicos
+  const allRoles = Array.from(new Set(users.map(u => u.role || u.customClaims?.role || '').filter(Boolean)));
+  const allStatuses = Array.from(new Set(users.map(u => u.status || 'Active')));
+
+  // Filtrar usuarios por nombre/correo, rol y estado
+  const filteredUsers = users.filter(user => {
+    const term = search.trim().toLowerCase();
+    const name = (user.displayName || user.name || "").toLowerCase();
+    const email = (user.email || "").toLowerCase();
+    const role = (user.role || user.customClaims?.role || '').toLowerCase();
+    const status = (user.status || 'Active').toLowerCase();
+    let match = true;
+    if (term) {
+      match = name.includes(term) || email.includes(term);
+    }
+    if (roleFilter) {
+      match = match && (role === roleFilter.toLowerCase());
+    }
+    if (statusFilter) {
+      match = match && (status === statusFilter.toLowerCase());
+    }
+    return match;
+  });
+
   return (
     <div className="relative flex h-auto min-h-screen w-full flex-col bg-[#f8f6f4] dark:bg-background-dark group/design-root overflow-x-hidden">
       <div className="layout-container flex h-full grow flex-row">  
@@ -48,15 +77,15 @@ const UserManagement = () => {
             {/* Header */}
             <header className="flex flex-wrap justify-between gap-4 items-center mb-6">
               <div className="flex flex-col gap-1">
-                <p className="text-[#181210] dark:text-white text-3xl font-bold leading-tight tracking-tight">User Management</p>
-                <p className="text-[#8d6a5e] dark:text-gray-400 text-base font-normal leading-normal">Manage all users, their roles, and system access.</p>
+                <p className="text-[#181210] dark:text-white text-3xl font-bold leading-tight tracking-tight">{t('users.managementTitle', 'Gestión de usuarios')}</p>
+                <p className="text-[#8d6a5e] dark:text-gray-400 text-base font-normal leading-normal">{t('users.managementSubtitle', 'Gestiona todos los usuarios, sus roles y acceso al sistema.')}</p>
               </div>
               <button
                 className="flex min-w-[84px] items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-orange-500 text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-orange-600 transition-colors shadow-sm"
                 onClick={() => navigate('/users/new')}
               >
                 <span className="material-symbols-outlined mr-2">add</span>
-                <span className="truncate">Add New User</span>
+                <span className="truncate">{t('users.addNewUser', 'Agregar usuario')}</span>
               </button>
             </header>
             {/* Search and Filters */}
@@ -68,46 +97,65 @@ const UserManagement = () => {
                     <div className="text-[#8d6a5e] dark:text-gray-400 flex items-center justify-center pl-4">
                       <span className="material-symbols-outlined">search</span>
                     </div>
-                    <input className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden text-[#181210] dark:text-white focus:outline-0 focus:ring-0 border-none bg-transparent h-full placeholder:text-[#8d6a5e] dark:placeholder:text-gray-500 px-4 pl-2 text-sm font-normal leading-normal" placeholder="Search by name or email..." />
+                    <input
+                      className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden text-[#181210] dark:text-white focus:outline-0 focus:ring-0 border-none bg-transparent h-full placeholder:text-[#8d6a5e] dark:placeholder:text-gray-500 px-4 pl-2 text-sm font-normal leading-normal"
+                      placeholder={t('users.searchPlaceholder', 'Buscar por nombre o correo...')}
+                      value={search}
+                      onChange={e => setSearch(e.target.value)}
+                    />
                   </div>
                 </label>
               </div>
               {/* Dropdowns */}
               <div className="flex gap-3">
-                <button className="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-[#f5f1f0] dark:bg-[#2A1C16] px-4 shadow-sm hover:bg-gray-200 dark:hover:bg-gray-700/50 transition-colors">
-                  <p className="text-[#181210] dark:text-gray-300 text-sm font-medium leading-normal">Role</p>
-                  <span className="material-symbols-outlined text-[#181210] dark:text-gray-300 text-base">expand_more</span>
-                </button>
-                <button className="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-[#f5f1f0] dark:bg-[#2A1C16] px-4 shadow-sm hover:bg-gray-200 dark:hover:bg-gray-700/50 transition-colors">
-                  <p className="text-[#181210] dark:text-gray-300 text-sm font-medium leading-normal">Status</p>
-                  <span className="material-symbols-outlined text-[#181210] dark:text-gray-300 text-base">expand_more</span>
-                </button>
+                {/* Filtro por rol */}
+                <select
+                  className="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-[#f5f1f0] dark:bg-[#2A1C16] px-4 shadow-sm text-[#181210] dark:text-gray-300 text-sm font-medium leading-normal hover:bg-gray-200 dark:hover:bg-gray-700/50 transition-colors"
+                  value={roleFilter}
+                  onChange={e => setRoleFilter(e.target.value)}
+                >
+                  <option value="">{t('users.role', 'Rol')}</option>
+                  {allRoles.map(role => (
+                    <option key={role} value={role}>{role}</option>
+                  ))}
+                </select>
+                {/* Filtro por estado */}
+                <select
+                  className="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-[#f5f1f0] dark:bg-[#2A1C16] px-4 shadow-sm text-[#181210] dark:text-gray-300 text-sm font-medium leading-normal hover:bg-gray-200 dark:hover:bg-gray-700/50 transition-colors"
+                  value={statusFilter}
+                  onChange={e => setStatusFilter(e.target.value)}
+                >
+                  <option value="">{t('users.status', 'Estado')}</option>
+                  {allStatuses.map(status => (
+                    <option key={status} value={status}>{status}</option>
+                  ))}
+                </select>
               </div>
             </div>
             {/* Table */}
             <div className="w-full rounded-xl border border-[#e7deda] dark:border-gray-800 bg-white dark:bg-[#1C1411] shadow-md overflow-hidden min-h-[200px]">
               {loading ? (
-                <div className="p-8 text-center text-gray-500">Cargando usuarios...</div>
+                <div className="p-8 text-center text-gray-500">{t('users.loading', 'Cargando usuarios...')}</div>
               ) : error ? (
                 <div className="p-8 text-center text-red-500">{error}</div>
               ) : (
                 <table className="w-full">
                   <thead className="bg-[#f5f1f0] dark:bg-[#2A1C16]">
                     <tr>
-                      <th className="px-6 py-4 text-left text-[#181210] dark:text-gray-300 text-xs font-medium uppercase tracking-wider">User</th>
-                      <th className="px-6 py-4 text-left text-[#181210] dark:text-gray-300 text-xs font-medium uppercase tracking-wider">Email</th>
-                      <th className="px-6 py-4 text-left text-[#181210] dark:text-gray-300 text-xs font-medium uppercase tracking-wider">Role</th>
-                      <th className="px-6 py-4 text-left text-[#181210] dark:text-gray-300 text-xs font-medium uppercase tracking-wider">Status</th>
+                      <th className="px-6 py-4 text-left text-[#181210] dark:text-gray-300 text-xs font-medium uppercase tracking-wider">{t('users.user', 'Usuario')}</th>
+                      <th className="px-6 py-4 text-left text-[#181210] dark:text-gray-300 text-xs font-medium uppercase tracking-wider">{t('users.email', 'Correo')}</th>
+                      <th className="px-6 py-4 text-left text-[#181210] dark:text-gray-300 text-xs font-medium uppercase tracking-wider">{t('users.role', 'Rol')}</th>
+                      <th className="px-6 py-4 text-left text-[#181210] dark:text-gray-300 text-xs font-medium uppercase tracking-wider">{t('users.status', 'Estado')}</th>
                       <th className="px-6 py-4 text-left text-[#181210] dark:text-gray-300 text-xs font-medium uppercase tracking-wider">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#e7deda] dark:divide-gray-800">
-                    {users.length === 0 ? (
+                    {filteredUsers.length === 0 ? (
                       <tr>
-                        <td colSpan={5} className="text-center py-8 text-gray-400">No users found</td>
+                        <td colSpan={5} className="text-center py-8 text-gray-400">{t('users.noUsersFound', 'No users found')}</td>
                       </tr>
                     ) : (
-                      users.map((user) => (
+                      filteredUsers.map((user) => (
                         <tr key={user.id || user.uid} className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-3">
@@ -163,10 +211,10 @@ const UserManagement = () => {
               </p>
               <div className="flex gap-2">
                 <button className="flex items-center justify-center h-10 px-4 rounded-lg bg-white dark:bg-[#1C1411] border border-[#e7deda] dark:border-gray-800 text-[#181210] dark:text-white text-sm font-medium hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
-                  Previous
+                  {t('users.previous', 'Anterior')}
                 </button>
                 <button className="flex items-center justify-center h-10 px-4 rounded-lg bg-white dark:bg-[#1C1411] border border-[#e7deda] dark:border-gray-800 text-[#181210] dark:text-white text-sm font-medium hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
-                  Next
+                  {t('users.next', 'Siguiente')}
                 </button>
               </div>
             </div>
@@ -175,8 +223,8 @@ const UserManagement = () => {
         {showDeactivateModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
             <div className="bg-white dark:bg-[#1C1411] rounded-lg shadow-lg p-8 w-full max-w-md">
-              <h2 className="text-xl font-bold mb-4 text-[#181210] dark:text-white">¿Desactivar usuario?</h2>
-              <p className="mb-6 text-[#8d6a5e] dark:text-gray-400">¿Estás seguro de que deseas desactivar a <span className="font-semibold">{userToDeactivate?.displayName || userToDeactivate?.name || userToDeactivate?.email}</span>? El usuario no podrá acceder al sistema.</p>
+              <h2 className="text-xl font-bold mb-4 text-[#181210] dark:text-white">{t('users.deactivateTitle', '¿Desactivar usuario?')}</h2>
+              <p className="mb-6 text-[#8d6a5e] dark:text-gray-400">{t('users.deactivateConfirm', '¿Estás seguro de que deseas desactivar a')} <span className="font-semibold">{userToDeactivate?.displayName || userToDeactivate?.name || userToDeactivate?.email}</span>? {t('users.deactivateWarning', 'El usuario no podrá acceder al sistema.')}</p>
               <div className="flex justify-end gap-4">
                 <button
                   className="px-4 py-2 rounded-md bg-gray-200 dark:bg-gray-700 text-[#181210] dark:text-white font-medium hover:bg-gray-300 dark:hover:bg-gray-600"
@@ -185,7 +233,7 @@ const UserManagement = () => {
                     setUserToDeactivate(null);
                   }}
                   disabled={deactivating}
-                >Cancelar</button>
+                >{t('users.deactivateCancel', 'Cancelar')}</button>
                 <button
                   className="px-4 py-2 rounded-md bg-red-600 text-white font-bold hover:bg-red-700"
                   onClick={async () => {
@@ -196,13 +244,13 @@ const UserManagement = () => {
                       setShowDeactivateModal(false);
                       setUserToDeactivate(null);
                     } catch (err) {
-                      alert('Error al desactivar usuario');
+                      alert(t('users.deactivateError', 'Error al desactivar usuario'));
                     } finally {
                       setDeactivating(false);
                     }
                   }}
                   disabled={deactivating}
-                >{deactivating ? 'Desactivando...' : 'Confirmar'}</button>
+                >{deactivating ? t('users.deactivating', 'Desactivando...') : t('users.deactivateButton', 'Confirmar')}</button>
               </div>
             </div>
           </div>

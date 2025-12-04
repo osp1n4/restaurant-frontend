@@ -16,8 +16,17 @@ const RAW_MENU_ITEMS = [
 ];
 
 export default function OrderForm() {
+  const { i18n, t } = useTranslation();
   const navigate = useNavigate();
-  const { t } = useTranslation();
+
+  // Navbar: cambio de idioma y atrás
+  const handleLanguageChange = () => {
+    i18n.changeLanguage(i18n.language === 'es' ? 'en' : 'es');
+  };
+  const handleBack = () => {
+    navigate(-1);
+  };
+
 
   // Hook de validación (SRP: separa lógica de validación del UI)
   const {
@@ -116,10 +125,37 @@ export default function OrderForm() {
     navigate(`/orders/${orderNumber}`);
   };
 
+
+  // Validación básica de email
+  function isValidEmail(email) {
+    return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
+  }
+
   const total = calculateTotal();
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background-light dark:bg-background-dark">
+    <div className="min-h-screen flex flex-col bg-background-light dark:bg-background-dark">
+      {/* Navbar superior */}
+      <nav className="w-full flex items-center justify-between px-6 py-4 bg-white dark:bg-background-dark border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleBack}
+            className="flex items-center gap-1 px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+          >
+            <span className="material-symbols-outlined text-base">arrow_back</span>
+            {t('orderForm.back', 'Back')}
+          </button>
+        </div>
+        <div className="flex items-center justify-end w-12 h-12">
+          <button
+            onClick={handleLanguageChange}
+            className="flex items-center justify-center w-10 h-10 rounded-full border border-primary text-xs font-semibold text-primary hover:bg-primary hover:text-white transition-colors"
+            aria-label={i18n.language === 'es' ? 'Switch to English' : 'Cambiar a Español'}
+          >
+            {i18n.language === 'es' ? 'EN' : 'ES'}
+          </button>
+        </div>
+      </nav>
       <div className="w-full max-w-4xl mx-auto bg-white dark:bg-background-dark rounded-2xl shadow-xl p-12 md:p-16 flex flex-col gap-10">
         {/* Header minimalista */}
         <div className="flex items-center gap-3 mb-2">
@@ -167,19 +203,19 @@ export default function OrderForm() {
               onChange={(e) => setCustomerEmail(e.target.value)}
               onBlur={() => setTouched(prev => ({ ...prev, email: true }))}
             />
-            {touched.email && customerEmail.trim().length === 0 && (
-              <span className="text-red-500 text-sm mt-1">{t('orderForm.emailRequired')}</span>
-            )}
-            {touched.email && customerEmail.trim().length > 0 && !isValidEmail(customerEmail) && (
-              <span className="text-yellow-600 dark:text-yellow-500 text-sm mt-1">{t('orderForm.emailInvalid')}</span>
-            {touched.email && customerEmail.trim().length > 0 && getEmailValidationState(customerEmail) === 'invalid' && (
-              <span className="text-yellow-600 dark:text-yellow-500 text-sm mt-1">Please enter a valid email format</span>
-            )}
-            {touched.email && isValidEmail(customerEmail) && (
-              <span className="text-green-600 dark:text-green-500 text-sm mt-1">{t('orderForm.emailValid')}</span>
-            {touched.email && getEmailValidationState(customerEmail) === 'valid' && (
-              <span className="text-green-600 dark:text-green-500 text-sm mt-1">✓ Email format is correct</span>
-            )}
+              {touched.email && customerEmail.trim().length === 0 && (
+                <span className="text-red-500 text-sm mt-1">{t('orderForm.emailRequired')}</span>
+              )}
+              {touched.email && customerEmail.trim().length > 0 && !isValidEmail(customerEmail) && (
+                <span className="text-yellow-600 dark:text-yellow-500 text-sm mt-1">{t('orderForm.emailInvalid')}</span>
+              )}
+              {touched.email && customerEmail.trim().length > 0 && getEmailValidationState(customerEmail) === 'invalid' && (
+                <span className="text-yellow-600 dark:text-yellow-500 text-sm mt-1">Please enter a valid email format</span>
+              )}
+              {touched.email && isValidEmail(customerEmail) && (
+                <span className="text-green-600 dark:text-green-500 text-sm mt-1">{t('orderForm.emailValid')}</span>
+              )}
+            
           </label>
           <label className="flex flex-col">
             <span className="text-[#181311] dark:text-gray-300 text-base font-medium pb-2">{t('orderForm.notesLabel')}</span>
