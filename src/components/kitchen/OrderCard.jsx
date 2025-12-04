@@ -5,13 +5,15 @@ import {
   getReferenceTime,
   calculateOrderTotal
 } from '../../utils/kitchenUtils';
+import { useTranslation } from 'react-i18next';
 
 /**
  * Componente de Tarjeta de Pedido
  */
 function OrderCard({ order, isProcessing, onStartPreparing, onMarkAsReady }) {
+  const { t } = useTranslation();
   const referenceTime = getReferenceTime(order);
-  const timeAgo = formatTimeAgo(referenceTime);
+  const timeAgo = formatTimeAgo(referenceTime, t);
   const total = calculateOrderTotal(order.items);
 
   return (
@@ -20,7 +22,7 @@ function OrderCard({ order, isProcessing, onStartPreparing, onMarkAsReady }) {
       <div className="flex items-start justify-between mb-3 sm:mb-4 flex-shrink-0">
         <div className="flex-1 min-w-0">
           <h3 className="text-lg sm:text-xl font-bold text-gray-900 truncate">
-            Order #{order.orderNumber || order.orderId || 'N/A'}
+            {t('kitchen.orderNumber')} {order.orderNumber || order.orderId || 'N/A'}
           </h3>
           <p className="text-gray-600 text-xs sm:text-sm mt-1 truncate">
             {order.customerName || 'N/A'}
@@ -84,7 +86,7 @@ function OrderCard({ order, isProcessing, onStartPreparing, onMarkAsReady }) {
             order.status
           )}`}
         >
-          {getStatusText(order.status)}
+          {getStatusText(order.status, t)}
         </span>
 
         {order.status === 'RECEIVED' && (
@@ -93,7 +95,7 @@ function OrderCard({ order, isProcessing, onStartPreparing, onMarkAsReady }) {
             disabled={isProcessing}
             className="px-3 py-1.5 sm:px-4 sm:py-2 bg-orange-500 text-white rounded-lg text-xs sm:text-sm font-medium hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
           >
-            {isProcessing ? 'Processing...' : 'Start Cooking'}
+            {isProcessing ? t('kitchen.processing') : t('kitchen.startCooking')}
           </button>
         )}
 
@@ -103,7 +105,7 @@ function OrderCard({ order, isProcessing, onStartPreparing, onMarkAsReady }) {
             disabled={isProcessing}
             className="px-3 py-1.5 sm:px-4 sm:py-2 bg-orange-500 text-white rounded-lg text-xs sm:text-sm font-medium hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
           >
-            {isProcessing ? 'Processing...' : 'Mark as Ready'}
+            {isProcessing ? t('kitchen.processing') : t('kitchen.markAsReady')}
           </button>
         )}
 
@@ -112,7 +114,7 @@ function OrderCard({ order, isProcessing, onStartPreparing, onMarkAsReady }) {
             disabled
             className="px-3 py-1.5 sm:px-4 sm:py-2 bg-gray-300 text-gray-700 rounded-lg text-xs sm:text-sm font-medium cursor-not-allowed whitespace-nowrap"
           >
-            Completed
+            {t('kitchen.completed')}
           </button>
         )}
       </div>

@@ -1,25 +1,29 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { createOrder } from '../services/api';
 
+
 // Menú de items disponibles (precios en pesos colombianos)
-const MENU_ITEMS = [
-  { id: 1, name: 'Classic Margherita Pizza', price: 28000, icon: 'local_pizza' },
-  { id: 2, name: 'Cheeseburger', price: 20000, icon: 'lunch_dining' },
-  { id: 3, name: 'Creamy Carbonara', price: 30000, icon: 'restaurant_menu' },
-  { id: 4, name: 'Caesar Salad', price: 18000, icon: 'restaurant' },
-  { id: 5, name: 'Soft Drink', price: 6000, icon: 'local_cafe' },
+const RAW_MENU_ITEMS = [
+  { id: 1, key: 'margherita', price: 28000, icon: 'local_pizza' },
+  { id: 2, key: 'cheeseburger', price: 20000, icon: 'lunch_dining' },
+  { id: 3, key: 'carbonara', price: 30000, icon: 'restaurant_menu' },
+  { id: 4, key: 'caesar', price: 18000, icon: 'restaurant' },
+  { id: 5, key: 'drink', price: 6000, icon: 'local_cafe' },
 ];
 
 export default function OrderForm() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   // Estado del formulario
   const [customerName, setCustomerName] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
   const [notes, setNotes] = useState('');
   const [quantities, setQuantities] = useState(
-    MENU_ITEMS.reduce((acc, item) => ({ ...acc, [item.id]: 0 }), {})
+    RAW_MENU_ITEMS.reduce((acc, item) => ({ ...acc, [item.id]: 0 }), {})
   );
 
   // Estados de UI
@@ -59,7 +63,7 @@ export default function OrderForm() {
 
   // Calcular total del pedido
   const calculateTotal = () => {
-    return MENU_ITEMS.reduce((total, item) => {
+    return RAW_MENU_ITEMS.reduce((total, item) => {
       return total + (item.price * quantities[item.id]);
     }, 0);
   };
@@ -87,10 +91,10 @@ export default function OrderForm() {
 
     try {
       // Preparar items del pedido
-      const items = MENU_ITEMS
+      const items = RAW_MENU_ITEMS
         .filter(item => quantities[item.id] > 0)
         .map(item => ({
-          name: item.name,
+          name: t(`orderForm.menu.${item.key}`),
           quantity: quantities[item.id],
           price: item.price,
         }));
@@ -136,13 +140,13 @@ export default function OrderForm() {
           <div className="flex items-center justify-center rounded-full size-10 bg-primary">
             <span className="material-symbols-outlined text-2xl text-white">restaurant</span>
           </div>
-          <h2 className="text-[#181311] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">Delicious Kitchen</h2>
+          <h2 className="text-[#181311] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">{t('home.title')}</h2>
         </div>
 
         {/* Sección de detalles del cliente */}
         <div className="flex flex-col gap-4">
           <label className="flex flex-col">
-            <span className="text-[#181311] dark:text-gray-300 text-base font-medium pb-2">Your Name *</span>
+            <span className="text-[#181311] dark:text-gray-300 text-base font-medium pb-2">{t('orderForm.nameLabel')}</span>
             <input
               type="text"
               className={`form-input w-full rounded-lg text-[#181311] dark:text-white border ${
@@ -150,17 +154,17 @@ export default function OrderForm() {
                   ? 'border-red-500 dark:border-red-500'
                   : 'border-[#e6dfdb] dark:border-gray-600'
               } bg-white dark:bg-gray-800 focus:border-primary h-12 px-4 text-base`}
-              placeholder="Enter your name"
+              placeholder={t('orderForm.namePlaceholder')}
               value={customerName}
               onChange={(e) => setCustomerName(e.target.value)}
               onBlur={() => setTouched(prev => ({ ...prev, name: true }))}
             />
             {touched.name && customerName.trim().length === 0 && (
-              <span className="text-red-500 text-sm mt-1">Name is required</span>
+              <span className="text-red-500 text-sm mt-1">{t('orderForm.nameRequired')}</span>
             )}
           </label>
           <label className="flex flex-col">
-            <span className="text-[#181311] dark:text-gray-300 text-base font-medium pb-2">Your Email *</span>
+            <span className="text-[#181311] dark:text-gray-300 text-base font-medium pb-2">{t('orderForm.emailLabel')}</span>
             <input
               type="email"
               className={`form-input w-full rounded-lg text-[#181311] dark:text-white border ${
@@ -172,26 +176,26 @@ export default function OrderForm() {
                   ? 'border-green-500 dark:border-green-500'
                   : 'border-[#e6dfdb] dark:border-gray-600'
               } bg-white dark:bg-gray-800 focus:border-primary h-12 px-4 text-base`}
-              placeholder="your@email.com"
+              placeholder={t('orderForm.emailPlaceholder')}
               value={customerEmail}
               onChange={(e) => setCustomerEmail(e.target.value)}
               onBlur={() => setTouched(prev => ({ ...prev, email: true }))}
             />
             {touched.email && customerEmail.trim().length === 0 && (
-              <span className="text-red-500 text-sm mt-1">Email is required</span>
+              <span className="text-red-500 text-sm mt-1">{t('orderForm.emailRequired')}</span>
             )}
             {touched.email && customerEmail.trim().length > 0 && !isValidEmail(customerEmail) && (
-              <span className="text-yellow-600 dark:text-yellow-500 text-sm mt-1">Please enter a valid email format</span>
+              <span className="text-yellow-600 dark:text-yellow-500 text-sm mt-1">{t('orderForm.emailInvalid')}</span>
             )}
             {touched.email && isValidEmail(customerEmail) && (
-              <span className="text-green-600 dark:text-green-500 text-sm mt-1">✓ Email format is correct</span>
+              <span className="text-green-600 dark:text-green-500 text-sm mt-1">{t('orderForm.emailValid')}</span>
             )}
           </label>
           <label className="flex flex-col">
-            <span className="text-[#181311] dark:text-gray-300 text-base font-medium pb-2">Special Notes (optional)</span>
+            <span className="text-[#181311] dark:text-gray-300 text-base font-medium pb-2">{t('orderForm.notesLabel')}</span>
             <textarea
               className="form-input w-full rounded-lg text-[#181311] dark:text-white border border-[#e6dfdb] dark:border-gray-600 bg-white dark:bg-gray-800 focus:border-primary px-4 py-2 text-base"
-              placeholder="Allergies, preferences, special instructions..."
+              placeholder={t('orderForm.notesPlaceholder')}
               rows="2"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
@@ -201,12 +205,12 @@ export default function OrderForm() {
 
         {/* Sección del menú */}
         <div className="flex flex-col gap-3">
-          <span className="text-[#181311] dark:text-white text-base font-bold pb-2">What are you craving?</span>
-          {MENU_ITEMS.map((item) => (
+          <span className="text-[#181311] dark:text-white text-base font-bold pb-2">{t('orderForm.menuLabel')}</span>
+          {RAW_MENU_ITEMS.map((item) => (
             <div key={item.id} className="flex items-center justify-between gap-4 bg-background-light dark:bg-gray-900 rounded-lg px-3 py-2">
               <div className="flex items-center gap-3">
                 <span className="material-symbols-outlined text-2xl text-primary bg-primary/20 rounded-lg p-2">{item.icon}</span>
-                <span className="text-[#181311] dark:text-white text-base font-medium">{item.name}</span>
+                <span className="text-[#181311] dark:text-white text-base font-medium">{t(`orderForm.menu.${item.key}`)}</span>
                 <span className="text-[#896f61] dark:text-gray-400 text-sm font-normal">${item.price.toLocaleString('es-CO')}</span>
               </div>
               <div className="flex items-center gap-2">
@@ -230,7 +234,7 @@ export default function OrderForm() {
         {/* Footer resumen y botón */}
         <div className="flex flex-col gap-2 pt-4">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-500 dark:text-gray-400">Total</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">{t('orderForm.totalLabel')}</span>
             <span className="text-xl font-bold text-[#181311] dark:text-white">${total.toLocaleString('es-CO')}</span>
           </div>
           <button
@@ -238,7 +242,7 @@ export default function OrderForm() {
             disabled={!isFormValid() || isLoading}
             className="bg-primary text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50 disabled:bg-gray-400 disabled:cursor-not-allowed w-full transition-colors"
           >
-            {isLoading ? 'Processing...' : 'Place Order'}
+            {isLoading ? t('orderForm.processing') : t('orderForm.placeOrder')}
           </button>
         </div>
 
@@ -249,16 +253,16 @@ export default function OrderForm() {
               <div className="flex items-center justify-center size-16 bg-green-100 rounded-full mb-4">
                 <span className="material-symbols-outlined text-4xl text-green-600">check_circle</span>
               </div>
-              <h3 className="text-xl font-bold text-[#181311] dark:text-white mb-2">Order Placed Successfully!</h3>
-              <p className="text-gray-600 dark:text-gray-300 mb-4">Your order is being prepared.</p>
+              <h3 className="text-xl font-bold text-[#181311] dark:text-white mb-2">{t('orderForm.successTitle')}</h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-4">{t('orderForm.successText')}</p>
               <div className="bg-background-light dark:bg-gray-800 rounded-lg p-3 w-full">
-                <span className="text-sm text-gray-500 dark:text-gray-400">Your Order Number</span>
+                <span className="text-sm text-gray-500 dark:text-gray-400">{t('orderForm.orderNumberLabel')}</span>
                 <p className="text-lg font-mono font-bold text-[#181311] dark:text-white tracking-wider">{orderNumber}</p>
               </div>
               <button
                 onClick={handleModalClose}
                 className="mt-6 bg-primary text-white font-bold py-3 px-6 rounded-lg w-full hover:bg-primary/90 transition-colors"
-              >View Order Status</button>
+              >{t('orderForm.viewOrderStatus')}</button>
             </div>
           </div>
         )}

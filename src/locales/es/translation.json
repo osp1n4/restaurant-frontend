@@ -1,0 +1,76 @@
+  "notification": {
+    "defaultTitle": "Notificación",
+    "defaultMessage": "Tienes una nueva notificación.",
+    "accept": "Aceptar",
+    "cancel": "Cancelar"
+  },
+{
+  "home": {
+    "title": "Delicious Kitchen",
+    "orderNow": "Ordenar ahora",
+    "ourStory": "Nuestra historia",
+    "featuredDishes": "Platos destacados",
+    "viewFullMenu": "Ver menú completo",
+    "expertTeam": "Equipo culinario experto",
+    "expertArtists": "Artistas culinarios expertos",
+    "michelinExcellence": "Excelencia formada en Michelin",
+    "passionateProfessionals": "Profesionales apasionados",
+    "awardWinningTeam": "Equipo galardonado",
+    "seeReviews": "Opiniones de nuestros clientes",
+    "viewCustomerReviews": "Ver opiniones de clientes",
+    "ctaTitle": "¿Listo para probar comida increíble?",
+    "ctaText": "Ordena ahora y prueba la diferencia que hacen la pasión y la calidad",
+    "heroSubtitle": "Recién hecho, solo para ti",
+    "heroDescription": "Experimenta la excelencia culinaria con nuestros platos elaborados por expertos, hechos con los ingredientes locales más frescos.",
+    "aboutDescription": "En Delicious Kitchen, creemos en el poder de la buena comida para unir a las personas. Cada plato se elabora con pasión, usando solo los mejores ingredientes para crear experiencias culinarias inolvidables.",
+    "featuredSubtitle": "Explora nuestras creaciones exclusivas",
+    "teamDescription": "Nuestros talentosos chefs aportan años de experiencia y pasión a cada plato. Formados en las mejores tradiciones culinarias, crean experiencias gastronómicas excepcionales.",
+    "expertArtistsDescription": "Nuestros chefs dominan el arte del sabor, combinando técnicas tradicionales con innovación moderna para crear platos inolvidables.",
+    "passionateProfessionalsDescription": "Dedicados a la perfección, nuestro equipo asegura que cada comida se prepare con precisión, cuidado y los mejores ingredientes.",
+    "certifiedExcellence": "Excelencia certificada",
+    "certifiedExcellenceDescription": "Todos nuestros chefs son profesionales certificados con años de experiencia culinaria.",
+    "freshIngredients": "Ingredientes frescos",
+    "freshIngredientsDescription": "Seleccionamos solo los mejores ingredientes locales y orgánicos cada día.",
+    "madeWithLove": "Hecho con amor",
+    "madeWithLoveDescription": "Cada plato se prepara con pasión y atención al detalle.",
+    "reviewsDescription": "Lee reseñas auténticas de nuestros clientes satisfechos y descubre por qué les encanta comer con nosotros."
+  },
+  "kitchen": {
+          "filterAll": "Todos",
+          "filterReceived": "Recibidos",
+          "filterPreparing": "En preparación",
+          "filterReady": "Listos",
+        "orderNumber": "Pedido #",
+      "completed": "Completado",
+    "statusReceived": "Nuevo pedido",
+    "statusPreparing": "En cocina",
+    "statusReady": "Listo",
+    "processing": "Procesando...",
+    "startCooking": "Comenzar a cocinar",
+    "markAsReady": "Marcar como listo",
+    "timeMinutesAgo": "hace {{count}} min",
+    "timeSecondsAgo": "hace {{count}} seg"
+  },
+  "sidebar": {
+    "userManagement": "Gestión de usuarios",
+    "kitchen": "Cocina",
+    "reports": "Reportes",
+    "reviewManagement": "Gestión de reseñas"
+  },
+  "login": {
+    "adminPanel": "Panel de administración",
+    "usernameOrEmail": "Usuario o correo electrónico",
+    "password": "Contraseña",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "login": "Ingresar"
+  },
+  "reviews": {
+    "reviewPanel": "Panel de gestión de reseñas",
+    "manageReviews": "Gestiona y modera las reseñas de clientes",
+    "totalReviews": "Total de reseñas",
+    "pending": "Pendiente",
+    "approved": "Aprobado",
+    "noReviews": "Sin reseñas",
+    "reviewsWillAppear": "Las reseñas aparecerán aquí cuando los clientes las envíen"
+  }
+}

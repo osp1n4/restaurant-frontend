@@ -1,5 +1,8 @@
+
+
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useContext } from 'react';
+import { useTranslation } from 'react-i18next';
 import { AuthContext } from '../../context/AuthContext.jsx';
 
 /**
@@ -9,15 +12,24 @@ import { AuthContext } from '../../context/AuthContext.jsx';
 function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t, i18n } = useTranslation();
   const { user } = useContext(AuthContext);
+  const handleLanguageChange = (e) => {
+    i18n.changeLanguage(e.target.value);
+    // Forzar re-render de la página actual para que el contenido cambie de idioma inmediatamente
+    // Esto se logra actualizando una key en el layout principal (ver nota abajo)
+    // Si usas React Router v6, puedes forzar un re-render usando navigate(0) o navigate(location.pathname, {replace: true})
+    // Aquí usamos navigate(location.pathname, {replace: true}) para recargar la ruta actual
+    navigate(location.pathname, { replace: true });
+  };
 
   // Define allowed menu items by role
   const role = (user?.role || '').toUpperCase();
   let menuItems = [
-    { path: '/users', icon: 'person', label: 'User Management', filled: false, roles: ['ADMIN'] },
-    { path: '/kitchen', icon: 'soup_kitchen', label: 'Kitchen', filled: false, roles: ['ADMIN', 'KITCHEN'] },
-    { path: '/dashboard/analytics', icon: 'analytics', label: 'Reports', filled: true, roles: ['ADMIN'] },
-    { path: '/admin/reviews', icon: 'reviews', label: 'Review Management', filled: false, roles: ['ADMIN'] }
+    { path: '/users', icon: 'person', label: t('sidebar.userManagement'), filled: false, roles: ['ADMIN'] },
+    { path: '/kitchen', icon: 'soup_kitchen', label: t('sidebar.kitchen'), filled: false, roles: ['ADMIN', 'KITCHEN'] },
+    { path: '/dashboard/analytics', icon: 'analytics', label: t('sidebar.reports'), filled: true, roles: ['ADMIN'] },
+    { path: '/admin/reviews', icon: 'reviews', label: t('sidebar.reviewManagement'), filled: false, roles: ['ADMIN'] }
   ];
 
   // Only show items allowed for the current role
@@ -36,10 +48,10 @@ function Sidebar() {
             </div>
             <div className="flex flex-col">
               <h1 className="text-[#111813] dark:text-white text-base font-medium leading-normal">
-                Restaurant Admin
+                {t('sidebar.userManagement')}
               </h1>
               <p className="text-[#63886f] dark:text-gray-400 text-sm font-normal leading-normal">
-                Management Panel
+                {t('sidebar.reports')}
               </p>
             </div>
           </div>
@@ -69,9 +81,21 @@ function Sidebar() {
             ))}
           </nav>
         </div>
+        
 
         {/* Bottom Actions */}
         <div className="flex flex-col gap-1">
+          <div className="flex items-center ">
+            <span className="material-symbols-outlined text-2xl">language</span>
+            <select
+              value={i18n.language}
+              onChange={handleLanguageChange}
+              className="bg-primary text-white font-semibold px-4 py-1 rounded-lg hover:bg-primary/90 transition-all"
+            >
+              <option value="en">EN</option>
+              <option value="es">ES</option>
+            </select>
+          </div>
           <button className="flex items-center gap-3 px-3 py-2 text-[#111813] dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all">
             <span className="material-symbols-outlined text-2xl">settings</span>
             <p className="text-sm font-medium leading-normal">Settings</p>

@@ -1,0 +1,76 @@
+{
+    "notification": {
+        "defaultTitle": "Notification",
+        "defaultMessage": "You have a new notification.",
+        "accept": "Accept",
+        "cancel": "Cancel"
+    },
+    "home": {
+        "title": "Delicious Kitchen",
+        "orderNow": "Order Now",
+        "ourStory": "Our Story",
+        "featuredDishes": "Featured Dishes",
+        "viewFullMenu": "View Full Menu",
+        "expertTeam": "Expert Culinary Team",
+        "expertArtists": "Expert Culinary Artists",
+        "michelinExcellence": "Michelin-Trained Excellence",
+        "passionateProfessionals": "Passionate Professionals",
+        "awardWinningTeam": "Award-Winning Team",
+        "seeReviews": "See What Our Customers Say",
+        "viewCustomerReviews": "View Customer Reviews",
+        "ctaTitle": "Ready to Experience Amazing Food?",
+        "ctaText": "Order now and taste the difference that passion and quality make",
+        "heroSubtitle": "Freshly Made, Just for You",
+        "heroDescription": "Experience culinary excellence with our expertly crafted dishes, made with the freshest locally sourced ingredients.",
+        "aboutDescription": "At Delicious Kitchen, we believe in the power of great food to bring people together. Every dish is crafted with passion, using only the finest ingredients to create unforgettable culinary experiences.",
+        "featuredSubtitle": "Explore our signature creations",
+        "teamDescription": "Our talented chefs bring years of experience and passion to every dish. Trained in the finest culinary traditions, they create exceptional dining experiences.",
+        "expertArtistsDescription": "Our chefs master the art of flavor, combining traditional techniques with modern innovation to create unforgettable dishes.",
+        "passionateProfessionalsDescription": "Dedicated to perfection, our team ensures every meal is crafted with precision, care, and the finest ingredients.",
+        "certifiedExcellence": "Certified Excellence",
+        "certifiedExcellenceDescription": "All our chefs are certified professionals with years of culinary expertise.",
+        "freshIngredients": "Fresh Ingredients",
+        "freshIngredientsDescription": "We source only the finest local and organic ingredients daily.",
+        "madeWithLove": "Made with Love",
+        "madeWithLoveDescription": "Every dish is prepared with passion and attention to detail.",
+        "reviewsDescription": "Read authentic reviews from our satisfied customers and discover why they love dining with us."
+    },
+    "kitchen": {
+        "filterAll": "All",
+        "filterReceived": "Received",
+        "filterPreparing": "Preparing",
+        "filterReady": "Ready",
+        "orderNumber": "Order #",
+        "completed": "Completed",
+        "statusReceived": "New order",
+        "statusPreparing": "Cooking",
+        "statusReady": "Ready",
+        "processing": "Processing...",
+        "startCooking": "Start Cooking",
+        "markAsReady": "Mark as Ready",
+        "timeMinutesAgo": "{{count}} min ago",
+        "timeSecondsAgo": "{{count}} sec ago"
+    },
+    "sidebar": {
+        "userManagement": "User Management",
+        "kitchen": "Kitchen",
+        "reports": "Reports",
+        "reviewManagement": "Review Management"
+    },
+    "login": {
+        "adminPanel": "Admin Panel",
+        "usernameOrEmail": "Username or Email",
+        "password": "Password",
+        "forgotPassword": "Forgot Password?",
+        "login": "Login"
+    },
+    "reviews": {
+        "reviewPanel": "Review Management Panel",
+        "manageReviews": "Manage and moderate customer reviews",
+        "totalReviews": "Total Reviews",
+        "pending": "Pending",
+        "approved": "Approved",
+        "noReviews": "No reviews",
+        "reviewsWillAppear": "Reviews will appear here when customers submit them"
+    }
+}

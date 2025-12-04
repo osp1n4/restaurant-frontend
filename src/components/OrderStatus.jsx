@@ -1,6 +1,8 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { getOrderStatus, cancelOrder } from '../services/api';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useNotifications } from '../hooks/useNotification';
 import NotificationModal from './NotificationModal';
 import OrderCancelModal from './OrderCancelModal';
@@ -12,6 +14,7 @@ import OrderCancelModal from './OrderCancelModal';
  * @param {Function} onOpenReviewModal - Callback para abrir el modal de review
  */
 function OrderStatus({ onOrderLoad, onRefreshRequest, onOpenReviewModal }) {
+  const { t } = useTranslation();
   const { orderId } = useParams();
   const navigate = useNavigate();
   const [order, setOrder] = useState(null);
@@ -45,7 +48,7 @@ function OrderStatus({ onOrderLoad, onRefreshRequest, onOpenReviewModal }) {
         onOrderLoad(orderData);
       }
     } catch (err) {
-      setError(err.message || 'Error loading order status');
+      setError(err.message || t('orderStatus.errorLoading'));
     } finally {
       setLoading(false);
     }
@@ -146,7 +149,7 @@ function OrderStatus({ onOrderLoad, onRefreshRequest, onOpenReviewModal }) {
         navigate('/');
       }, 2000);
     } catch (err) {
-      setCancelError(err.message || 'Error al cancelar el pedido');
+      setCancelError(err.message || t('orderStatus.errorCancelling'));
       console.error('Error cancelando pedido:', err);
     } finally {
       setIsCancelling(false);
@@ -194,7 +197,7 @@ function OrderStatus({ onOrderLoad, onRefreshRequest, onOpenReviewModal }) {
       <div className="flex justify-center items-center min-h-[400px]">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-subtext-light dark:text-subtext-dark">Loading order status...</p>
+          <p className="text-subtext-light dark:text-subtext-dark">{t('orderStatus.loading')}</p>
         </div>
       </div>
     );
@@ -206,7 +209,7 @@ function OrderStatus({ onOrderLoad, onRefreshRequest, onOpenReviewModal }) {
         <div className="text-red-600 dark:text-red-400 mb-2">
           <span className="material-symbols-outlined text-5xl">error</span>
         </div>
-        <h3 className="text-red-800 dark:text-red-300 font-semibold text-lg mb-2">Error</h3>
+        <h3 className="text-red-800 dark:text-red-300 font-semibold text-lg mb-2">{t('orderStatus.error')}</h3>
         <p className="text-red-600 dark:text-red-400">{error}</p>
       </div>
     );
@@ -215,7 +218,7 @@ function OrderStatus({ onOrderLoad, onRefreshRequest, onOpenReviewModal }) {
   if (!order) {
     return (
       <div className="bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark rounded-lg p-6 text-center">
-        <p className="text-subtext-light dark:text-subtext-dark">Order not found</p>
+        <p className="text-subtext-light dark:text-subtext-dark">{t('orderStatus.notFound')}</p>
       </div>
     );
   }
@@ -233,10 +236,10 @@ function OrderStatus({ onOrderLoad, onRefreshRequest, onOpenReviewModal }) {
     <>
       {/* Headline Text */}
       <h1 className="text-center text-[32px] font-bold leading-tight tracking-tight text-text-light dark:text-text-dark">
-        Order #{displayOrderId}
+        {t('orderStatus.orderNumber', { id: displayOrderId })}
       </h1>
       <p className="pt-1 text-center text-base font-normal leading-normal text-subtext-light dark:text-subtext-dark">
-        For: {customerName}
+        {t('orderStatus.for', { name: customerName })}
       </p>
 
       {/* Estado cancelado */}
@@ -245,9 +248,9 @@ function OrderStatus({ onOrderLoad, onRefreshRequest, onOpenReviewModal }) {
           <div className="text-red-600 dark:text-red-400 mb-2">
             <span className="material-symbols-outlined text-5xl">cancel</span>
           </div>
-          <h3 className="text-red-800 dark:text-red-300 font-semibold text-lg">Pedido Cancelado</h3>
+          <h3 className="text-red-800 dark:text-red-300 font-semibold text-lg">{t('orderStatus.cancelledTitle')}</h3>
           <p className="text-red-600 dark:text-red-400 text-sm mt-1">
-            Este pedido ha sido cancelado exitosamente.
+            {t('orderStatus.cancelledText')}
           </p>
         </div>
       )}
@@ -261,7 +264,7 @@ function OrderStatus({ onOrderLoad, onRefreshRequest, onOpenReviewModal }) {
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white">
                 <span className="material-symbols-outlined">check</span>
               </div>
-              <p className="text-xs font-medium text-text-light dark:text-text-dark">Order Received</p>
+              <p className="text-xs font-medium text-text-light dark:text-text-dark">{t('orderStatus.stepReceived')}</p>
             </div>
             {/* Connector 1 */}
             <div className={`h-1 flex-grow rounded-full ${isBeingPrepared ? 'bg-primary' : 'bg-border-light dark:bg-border-dark'}`}></div>
@@ -274,7 +277,7 @@ function OrderStatus({ onOrderLoad, onRefreshRequest, onOpenReviewModal }) {
                 )}
               </div>
               <p className={`text-xs font-medium ${isBeingPrepared ? 'text-primary' : 'text-subtext-light dark:text-subtext-dark'}`}>
-                Being Prepared
+                {t('orderStatus.stepPreparing')}
               </p>
             </div>
             {/* Connector 2 */}
@@ -285,7 +288,7 @@ function OrderStatus({ onOrderLoad, onRefreshRequest, onOpenReviewModal }) {
                 <span className="material-symbols-outlined">{isReadyForPickup ? 'check' : 'shopping_bag'}</span>
               </div>
               <p className={`text-xs font-medium ${isReadyForPickup ? 'text-primary' : 'text-subtext-light dark:text-subtext-dark'}`}>
-                Ready for Pickup
+                {t('orderStatus.stepReady')}
               </p>
             </div>
           </div>
@@ -294,7 +297,7 @@ function OrderStatus({ onOrderLoad, onRefreshRequest, onOpenReviewModal }) {
 
       {/* Section Header */}
       <h3 className="px-0 pb-2 pt-8 text-lg font-bold leading-tight tracking-[-0.015em] text-text-light dark:text-text-dark">
-        Your Order
+        {t('orderStatus.yourOrder')}
       </h3>
 
       {/* Order Items List */}
@@ -326,7 +329,7 @@ function OrderStatus({ onOrderLoad, onRefreshRequest, onOpenReviewModal }) {
         </div>
       ) : (
         <div className="rounded-lg bg-card-light dark:bg-card-dark p-4 shadow-sm">
-          <p className="text-subtext-light dark:text-subtext-dark text-center">No hay items en este pedido</p>
+          <p className="text-subtext-light dark:text-subtext-dark text-center">{t('orderStatus.noItems')}</p>
         </div>
       )}
 
@@ -338,7 +341,7 @@ function OrderStatus({ onOrderLoad, onRefreshRequest, onOpenReviewModal }) {
             disabled={isCancelling}
             className="px-6 py-3 bg-red-500 text-white rounded-lg font-semibold hover:bg-red-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
           >
-            {isCancelling ? 'Cancelando...' : 'Cancelar Pedido'}
+            {isCancelling ? t('orderStatus.cancelling') : t('orderStatus.cancelOrder')}
           </button>
         </div>
       )}
@@ -359,22 +362,22 @@ function OrderStatus({ onOrderLoad, onRefreshRequest, onOpenReviewModal }) {
       <NotificationModal
         isOpen={preparingModal}
         type="info"
-        title="Your order is being prepared!"
-        message="Your order is being prepared by our team. We'll let you know when it's ready."
+        title={t('orderStatus.preparingTitle')}
+        message={t('orderStatus.preparingMessage')}
         onAccept={handleAcceptPreparing}
-        acceptText="Got it"
+        acceptText={t('orderStatus.gotIt')}
       />
 
       {/* Modal: Order ready for pickup */}
       <NotificationModal
         isOpen={readyModal}
         type="success"
-        title="Your order is ready!"
-        message="Your order is ready for pickup. Enjoy your meal!"
+        title={t('orderStatus.readyTitle')}
+        message={t('orderStatus.readyMessage')}
         onAccept={handlePickUpOrder}
-        acceptText="Pick Up Order"
+        acceptText={t('orderStatus.pickUpOrder')}
         onCancel={handleAddReview}
-        cancelText="Add Review"
+        cancelText={t('orderStatus.addReview')}
       />
     </>
   );

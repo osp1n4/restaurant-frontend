@@ -1,18 +1,21 @@
 /**
  * Modal para mostrar notificaciones al usuario
  */
+import { useTranslation } from 'react-i18next';
+
 export default function NotificationModal({
   isOpen,
   type = 'info',
   title,
   message,
   onAccept,
-  acceptText = 'Aceptar',
+  acceptText,
   onCancel,
-  cancelText = 'Cancelar'
+  cancelText
 }) {
   // Log para debugging
   console.log('🎭 NotificationModal render:', { isOpen, type, title });
+  const { t } = useTranslation();
 
   if (!isOpen) return null;
 
@@ -47,14 +50,15 @@ export default function NotificationModal({
           </span>
         </div>
 
+
         {/* Título */}
         <h3 className="text-xl font-bold text-[#181311] dark:text-white mb-2">
-          {title}
+          {title ? title : t('notification.defaultTitle')}
         </h3>
 
         {/* Mensaje */}
         <p className="text-gray-600 dark:text-gray-300 mb-6">
-          {message}
+          {message ? message : t('notification.defaultMessage')}
         </p>
 
         {/* Botones */}
@@ -63,14 +67,14 @@ export default function NotificationModal({
             onClick={onAccept}
             className={`bg-primary text-white font-bold py-3 px-6 rounded-lg ${onCancel ? 'flex-1' : 'w-full'} hover:bg-primary/90 transition-colors`}
           >
-            {acceptText}
+            {acceptText ? acceptText : t('notification.accept')}
           </button>
           {onCancel && (
             <button
               onClick={onCancel}
               className="bg-primary text-white font-bold py-3 px-6 rounded-lg flex-1 hover:bg-primary/90 transition-colors"
             >
-              {cancelText}
+              {cancelText ? cancelText : t('notification.cancel')}
             </button>
           )}
         </div>
