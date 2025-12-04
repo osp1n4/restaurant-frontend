@@ -126,18 +126,36 @@ export async function getKitchenOrders(status) {
     }
 
     const data = await response.json();
+    console.log('🔍 Raw response data:', data);
 
-    // El backend devuelve { success: true, data: [...], count: ... }
-    if (data.success && data.data) {
-      return data.data;
+    // El backend puede devolver estructuras anidadas
+    // Caso 1: { success: true, data: { success: true, data: { data: [...] } } }
+    if (data.success && data.data?.success && data.data?.data?.data) {
+      console.log('✅ Estructura anidada triple detectada');
+      return Array.isArray(data.data.data.data) ? data.data.data.data : [];
     }
 
-    // Si no tiene success pero tiene data directamente
+    // Caso 2: { success: true, data: { data: [...] } }
+    if (data.success && data.data?.data) {
+      console.log('✅ Estructura anidada doble detectada');
+      return Array.isArray(data.data.data) ? data.data.data : [];
+    }
+
+    // Caso 3: { success: true, data: [...] }
+    if (data.success && data.data) {
+      console.log('✅ Estructura normal detectada');
+      return Array.isArray(data.data) ? data.data : [];
+    }
+
+    // Caso 4: Array directo
     if (Array.isArray(data)) {
+      console.log('✅ Array directo detectado');
       return data;
     }
 
-    return data;
+    console.warn('⚠️ Estructura de datos no reconocida, retornando array vacío');
+    // Si data no es un array, retornar array vacío
+    return [];
   } catch (error) {
     // Si es un error de red (fetch falló completamente)
     if (error instanceof TypeError && error.message.includes('fetch')) {
