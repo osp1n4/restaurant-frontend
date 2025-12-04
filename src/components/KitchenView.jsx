@@ -34,7 +34,14 @@ function KitchenView() {
       setLoading(true);
       setError(null);
       const data = await getKitchenOrders(filter || undefined);
-      setOrders(data || []);
+      console.log('📦 Datos recibidos de getKitchenOrders:', data);
+      console.log('📦 Tipo de datos:', typeof data);
+      console.log('📦 Es array?:', Array.isArray(data));
+      
+      // Asegurarse de que siempre sea un array
+      const ordersArray = Array.isArray(data) ? data : [];
+      console.log('📦 Orders array final:', ordersArray);
+      setOrders(ordersArray);
     } catch (err) {
       console.error('Error al cargar pedidos:', err);
 

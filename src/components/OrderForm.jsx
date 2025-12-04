@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { createOrder } from '../services/api';
+import { useOrderFormValidation } from '../hooks/useOrderFormValidation';
 
 
 // Menú de items disponibles (precios en pesos colombianos)
@@ -18,6 +19,14 @@ export default function OrderForm() {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
+  // Hook de validación (SRP: separa lógica de validación del UI)
+  const {
+    touched,
+    setTouched,
+    getEmailValidationState,
+    isFormValid
+  } = useOrderFormValidation();
+
   // Estado del formulario
   const [customerName, setCustomerName] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
@@ -32,21 +41,6 @@ export default function OrderForm() {
   const [orderId, setOrderId] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [touched, setTouched] = useState({ name: false, email: false });
-
-  // Validar formato de email
-  const isValidEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
-  // Obtener estado de validación del email
-  const getEmailValidationState = () => {
-    if (!touched.email) return 'neutral';
-    if (customerEmail.trim().length === 0) return 'error';
-    if (!isValidEmail(customerEmail)) return 'invalid';
-    return 'valid';
-  };
 
   // Incrementar cantidad de un item
   const increment = (itemId) => {
@@ -68,20 +62,12 @@ export default function OrderForm() {
     }, 0);
   };
 
-  // Validar formulario
-  const isFormValid = () => {
-    const hasItems = Object.values(quantities).some(qty => qty > 0);
-    const hasName = customerName.trim().length > 0;
-    const hasEmail = customerEmail.trim().length > 0;
-    return hasItems && hasName && hasEmail;
-  };
-
   // Enviar pedido
   const handleSubmit = async () => {
     // Marcar campos como tocados al intentar enviar
     setTouched({ name: true, email: true });
 
-    if (!isFormValid()) {
+    if (!isFormValid(customerName, customerEmail, quantities)) {
       setError('Please enter your name, email, and select at least one item');
       return;
     }
@@ -168,11 +154,11 @@ export default function OrderForm() {
             <input
               type="email"
               className={`form-input w-full rounded-lg text-[#181311] dark:text-white border ${
-                getEmailValidationState() === 'error'
+                getEmailValidationState(customerEmail) === 'error'
                   ? 'border-red-500 dark:border-red-500'
-                  : getEmailValidationState() === 'invalid'
+                  : getEmailValidationState(customerEmail) === 'invalid'
                   ? 'border-yellow-500 dark:border-yellow-500'
-                  : getEmailValidationState() === 'valid'
+                  : getEmailValidationState(customerEmail) === 'valid'
                   ? 'border-green-500 dark:border-green-500'
                   : 'border-[#e6dfdb] dark:border-gray-600'
               } bg-white dark:bg-gray-800 focus:border-primary h-12 px-4 text-base`}
@@ -186,9 +172,13 @@ export default function OrderForm() {
             )}
             {touched.email && customerEmail.trim().length > 0 && !isValidEmail(customerEmail) && (
               <span className="text-yellow-600 dark:text-yellow-500 text-sm mt-1">{t('orderForm.emailInvalid')}</span>
+            {touched.email && customerEmail.trim().length > 0 && getEmailValidationState(customerEmail) === 'invalid' && (
+              <span className="text-yellow-600 dark:text-yellow-500 text-sm mt-1">Please enter a valid email format</span>
             )}
             {touched.email && isValidEmail(customerEmail) && (
               <span className="text-green-600 dark:text-green-500 text-sm mt-1">{t('orderForm.emailValid')}</span>
+            {touched.email && getEmailValidationState(customerEmail) === 'valid' && (
+              <span className="text-green-600 dark:text-green-500 text-sm mt-1">✓ Email format is correct</span>
             )}
           </label>
           <label className="flex flex-col">
@@ -239,7 +229,7 @@ export default function OrderForm() {
           </div>
           <button
             onClick={handleSubmit}
-            disabled={!isFormValid() || isLoading}
+            disabled={!isFormValid(customerName, customerEmail, quantities) || isLoading}
             className="bg-primary text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50 disabled:bg-gray-400 disabled:cursor-not-allowed w-full transition-colors"
           >
             {isLoading ? t('orderForm.processing') : t('orderForm.placeOrder')}
