@@ -36,7 +36,8 @@ function SalesAnalyticsDashboard() {
    * Transformar datos de series para gráfico de líneas
    */
   const getLineChartData = () => {
-    if (!data?.series) return [];
+    if (!data?.series || data.series.length === 0) return [];
+    
     return data.series.map(s => ({
       value: s.totalOrders,
       label: s.period

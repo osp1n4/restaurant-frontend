@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-
+import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import OrderStatus from '../components/OrderStatus';
 import ReviewModal from '../components/ReviewModal';
@@ -64,6 +64,7 @@ function OrderStatusPage() {
       {/* Review Modal */}
       {showReviewModal && orderData && (
         <ReviewModal
+          key={i18n.language}
           isOpen={showReviewModal}
           onClose={() => setShowReviewModal(false)}
           orderData={{
@@ -86,8 +87,6 @@ function OrderStatusPage() {
  * @param {Object} order - Datos del pedido
  * @param {Function} onRefresh - Función para refrescar el estado del pedido
  */
-import { useTranslation } from 'react-i18next';
-
 function OrderStatusFooter({ order, onRefresh }) {
   const { t } = useTranslation();
   // Calcular tiempo estimado basado en el estado del pedido

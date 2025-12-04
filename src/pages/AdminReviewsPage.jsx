@@ -286,11 +286,11 @@ const AdminReviewsPage = () => {
                     <div className="grid grid-cols-2 gap-4 mb-4">
                       <div>
                         <p className="text-sm text-[#666666] mb-2">{t('reviews.overallRating', 'Overall Rating')}</p>
-                        <StarRating rating={review.overallRating} readonly size="sm" />
+                        <StarRating rating={review.ratings?.overall || review.rating || 5} readonly size="sm" />
                       </div>
                       <div>
                         <p className="text-sm text-[#666666] mb-2">{t('reviews.foodQuality', 'Food Quality')}</p>
-                        <StarRating rating={review.foodRating} readonly size="sm" />
+                        <StarRating rating={review.ratings?.food || review.rating || 5} readonly size="sm" />
                       </div>
                     </div>
 
