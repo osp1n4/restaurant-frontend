@@ -1,6 +1,8 @@
 /**
  * Modal para confirmar la cancelación de un pedido
  */
+import { useTranslation } from 'react-i18next';
+
 export default function OrderCancelModal({
   isOpen,
   isCancelling,
@@ -8,6 +10,7 @@ export default function OrderCancelModal({
   onConfirm,
   onClose
 }) {
+  const { t } = useTranslation();
   if (!isOpen) return null;
 
   return (
@@ -22,12 +25,12 @@ export default function OrderCancelModal({
 
         {/* Título */}
         <h3 className="text-xl font-bold text-[#181311] dark:text-white mb-2">
-          Cancel Order?
+          {t('orderCancelModal.title')}
         </h3>
 
         {/* Mensaje */}
         <p className="text-gray-600 dark:text-gray-300 mb-6">
-          Are you sure you want to cancel this order? This action cannot be undone.
+          {t('orderCancelModal.confirmMessage')}
         </p>
 
         {/* Mensaje de error si existe */}
@@ -44,14 +47,14 @@ export default function OrderCancelModal({
             disabled={isCancelling}
             className="flex-1 bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-bold py-2 px-4 rounded-lg hover:bg-gray-400 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            No, Keep Order
+            {t('orderCancelModal.keepOrder')}
           </button>
           <button
             onClick={onConfirm}
             disabled={isCancelling}
             className="flex-1 bg-red-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
-            {isCancelling ? 'Cancelling...' : 'Yes, Cancel Order'}
+            {isCancelling ? t('orderStatus.cancelling') : t('orderCancelModal.cancelOrder')}
           </button>
         </div>
       </div>

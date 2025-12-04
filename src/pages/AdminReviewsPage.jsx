@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import StarRating from '../components/StarRating';
 import Sidebar from '../components/analytics/Sidebar';
+import { useTranslation } from 'react-i18next';
 
 /**
  * AdminReviewsPage Component
@@ -26,6 +27,7 @@ const AdminReviewsPage = () => {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { t, i18n } = useTranslation();
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [selectedReview, setSelectedReview] = useState(null);
   const [actionType, setActionType] = useState(null); // 'approve' | 'hide'
@@ -130,24 +132,17 @@ const AdminReviewsPage = () => {
       approved: 'bg-green-100 text-green-800 border-green-300',
       hidden: 'bg-gray-100 text-gray-800 border-gray-300',
     };
-
-    const labels = {
-      pending: 'Pendiente',
-      approved: 'Aprobado',
-      hidden: 'Oculto',
-    };
-
     return (
       <span
         className={`px-3 py-1 rounded-full text-sm font-medium border ${styles[status] || styles.pending}`}
       >
-        {labels[status] || status}
+        {t(`reviews.status.${status}`, status)}
       </span>
     );
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('es-ES', {
+    return new Date(dateString).toLocaleDateString(i18n.language === 'es' ? 'es-ES' : 'en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -161,7 +156,7 @@ const AdminReviewsPage = () => {
       <div className="min-h-screen bg-[#F5F5F5] flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF6B35] mx-auto mb-4"></div>
-          <p className="text-[#222222] text-lg">Loading reviews...</p>
+          <p className="text-[#222222] text-lg">{t('reviews.loading', 'Loading reviews...')}</p>
         </div>
       </div>
     );
@@ -173,13 +168,13 @@ const AdminReviewsPage = () => {
         <div className="bg-white rounded-lg shadow-lg p-8 max-w-md mx-4">
           <div className="text-center">
             <span className="material-symbols-outlined text-red-500 text-5xl mb-4">error</span>
-            <h2 className="text-2xl font-bold text-[#222222] mb-2">Error</h2>
+            <h2 className="text-2xl font-bold text-[#222222] mb-2">{t('reviews.error', 'Error')}</h2>
             <p className="text-[#666666] mb-6">{error}</p>
             <button
               onClick={fetchReviews}
               className="bg-[#FF6B35] hover:bg-[#e55d2e] text-white font-medium py-2 px-6 rounded-lg transition-colors"
             >
-              Retry
+              {t('reviews.retry', 'Retry')}
             </button>
           </div>
         </div>
@@ -196,27 +191,27 @@ const AdminReviewsPage = () => {
             {/* Header */}
             <div className="mb-8">
               <h1 className="text-4xl font-bold text-[#222222] mb-2">
-                Review Management Panel
+                {t('reviews.managementTitle', 'Review Management Panel')}
               </h1>
               <p className="text-[#666666] text-lg">
-                Manage and moderate customer reviews
+                {t('reviews.managementSubtitle', 'Manage and moderate customer reviews')}
               </p>
             </div>
 
             {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
               <div className="bg-white rounded-lg shadow-md p-6">
-                <p className="text-[#666666] text-sm mb-1">Total Reviews</p>
+                <p className="text-[#666666] text-sm mb-1">{t('reviews.total', 'Total Reviews')}</p>
                 <p className="text-3xl font-bold text-[#222222]">{reviews.length}</p>
               </div>
               <div className="bg-white rounded-lg shadow-md p-6">
-                <p className="text-[#666666] text-sm mb-1">Pending</p>
+                <p className="text-[#666666] text-sm mb-1">{t('reviews.status.pending', 'Pending')}</p>
                 <p className="text-3xl font-bold text-yellow-600">
                   {reviews.filter((r) => r.status === 'pending').length}
                 </p>
               </div>
               <div className="bg-white rounded-lg shadow-md p-6">
-                <p className="text-[#666666] text-sm mb-1">Approved</p>
+                <p className="text-[#666666] text-sm mb-1">{t('reviews.status.approved', 'Approved')}</p>
                 <p className="text-3xl font-bold text-green-600">
                   {reviews.filter((r) => r.status === 'approved').length}
                 </p>
@@ -228,10 +223,10 @@ const AdminReviewsPage = () => {
               <div className="bg-white rounded-lg shadow-md p-12 text-center">
                 <span className="material-symbols-outlined text-[#CCCCCC] text-6xl mb-4">rate_review</span>
                 <h2 className="text-2xl font-bold text-[#222222] mb-2">
-                  No reviews
+                  {t('reviews.noReviews', 'No reviews')}
                 </h2>
                 <p className="text-[#666666]">
-                  Reviews will appear here when customers submit them
+                  {t('reviews.noReviewsText', 'Reviews will appear here when customers submit them')}
                 </p>
               </div>
             ) : (
@@ -269,7 +264,7 @@ const AdminReviewsPage = () => {
                           `}
                         >
                           <span className="material-symbols-outlined text-sm">check_circle</span>
-                          Approve
+                          {t('reviews.approve', 'Approve')}
                         </button>
                         <button
                           onClick={() => handleOpenConfirmModal(review, 'hide')}
@@ -283,25 +278,25 @@ const AdminReviewsPage = () => {
                           `}
                         >
                           <span className="material-symbols-outlined text-sm">visibility_off</span>
-                          Hide
+                          {t('reviews.hide', 'Hide')}
                         </button>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4 mb-4">
                       <div>
-                        <p className="text-sm text-[#666666] mb-2">Overall Rating</p>
+                        <p className="text-sm text-[#666666] mb-2">{t('reviews.overallRating', 'Overall Rating')}</p>
                         <StarRating rating={review.ratings?.overall || review.rating || 5} readonly size="sm" />
                       </div>
                       <div>
-                        <p className="text-sm text-[#666666] mb-2">Food Quality</p>
+                        <p className="text-sm text-[#666666] mb-2">{t('reviews.foodQuality', 'Food Quality')}</p>
                         <StarRating rating={review.ratings?.food || review.rating || 5} readonly size="sm" />
                       </div>
                     </div>
 
                     {review.comment && (
                       <div className="border-t border-[#F5F5F5] pt-4">
-                        <p className="text-sm text-[#666666] mb-1 font-medium">Comment:</p>
+                        <p className="text-sm text-[#666666] mb-1 font-medium">{t('reviews.comment', 'Comment:')}</p>
                         <p className="text-[#222222]">{review.comment}</p>
                       </div>
                     )}
@@ -315,27 +310,25 @@ const AdminReviewsPage = () => {
           {showConfirmModal && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
               <div className="bg-white rounded-lg shadow-2xl max-w-md w-full p-6">
-                <h3 className="text-2xl font-bold text-[#222222] mb-4">
-                  Confirm Action
-                </h3>
-                <p className="text-[#666666] mb-6">
-                  Are you sure you want to {actionType === 'approve' ? 'approve' : 'hide'} this review from{' '}
-                  <strong>{selectedReview?.customerName}</strong>?
-                </p>
+                <h3 className="text-2xl font-bold text-[#222222] mb-4">{t('reviews.confirmAction', 'Confirm Action')}</h3>
+                <p className="text-[#666666] mb-6">{t('reviews.confirmText', 'Are you sure you want to {{action}} this review from {{name}}?', {
+                    action: t(`reviews.${actionType}`, actionType === 'approve' ? 'approve' : 'hide'),
+                    name: selectedReview?.customerName
+                  })}</p>
                 <div className="flex gap-3">
                   <button
                     onClick={handleCloseConfirmModal}
                     disabled={processing}
                     className="flex-1 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-[#222222] rounded-lg font-medium transition-colors disabled:opacity-50"
                   >
-                    Cancel
+                    {t('reviews.cancel', 'Cancel')}
                   </button>
                   <button
                     onClick={handleConfirmAction}
                     disabled={processing}
                     className="flex-1 px-4 py-2 bg-[#FF6B35] hover:bg-[#e55d2e] text-white rounded-lg font-medium transition-colors disabled:opacity-50"
                   >
-                    {processing ? 'Processing...' : 'Confirm'}
+                    {processing ? t('reviews.processing', 'Processing...') : t('reviews.confirm', 'Confirm')}
                   </button>
                 </div>
               </div>

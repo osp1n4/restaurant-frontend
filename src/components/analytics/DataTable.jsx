@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 
 /**
@@ -6,6 +7,7 @@ import PropTypes from 'prop-types';
  * Muestra datos detallados de analíticas
  */
 function DataTable({ data = [] }) {
+  const { t } = useTranslation();
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -45,7 +47,7 @@ function DataTable({ data = [] }) {
                   onClick={() => handleSort('period')}
                   className="flex items-center gap-1 hover:text-primary transition-colors"
                 >
-                  PERIOD <span className="material-symbols-outlined text-base">swap_vert</span>
+                  {t('analytics.period', 'Period')} <span className="material-symbols-outlined text-base">swap_vert</span>
                 </button>
               </th>
               <th className="px-6 py-3" scope="col">
@@ -53,7 +55,7 @@ function DataTable({ data = [] }) {
                   onClick={() => handleSort('totalOrders')}
                   className="flex items-center gap-1 hover:text-primary transition-colors"
                 >
-                  TOTAL ORDERS <span className="material-symbols-outlined text-base">swap_vert</span>
+                  {t('analytics.totalOrders', 'Total Orders')} <span className="material-symbols-outlined text-base">swap_vert</span>
                 </button>
               </th>
               <th className="px-6 py-3" scope="col">
@@ -61,19 +63,19 @@ function DataTable({ data = [] }) {
                   onClick={() => handleSort('totalRevenue')}
                   className="flex items-center gap-1 hover:text-primary transition-colors"
                 >
-                  TOTAL INCOME <span className="material-symbols-outlined text-base">swap_vert</span>
+                  {t('analytics.totalIncome', 'Total Income')} <span className="material-symbols-outlined text-base">swap_vert</span>
                 </button>
               </th>
-              <th className="px-6 py-3" scope="col">Product ID</th>
-              <th className="px-6 py-3" scope="col">Product Name</th>
-              <th className="px-6 py-3" scope="col">Quantity</th>
+              <th className="px-6 py-3" scope="col">{t('analytics.productId', 'Product ID')}</th>
+              <th className="px-6 py-3" scope="col">{t('analytics.productName', 'Product Name')}</th>
+              <th className="px-6 py-3" scope="col">{t('analytics.quantity', 'Quantity')}</th>
             </tr>
           </thead>
           <tbody>
             {paginatedData.length === 0 ? (
               <tr>
                 <td colSpan="6" className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
-                  No data is available for the selected period.
+                  {t('analytics.noTableData', 'No data is available for the selected period.')}
                 </td>
               </tr>
             ) : (
@@ -100,7 +102,7 @@ function DataTable({ data = [] }) {
       {/* Paginación */}
       <nav aria-label="Table navigation" className="flex items-center justify-between p-4">
         <div className="text-sm font-normal text-gray-500 dark:text-gray-400 flex items-center gap-2">
-          Rows per page:
+          {t('analytics.rowsPerPage', 'Rows per page:')}
           <select
             className="bg-gray-50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-primary focus:border-primary p-1"
             value={rowsPerPage}
@@ -121,7 +123,7 @@ function DataTable({ data = [] }) {
               disabled={currentPage === 1}
               className="px-3 py-2 ml-0 leading-tight text-gray-500 bg-white dark:bg-background-dark/50 border border-gray-300 dark:border-gray-700 rounded-l-lg hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Previous
+              {t('users.previous', 'Previous')}
             </button>
           </li>
           {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
@@ -147,7 +149,7 @@ function DataTable({ data = [] }) {
               disabled={currentPage === totalPages}
               className="px-3 py-2 leading-tight text-gray-500 bg-white dark:bg-background-dark/50 border border-gray-300 dark:border-gray-700 rounded-r-lg hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Next
+              {t('users.next', 'Next')}
             </button>
           </li>
         </ul>

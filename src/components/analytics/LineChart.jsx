@@ -36,7 +36,7 @@ function LineChart({ data, title, subtitle, value, change }) {
         >
           {/* Área bajo la línea */}
           <path
-            d={`${points} V150 H0 V${data[0]?.y || 100}Z`}
+            d={`${points} V150 H0 V75 Z`}
             fill="url(#paint0_linear_chart)"
           />
           {/* Línea principal */}
@@ -71,6 +71,15 @@ function LineChart({ data, title, subtitle, value, change }) {
 function generatePathPoints(data) {
   if (!data || data.length === 0) {
     return 'M0 75 L500 75'; // Línea plana si no hay datos
+  }
+
+  // Si solo hay un punto, crear una línea horizontal en ese valor
+  if (data.length === 1) {
+    const width = 500;
+    const height = 150;
+    const padding = 10;
+    const y = height - padding - (data[0].value || 0) * 2; // Escalado simple
+    return `M0 ${y} L${width} ${y}`;
   }
 
   const width = 500;

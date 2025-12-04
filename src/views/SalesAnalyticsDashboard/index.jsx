@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSalesAnalytics } from '../../hooks/useSalesAnalytics';
 import FilterToolbar from '../../components/analytics/FilterToolbar';
 import StatCard from '../../components/analytics/StatCard';
@@ -11,6 +12,7 @@ import DataTable from '../../components/analytics/DataTable';
  * Implementa arquitectura modular con separación de responsabilidades
  */
 function SalesAnalyticsDashboard() {
+  const { t } = useTranslation();
   const { data, loading, error, filters, updateFilters, refetch, exportToCSV } = useSalesAnalytics();
   const [exportLoading, setExportLoading] = useState(false);
 
@@ -22,9 +24,9 @@ function SalesAnalyticsDashboard() {
     try {
       await exportToCSV();
       // Notificación de éxito (puedes integrar con tu sistema de notificaciones)
-      alert('CSV exportado exitosamente');
+      alert(t('analytics.exportSuccess', 'CSV exportado exitosamente'));
     } catch (err) {
-      alert(`Error al exportar: ${err.message}`);
+      alert(t('analytics.exportError', 'Error al exportar: ') + err.message);
     } finally {
       setExportLoading(false);
     }
@@ -34,7 +36,8 @@ function SalesAnalyticsDashboard() {
    * Transformar datos de series para gráfico de líneas
    */
   const getLineChartData = () => {
-    if (!data?.series) return [];
+    if (!data?.series || data.series.length === 0) return [];
+    
     return data.series.map(s => ({
       value: s.totalOrders,
       label: s.period
@@ -87,14 +90,14 @@ function SalesAnalyticsDashboard() {
             <div className="flex flex-wrap justify-between gap-3 items-center">
               <div className="flex flex-col gap-2">
                 <p className="text-[#111813] dark:text-white text-4xl font-black leading-tight tracking-[-0.033em]">
-                  Dashboard de Analíticas
+                  {t('analytics.title', 'Dashboard de Analíticas')}
                 </p>
                 <p className="text-[#63886f] dark:text-gray-400 text-base font-normal leading-normal">
-                  Reports, metrics and exports for decision making.
+                  {t('analytics.subtitle', 'Reportes, métricas y exportaciones para la toma de decisiones.')}
                 </p>
               </div>
               <span className="inline-flex items-center justify-center rounded-lg h-10 px-4 bg-primary/20 dark:bg-primary/30 text-[#111813] dark:text-white text-sm font-bold leading-normal tracking-[0.015em]">
-                Manager / Admin
+                {t('analytics.roleLabel', 'Manager / Admin')}
               </span>
             </div>
 
@@ -113,7 +116,7 @@ function SalesAnalyticsDashboard() {
                 <div className="flex items-center gap-3">
                   <span className="material-symbols-outlined text-3xl text-red-500 dark:text-red-400">error</span>
                   <div>
-                    <h3 className="text-lg font-bold text-red-700 dark:text-red-400">Error al cargar datos</h3>
+                    <h3 className="text-lg font-bold text-red-700 dark:text-red-400">{t('analytics.errorTitle', 'Error al cargar datos')}</h3>
                     <p className="text-sm text-red-600 dark:text-red-300 mt-1">{error}</p>
                   </div>
                 </div>
@@ -125,7 +128,7 @@ function SalesAnalyticsDashboard() {
               <div className="mt-8 flex items-center justify-center p-12">
                 <div className="flex flex-col items-center gap-4">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-                  <p className="text-gray-500 dark:text-gray-400">Cargando analíticas...</p>
+                  <p className="text-gray-500 dark:text-gray-400">{t('analytics.loading', 'Cargando analíticas...')}</p>
                 </div>
               </div>
             )}
@@ -136,28 +139,28 @@ function SalesAnalyticsDashboard() {
                 {/* Stats Cards */}
                 <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                   <StatCard
-                    title="TOTAL ÓRDEN"
+                    title={t('analytics.totalOrders', 'Total de órdenes')}
                     value={data.summary?.totalOrders || 0}
                     change={data.summary?.totalOrdersChange ?? null}
                     icon="shopping_cart"
                     format="number"
                   />
                   <StatCard
-                    title="TOTAL INCOME"
+                    title={t('analytics.totalIncome', 'Ingresos totales')}
                     value={data.summary?.totalRevenue || 0}
                     change={data.summary?.totalRevenueChange ?? null}
                     icon="payments"
                     format="currency"
                   />
                   <StatCard
-                    title="PRODUCTS SOLD"
+                    title={t('analytics.productsSold', 'Productos vendidos')}
                     value={data.productsSold?.reduce((sum, p) => sum + p.quantity, 0) || 0}
                     change={data.summary?.totalProductsSoldChange ?? null}
                     icon="inventory_2"
                     format="number"
                   />
                   <StatCard
-                    title="TOP PRODUCT"
+                    title={t('analytics.topProduct', 'Producto destacado')}
                     value={data.topNProducts?.[0]?.name || 'N/A'}
                     change={null}
                     icon="star"
@@ -169,14 +172,14 @@ function SalesAnalyticsDashboard() {
                 <div className="mt-8 grid grid-cols-1 lg:grid-cols-5 gap-8">
                   <LineChart
                     data={getLineChartData()}
-                    title="TOTAL ORDER PER PERIOD"
-                    subtitle={`Last 30 days`}
+                    title={t('analytics.ordersPerPeriod', 'Órdenes por período')}
+                    subtitle={t('analytics.last30Days', 'Últimos 30 días')}
                     value={data.summary?.totalOrders}
                     change={12.5}
                   />
                   <BarChart
                     data={getBarChartData()}
-                    title="TOP N PRODUCTS SOLD"
+                    title={t('analytics.topProductsSold', 'Top productos vendidos')}
                     value={data.productsSold?.reduce((sum, p) => sum + p.quantity, 0) || 0}
                     change={8.2}
                   />
@@ -192,10 +195,10 @@ function SalesAnalyticsDashboard() {
               <div className="mt-8 p-12 text-center">
                 <span className="material-symbols-outlined text-6xl text-gray-300 dark:text-gray-700 mb-4">analytics</span>
                 <h3 className="text-xl font-bold text-gray-700 dark:text-gray-300 mb-2">
-                  No hay datos disponibles
+                  {t('analytics.noDataTitle', 'No hay datos disponibles')}
                 </h3>
                 <p className="text-gray-500 dark:text-gray-400">
-                  Selecciona un rango de fechas y presiona "Consultar métricas"
+                  {t('analytics.noDataSubtitle', 'Selecciona un rango de fechas y presiona "Consultar métricas"')}
                 </p>
               </div>
             )}
