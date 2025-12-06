@@ -60,22 +60,48 @@ function SalesAnalyticsDashboard() {
    */
   const getTableData = () => {
     if (!data?.series || !data?.productsSold) return [];
-    
+
+    // Filtrar periodos por rango seleccionado
+    const fromDate = new Date(filters.from);
+    const toDate = new Date(filters.to);
+
     const tableRows = [];
     data.series.forEach(seriesItem => {
-      data.productsSold.forEach(product => {
-        tableRows.push({
-          period: seriesItem.period,
-          totalOrders: seriesItem.totalOrders,
-          totalRevenue: seriesItem.totalRevenue,
-          productId: product.productId,
-          productName: product.name,
-          quantity: product.quantity,
-          avgPrepTime: seriesItem.avgPrepTime
+      // El periodo puede ser 'YYYY-MM-DD', 'YYYY-MM', etc. según groupBy
+      let periodDate;
+      if (filters.groupBy === 'day') {
+        periodDate = new Date(seriesItem.period);
+      } else if (filters.groupBy === 'month') {
+        // Parse 'YYYY-MM' as first day of month
+        const [year, month] = seriesItem.period.split('-');
+        periodDate = new Date(Number(year), Number(month) - 1, 1);
+      } else if (filters.groupBy === 'year') {
+        periodDate = new Date(Number(seriesItem.period), 0, 1);
+      } else if (filters.groupBy === 'week') {
+        // Parse 'YYYY-WW' as first day of ISO week
+        const [year, week] = seriesItem.period.split('-');
+        // ISO week: set to first day of week
+        const simple = new Date(Number(year), 0, 1 + (Number(week) - 1) * 7);
+        periodDate = simple;
+      } else {
+        periodDate = new Date(seriesItem.period);
+      }
+
+      if (periodDate >= fromDate && periodDate <= toDate) {
+        data.productsSold.forEach(product => {
+          tableRows.push({
+            period: seriesItem.period,
+            totalOrders: seriesItem.totalOrders,
+            totalRevenue: seriesItem.totalRevenue,
+            productId: product.productId,
+            productName: product.name,
+            quantity: product.quantity,
+            avgPrepTime: seriesItem.avgPrepTime
+          });
         });
-      });
+      }
     });
-    
+
     return tableRows;
   };
 

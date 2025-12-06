@@ -27,6 +27,7 @@ function FilterToolbar({ filters, onFilterChange, onQuery, onExport, loading }) 
             id="from-date"
             type="date"
             value={filters.from}
+            max={new Date().toISOString().split('T')[0]}
             onChange={(e) => handleInputChange('from', e.target.value)}
           />
         </div>
@@ -44,6 +45,8 @@ function FilterToolbar({ filters, onFilterChange, onQuery, onExport, loading }) 
             id="to-date"
             type="date"
             value={filters.to}
+            min={filters.from}
+            max={new Date().toISOString().split('T')[0]}
             onChange={(e) => handleInputChange('to', e.target.value)}
           />
         </div>
