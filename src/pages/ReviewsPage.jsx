@@ -45,7 +45,7 @@ const ReviewsPage = () => {
 
       const data = await response.json();
 
-      console.log('📋 Reviews API Response:', data);
+  
 
       // El backend responde con { success, data: [...reviews], pagination }
       const reviewsList = Array.isArray(data.data) ? data.data : [];

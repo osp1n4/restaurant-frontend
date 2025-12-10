@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { getOrderStatus, cancelOrder } from '../services/api';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -17,181 +17,127 @@ function OrderStatus({ onOrderLoad, onRefreshRequest, onOpenReviewModal }) {
   const { t } = useTranslation();
   const { orderId } = useParams();
   const navigate = useNavigate();
+  // Estados principales
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // Estados para modales de notificación
+  // Estados de modales
   const [preparingModal, setPreparingModal] = useState(false);
   const [readyModal, setReadyModal] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   const [cancelError, setCancelError] = useState('');
 
-  // Log cambios en estados de modales
+  // --- Efectos de logging para debug ---
   useEffect(() => {
-    console.log('🎭 Estado preparingModal cambió a:', preparingModal);
-  }, [preparingModal]);
 
+  }, [preparingModal]);
   useEffect(() => {
-    console.log('🎭 Estado readyModal cambió a:', readyModal);
   }, [readyModal]);
 
-  // Función para obtener el estado del pedido
+  // --- Lógica de obtención de pedido ---
   const fetchOrderStatus = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
-      setLoading(true);
-      setError(null);
       const orderData = await getOrderStatus(orderId);
       setOrder(orderData);
-      if (onOrderLoad) {
-        onOrderLoad(orderData);
-      }
+      onOrderLoad?.(orderData);
     } catch (err) {
       setError(err.message || t('orderStatus.errorLoading'));
     } finally {
       setLoading(false);
     }
-  }, [orderId, onOrderLoad]);
+  }, [orderId, onOrderLoad, t]);
 
-  // Carga inicial
+  // Carga inicial y refresh
   useEffect(() => {
-    if (orderId) {
-      fetchOrderStatus();
-    }
+    if (orderId) fetchOrderStatus();
   }, [orderId, fetchOrderStatus]);
-
-  // Pasar la función de refresh al padre
   useEffect(() => {
-    if (onRefreshRequest) {
-      onRefreshRequest(fetchOrderStatus);
-    }
+    onRefreshRequest?.(fetchOrderStatus);
   }, [onRefreshRequest, fetchOrderStatus]);
 
-  // Manejar notificaciones SSE
-  const handleNotification = useCallback((notification) => {
-    console.log('🔔 ============ NOTIFICACIÓN RECIBIDA ============');
-    console.log('📦 Notificación completa:', JSON.stringify(notification, null, 2));
-    console.log('🔍 notification.orderId:', notification.orderId);
-    console.log('🔍 notification.orderNumber:', notification.orderNumber);
-    console.log('🔍 notification.eventType:', notification.eventType);
-    console.log('📍 orderId del URL:', orderId);
-    console.log('📍 order state:', order);
+  // --- Lógica de notificaciones SSE ---
+  const isNotificationForOrder = useCallback(
+    (notification) => {
+      // Normaliza coincidencia de IDs
+      const ids = [orderId, order?._id, order?.orderNumber];
+      return (
+        ids.includes(notification.orderId) ||
+        ids.includes(notification.orderNumber)
+      );
+    },
+    [orderId, order]
+  );
 
-    // SIMPLIFICADO: Solo comparar con el orderId del URL (que puede ser _id o orderNumber)
-    const match1 = notification.orderId === orderId;
-    const match2 = notification.orderNumber === orderId;
-    const match3 = order && notification.orderId === order._id;
-    const match4 = order && notification.orderNumber === order.orderNumber;
-    const match5 = order && notification.orderId === order.orderNumber;
-
-    console.log('🔎 Comparaciones:');
-    console.log('  match1 (notification.orderId === orderId):', match1, `(${notification.orderId} === ${orderId})`);
-    console.log('  match2 (notification.orderNumber === orderId):', match2, `(${notification.orderNumber} === ${orderId})`);
-    console.log('  match3 (notification.orderId === order._id):', match3, `(${notification.orderId} === ${order?._id})`);
-    console.log('  match4 (notification.orderNumber === order.orderNumber):', match4, `(${notification.orderNumber} === ${order?.orderNumber})`);
-    console.log('  match5 (notification.orderId === order.orderNumber):', match5, `(${notification.orderId} === ${order?.orderNumber})`);
-
-    const isMyOrder = match1 || match2 || match3 || match4 || match5;
-
-    console.log('🎯 Resultado final isMyOrder:', isMyOrder);
-
-    if (!isMyOrder) {
-      console.log('⏭️ ❌ Notificación NO es para mi orden, ignorando');
-      console.log('=========================================\n');
-      return;
-    }
-
-    console.log('✅ ✅ ✅ Notificación ES para mi orden!');
-    console.log('📢 Tipo de evento:', notification.eventType);
-
-    // order.preparing - Tu pedido está siendo preparado
-    if (notification.eventType === 'order.preparing') {
-      console.log('👨‍🍳 🔥 MOSTRANDO MODAL PREPARING 🔥');
-      setPreparingModal(true);
-      fetchOrderStatus();
-    }
-
-    // order.ready - Tu pedido está listo
-    if (notification.eventType === 'order.ready') {
-      console.log('🎉 🔥 MOSTRANDO MODAL READY 🔥');
-      setReadyModal(true);
-      fetchOrderStatus();
-    }
-
-    // Notificación de cancelación
-    if (notification.eventType === 'order.cancelled') {
-      fetchOrderStatus();
-    }
-
-    console.log('=========================================\n');
-  }, [orderId, order, fetchOrderStatus]);
-
-  // Conectar a notificaciones - RECIBIR TODAS (sin filtro)
+  const handleNotification = useCallback(
+    (notification) => {
+      if (!isNotificationForOrder(notification)) return;
+      switch (notification.eventType) {
+        case 'order.preparing':
+          setPreparingModal(true);
+          fetchOrderStatus();
+          break;
+        case 'order.ready':
+          setReadyModal(true);
+          fetchOrderStatus();
+          break;
+        case 'order.cancelled':
+          fetchOrderStatus();
+          break;
+        default:
+          break;
+      }
+    },
+    [isNotificationForOrder, fetchOrderStatus]
+  );
   useNotifications(handleNotification, []);
 
-  // Manejar cancelación de pedido
-  const handleCancelOrder = async () => {
+  // --- Acciones de UI ---
+  const handleCancelOrder = useCallback(async () => {
     setCancelError('');
     setIsCancelling(true);
-
     try {
       const updatedOrder = await cancelOrder(orderId);
       setOrder(updatedOrder);
       setCancelModal(false);
-      
-      // Mostrar modal de éxito
       setPreparingModal(false);
       setReadyModal(false);
-      
-      // Opcional: redireccionar después de 2 segundos
-      setTimeout(() => {
-        navigate('/');
-      }, 2000);
+      setTimeout(() => navigate('/'), 2000);
     } catch (err) {
       setCancelError(err.message || t('orderStatus.errorCancelling'));
-      console.error('Error cancelando pedido:', err);
     } finally {
       setIsCancelling(false);
     }
-  };
+  }, [orderId, navigate, t]);
 
-  // Manejar aceptar modal de "preparing"
-  const handleAcceptPreparing = () => {
-    setPreparingModal(false);
-  };
-
-  // Manejar "Pick Up Order" - solo cerrar modal, NO navegar
-  const handlePickUpOrder = () => {
+  const handleAcceptPreparing = useCallback(() => setPreparingModal(false), []);
+  const handlePickUpOrder = useCallback(() => setReadyModal(false), []);
+  const handleAddReview = useCallback(() => {
     setReadyModal(false);
-  };
+    onOpenReviewModal?.();
+  }, [onOpenReviewModal]);
 
-  // Manejar "Add Review" - cerrar modal y abrir ReviewModal
-  const handleAddReview = () => {
-    setReadyModal(false);
-    if (onOpenReviewModal) {
-      onOpenReviewModal();
-    }
-  };
-
-  // Función para obtener el icono según el nombre del item
-  const getItemIcon = (itemName) => {
+  // --- Utilidad para iconos de items ---
+  const getItemIcon = useMemo(() => (itemName) => {
     const name = itemName.toLowerCase();
-    if (name.includes('burger') || name.includes('hamburguesa')) {
-      return 'lunch_dining';
-    } else if (name.includes('fries') || name.includes('papas') || name.includes('patatas')) {
-      return 'bakery_dining';
-    } else if (name.includes('drink') || name.includes('bebida') || name.includes('shake') || name.includes('milkshake')) {
-      return 'local_cafe';
-    } else if (name.includes('pizza')) {
-      return 'local_pizza';
-    } else if (name.includes('salad') || name.includes('ensalada')) {
-      return 'restaurant';
-    } else {
-      return 'restaurant_menu';
-    }
-  };
+    if (name.includes('burger') || name.includes('hamburguesa')) return 'lunch_dining';
+    if (name.includes('fries') || name.includes('papas') || name.includes('patatas')) return 'bakery_dining';
+    if (name.includes('drink') || name.includes('bebida') || name.includes('shake') || name.includes('milkshake')) return 'local_cafe';
+    if (name.includes('pizza')) return 'local_pizza';
+    if (name.includes('salad') || name.includes('ensalada')) return 'restaurant';
+    return 'restaurant_menu';
+  }, []);
 
+  // --- Memoización de datos derivados ---
+  const displayOrderId = useMemo(() => order?.orderNumber || order?.orderId || order?._id || 'N/A', [order]);
+  const customerName = useMemo(() => order?.customerName || order?.customer || 'Customer', [order]);
+  const isBeingPrepared = useMemo(() => ['cooking', 'ready', 'delivered'].includes(order?.status), [order]);
+  const isReadyForPickup = useMemo(() => ['ready', 'delivered'].includes(order?.status), [order]);
+  const isCancelled = order?.status === 'cancelled';
+
+  // --- Renderizado condicional ---
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
@@ -202,7 +148,6 @@ function OrderStatus({ onOrderLoad, onRefreshRequest, onOpenReviewModal }) {
       </div>
     );
   }
-
   if (error) {
     return (
       <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 text-center">
@@ -214,7 +159,6 @@ function OrderStatus({ onOrderLoad, onRefreshRequest, onOpenReviewModal }) {
       </div>
     );
   }
-
   if (!order) {
     return (
       <div className="bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark rounded-lg p-6 text-center">
@@ -223,15 +167,7 @@ function OrderStatus({ onOrderLoad, onRefreshRequest, onOpenReviewModal }) {
     );
   }
 
-  // Get order number or ID to display
-  const displayOrderId = order.orderNumber || order.orderId || order._id || 'N/A';
-  const customerName = order.customerName || order.customer || 'Customer';
-
-  // Determine timeline states based on normalized status
-  const isBeingPrepared = order.status === 'cooking' || order.status === 'ready' || order.status === 'delivered';
-  const isReadyForPickup = order.status === 'ready' || order.status === 'delivered';
-  const isCancelled = order.status === 'cancelled';
-
+  // --- Render principal ---
   return (
     <>
       {/* Headline Text */}
@@ -350,9 +286,9 @@ function OrderStatus({ onOrderLoad, onRefreshRequest, onOpenReviewModal }) {
       {order.status !== 'pending' && !isCancelled && (
         <div className="mt-6 flex justify-center">
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            {order.status === 'cooking' ? 'Order is being prepared - cannot be cancelled' : ''}
-            {order.status === 'ready' ? 'Order is ready for pickup' : ''}
-            {order.status === 'delivered' ? 'Order has been delivered' : ''}
+            {order.status === 'cooking' ? t('orderStatus.infoPreparing') : ''}
+            {order.status === 'ready' ? t('orderStatus.infoReady') : ''}
+            {order.status === 'delivered' ? t('orderStatus.infoDelivered') : ''}
           </p>
         </div>
       )}
@@ -393,5 +329,4 @@ function OrderStatus({ onOrderLoad, onRefreshRequest, onOpenReviewModal }) {
     </>
   );
 }
-
 export default OrderStatus;

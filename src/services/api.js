@@ -3,8 +3,8 @@
  * Base URL: http://localhost:3000 (API Gateway)
  */
 
-// Usar import.meta.env para Vite
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import { getEnvVar } from '../utils/getEnvVar';
+const API_BASE_URL = getEnvVar('VITE_API_URL') || 'http://localhost:3000';
 
 /**
  * Mapea los estados del backend a los estados del frontend
@@ -92,7 +92,7 @@ export async function getKitchenOrders(status) {
       ? `${API_BASE_URL}/kitchen/orders?status=${status}`
       : `${API_BASE_URL}/kitchen/orders`;
 
-    console.log('Fetching kitchen orders from:', url);
+
 
     const response = await fetch(url, {
       method: 'GET',
@@ -126,30 +126,26 @@ export async function getKitchenOrders(status) {
     }
 
     const data = await response.json();
-    console.log('🔍 Raw response data:', data);
+   
 
     // El backend puede devolver estructuras anidadas
     // Caso 1: { success: true, data: { success: true, data: { data: [...] } } }
     if (data.success && data.data?.success && data.data?.data?.data) {
-      console.log('✅ Estructura anidada triple detectada');
       return Array.isArray(data.data.data.data) ? data.data.data.data : [];
     }
 
     // Caso 2: { success: true, data: { data: [...] } }
     if (data.success && data.data?.data) {
-      console.log('✅ Estructura anidada doble detectada');
       return Array.isArray(data.data.data) ? data.data.data : [];
     }
 
     // Caso 3: { success: true, data: [...] }
     if (data.success && data.data) {
-      console.log('✅ Estructura normal detectada');
       return Array.isArray(data.data) ? data.data : [];
     }
 
     // Caso 4: Array directo
     if (Array.isArray(data)) {
-      console.log('✅ Array directo detectado');
       return data;
     }
 

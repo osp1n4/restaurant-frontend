@@ -75,7 +75,7 @@ export default function ReviewModal({
         comment: comment.trim()
       };
 
-      console.log('Sending review data:', reviewData);
+
 
       const response = await fetch(`${API_BASE_URL}/reviews`, {
         method: 'POST',

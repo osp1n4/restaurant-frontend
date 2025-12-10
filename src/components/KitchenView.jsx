@@ -34,13 +34,10 @@ function KitchenView() {
       setLoading(true);
       setError(null);
       const data = await getKitchenOrders(filter || undefined);
-      console.log('📦 Datos recibidos de getKitchenOrders:', data);
-      console.log('📦 Tipo de datos:', typeof data);
-      console.log('📦 Es array?:', Array.isArray(data));
+
       
       // Asegurarse de que siempre sea un array
       const ordersArray = Array.isArray(data) ? data : [];
-      console.log('📦 Orders array final:', ordersArray);
       setOrders(ordersArray);
     } catch (err) {
       console.error('Error al cargar pedidos:', err);
@@ -66,7 +63,7 @@ function KitchenView() {
 
   // Manejar notificaciones SSE
   const handleNotification = useCallback((notification) => {
-    console.log('📬 Notificación en cocina:', notification);
+
 
     // order.received o order.created - Nuevo pedido
     if (notification.eventType === 'order.received' || notification.eventType === 'order.created') {
