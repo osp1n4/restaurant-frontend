@@ -1,197 +1,247 @@
-import { useState, useEffect, useCallback } from 'react';
-import { getOrderStatus } from '../services/api';
+
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { getOrderStatus, cancelOrder } from '../services/api';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useNotifications } from '../hooks/useNotification';
 import NotificationModal from './NotificationModal';
+import OrderCancelModal from './OrderCancelModal';
 
 /**
  * Componente para mostrar el estado de un pedido específico
  * @param {Function} onOrderLoad - Callback que se ejecuta cuando se carga el pedido
+ * @param {Function} onRefreshRequest - Callback para pasar la función de refresh al padre
+ * @param {Function} onOpenReviewModal - Callback para abrir el modal de review
  */
-function OrderStatus({ onOrderLoad }) {
+function OrderStatus({ onOrderLoad, onRefreshRequest, onOpenReviewModal }) {
+  const { t } = useTranslation();
   const { orderId } = useParams();
   const navigate = useNavigate();
+  // Estados principales
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
-  // Estados para modales de notificación
+  // Estados de modales
   const [preparingModal, setPreparingModal] = useState(false);
   const [readyModal, setReadyModal] = useState(false);
+  const [cancelModal, setCancelModal] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [cancelError, setCancelError] = useState('');
 
-  // Función para obtener el estado del pedido
+  // --- Efectos de logging para debug ---
+  useEffect(() => {
+
+  }, [preparingModal]);
+  useEffect(() => {
+  }, [readyModal]);
+
+  // --- Lógica de obtención de pedido ---
   const fetchOrderStatus = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
-      setLoading(true);
-      setError(null);
       const orderData = await getOrderStatus(orderId);
       setOrder(orderData);
-      if (onOrderLoad) {
-        onOrderLoad(orderData);
-      }
+      onOrderLoad?.(orderData);
     } catch (err) {
-      setError(err.message || 'Error al cargar el estado del pedido');
+      setError(err.message || t('orderStatus.errorLoading'));
     } finally {
       setLoading(false);
     }
-  }, [orderId, onOrderLoad]);
+  }, [orderId, onOrderLoad, t]);
 
-  // Carga inicial
+  // Carga inicial y refresh
   useEffect(() => {
-    if (orderId) {
-      fetchOrderStatus();
-    }
+    if (orderId) fetchOrderStatus();
   }, [orderId, fetchOrderStatus]);
+  useEffect(() => {
+    onRefreshRequest?.(fetchOrderStatus);
+  }, [onRefreshRequest, fetchOrderStatus]);
 
-  // Manejar notificaciones SSE
-  const handleNotification = useCallback((notification) => {
-    console.log('📬 Notificación para este pedido:', notification);
+  // --- Lógica de notificaciones SSE ---
+  const isNotificationForOrder = useCallback(
+    (notification) => {
+      // Normaliza coincidencia de IDs
+      const ids = [orderId, order?._id, order?.orderNumber];
+      return (
+        ids.includes(notification.orderId) ||
+        ids.includes(notification.orderNumber)
+      );
+    },
+    [orderId, order]
+  );
 
-    // order.preparing - Tu pedido está siendo preparado
-    if (notification.eventType === 'order.preparing') {
-      setPreparingModal(true);
+  const handleNotification = useCallback(
+    (notification) => {
+      if (!isNotificationForOrder(notification)) return;
+      switch (notification.eventType) {
+        case 'order.preparing':
+          setPreparingModal(true);
+          fetchOrderStatus();
+          break;
+        case 'order.ready':
+          setReadyModal(true);
+          fetchOrderStatus();
+          break;
+        case 'order.cancelled':
+          fetchOrderStatus();
+          break;
+        default:
+          break;
+      }
+    },
+    [isNotificationForOrder, fetchOrderStatus]
+  );
+  useNotifications(handleNotification, []);
+
+  // --- Acciones de UI ---
+  const handleCancelOrder = useCallback(async () => {
+    setCancelError('');
+    setIsCancelling(true);
+    try {
+      const updatedOrder = await cancelOrder(orderId);
+      setOrder(updatedOrder);
+      setCancelModal(false);
+      setPreparingModal(false);
+      setReadyModal(false);
+      setTimeout(() => navigate('/'), 2000);
+    } catch (err) {
+      setCancelError(err.message || t('orderStatus.errorCancelling'));
+    } finally {
+      setIsCancelling(false);
     }
-    
-    // order.ready - Tu pedido está listo
-    if (notification.eventType === 'order.ready') {
-      setReadyModal(true);
-    }
+  }, [orderId, navigate, t]);
+
+  const handleAcceptPreparing = useCallback(() => setPreparingModal(false), []);
+  const handlePickUpOrder = useCallback(() => setReadyModal(false), []);
+  const handleAddReview = useCallback(() => {
+    setReadyModal(false);
+    onOpenReviewModal?.();
+  }, [onOpenReviewModal]);
+
+  // --- Utilidad para iconos de items ---
+  const getItemIcon = useMemo(() => (itemName) => {
+    const name = itemName.toLowerCase();
+    if (name.includes('burger') || name.includes('hamburguesa')) return 'lunch_dining';
+    if (name.includes('fries') || name.includes('papas') || name.includes('patatas')) return 'bakery_dining';
+    if (name.includes('drink') || name.includes('bebida') || name.includes('shake') || name.includes('milkshake')) return 'local_cafe';
+    if (name.includes('pizza')) return 'local_pizza';
+    if (name.includes('salad') || name.includes('ensalada')) return 'restaurant';
+    return 'restaurant_menu';
   }, []);
 
-  // Conectar a notificaciones solo para este pedido
-  useNotifications(handleNotification, [orderId]);
+  // --- Memoización de datos derivados ---
+  const displayOrderId = useMemo(() => order?.orderNumber || order?.orderId || order?._id || 'N/A', [order]);
+  const customerName = useMemo(() => order?.customerName || order?.customer || 'Customer', [order]);
+  const isBeingPrepared = useMemo(() => ['cooking', 'ready', 'delivered'].includes(order?.status), [order]);
+  const isReadyForPickup = useMemo(() => ['ready', 'delivered'].includes(order?.status), [order]);
+  const isCancelled = order?.status === 'cancelled';
 
-  // Manejar aceptar modal de "preparing"
-  const handleAcceptPreparing = async () => {
-    setPreparingModal(false);
-    // Refrescar estado del pedido
-    await fetchOrderStatus();
-  };
-
-  // Manejar aceptar modal de "ready"
-  const handleAcceptReady = () => {
-    setReadyModal(false);
-    // Redirigir al home
-    navigate('/');
-  };
-
-  // Función para obtener el icono según el nombre del item
-  const getItemIcon = (itemName) => {
-    const name = itemName.toLowerCase();
-    if (name.includes('burger') || name.includes('hamburguesa')) {
-      return 'lunch_dining';
-    } else if (name.includes('fries') || name.includes('papas') || name.includes('patatas')) {
-      return 'bakery_dining';
-    } else if (name.includes('drink') || name.includes('bebida') || name.includes('shake') || name.includes('milkshake')) {
-      return 'local_cafe';
-    } else if (name.includes('pizza')) {
-      return 'local_pizza';
-    } else if (name.includes('salad') || name.includes('ensalada')) {
-      return 'restaurant';
-    } else {
-      return 'restaurant_menu';
-    }
-  };
-
+  // --- Renderizado condicional ---
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-subtext-light dark:text-subtext-dark">Cargando estado del pedido...</p>
+          <p className="text-subtext-light dark:text-subtext-dark">{t('orderStatus.loading')}</p>
         </div>
       </div>
     );
   }
-
   if (error) {
     return (
       <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 text-center">
         <div className="text-red-600 dark:text-red-400 mb-2">
           <span className="material-symbols-outlined text-5xl">error</span>
         </div>
-        <h3 className="text-red-800 dark:text-red-300 font-semibold text-lg mb-2">Error</h3>
+        <h3 className="text-red-800 dark:text-red-300 font-semibold text-lg mb-2">{t('orderStatus.error')}</h3>
         <p className="text-red-600 dark:text-red-400">{error}</p>
       </div>
     );
   }
-
   if (!order) {
     return (
       <div className="bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark rounded-lg p-6 text-center">
-        <p className="text-subtext-light dark:text-subtext-dark">No se encontró el pedido</p>
+        <p className="text-subtext-light dark:text-subtext-dark">{t('orderStatus.notFound')}</p>
       </div>
     );
   }
 
-  // Obtener el número de pedido o ID para mostrar
-  const displayOrderId = order.orderNumber || order.orderId || order._id || 'N/A';
-  const customerName = order.customerName || order.customer || 'Cliente';
-
-  // Determinar estados del timeline basado en el status normalizado
-  const isOrderReceived = true;
-  const isBeingPrepared = order.status === 'cooking' || order.status === 'ready' || order.status === 'delivered';
-  const isReadyForPickup = order.status === 'ready' || order.status === 'delivered';
-
+  // --- Render principal ---
   return (
     <>
       {/* Headline Text */}
       <h1 className="text-center text-[32px] font-bold leading-tight tracking-tight text-text-light dark:text-text-dark">
-        Order #{displayOrderId}
+        {t('orderStatus.orderNumber', { id: displayOrderId })}
       </h1>
       <p className="pt-1 text-center text-base font-normal leading-normal text-subtext-light dark:text-subtext-dark">
-        For: {customerName}
+        {t('orderStatus.for', { name: customerName })}
       </p>
 
+      {/* Estado cancelado */}
+      {isCancelled && (
+        <div className="mt-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 text-center">
+          <div className="text-red-600 dark:text-red-400 mb-2">
+            <span className="material-symbols-outlined text-5xl">cancel</span>
+          </div>
+          <h3 className="text-red-800 dark:text-red-300 font-semibold text-lg">{t('orderStatus.cancelledTitle')}</h3>
+          <p className="text-red-600 dark:text-red-400 text-sm mt-1">
+            {t('orderStatus.cancelledText')}
+          </p>
+        </div>
+      )}
+
       {/* Timeline / Status Stepper */}
-      <div className="mt-8 rounded-xl bg-card-light dark:bg-card-dark p-6 shadow-sm">
-        <div className="grid grid-cols-[1fr_auto_1fr_auto_1fr] items-center gap-2">
-          {/* Step 1: Order Received */}
-          <div className="flex flex-col items-center gap-2 text-center">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white">
-              <span className="material-symbols-outlined">check</span>
+      {!isCancelled && (
+        <div className="mt-8 rounded-xl bg-card-light dark:bg-card-dark p-6 shadow-sm">
+          <div className="grid grid-cols-[1fr_auto_1fr_auto_1fr] items-center gap-2">
+            {/* Step 1: Order Received */}
+            <div className="flex flex-col items-center gap-2 text-center">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white">
+                <span className="material-symbols-outlined">check</span>
+              </div>
+              <p className="text-xs font-medium text-text-light dark:text-text-dark">{t('orderStatus.stepReceived')}</p>
             </div>
-            <p className="text-xs font-medium text-text-light dark:text-text-dark">Order Received</p>
-          </div>
-          {/* Connector 1 */}
-          <div className={`h-1 flex-grow rounded-full ${isBeingPrepared ? 'bg-primary' : 'bg-border-light dark:bg-border-dark'}`}></div>
-          {/* Step 2: Being Prepared */}
-          <div className="flex flex-col items-center gap-2 text-center">
-            <div className={`relative flex h-10 w-10 items-center justify-center rounded-full ${isBeingPrepared ? 'bg-primary text-white' : 'bg-border-light dark:bg-border-dark text-subtext-light dark:text-subtext-dark'}`}>
-              <span className="material-symbols-outlined">{isReadyForPickup ? 'check' : 'soup_kitchen'}</span>
-              {(order.status === 'cooking' || order.status === 'preparing') && (
-                <div className="absolute h-full w-full animate-ping rounded-full bg-primary opacity-50"></div>
-              )}
+            {/* Connector 1 */}
+            <div className={`h-1 flex-grow rounded-full ${isBeingPrepared ? 'bg-primary' : 'bg-border-light dark:bg-border-dark'}`}></div>
+            {/* Step 2: Being Prepared */}
+            <div className="flex flex-col items-center gap-2 text-center">
+              <div className={`relative flex h-10 w-10 items-center justify-center rounded-full ${isBeingPrepared ? 'bg-primary text-white' : 'bg-border-light dark:bg-border-dark text-subtext-light dark:text-subtext-dark'}`}>
+                <span className="material-symbols-outlined">{isReadyForPickup ? 'check' : 'soup_kitchen'}</span>
+                {(order.status === 'cooking' || order.status === 'preparing') && (
+                  <div className="absolute h-full w-full animate-ping rounded-full bg-primary opacity-50"></div>
+                )}
+              </div>
+              <p className={`text-xs font-medium ${isBeingPrepared ? 'text-primary' : 'text-subtext-light dark:text-subtext-dark'}`}>
+                {t('orderStatus.stepPreparing')}
+              </p>
             </div>
-            <p className={`text-xs font-medium ${isBeingPrepared ? 'text-primary' : 'text-subtext-light dark:text-subtext-dark'}`}>
-              Being Prepared
-            </p>
-          </div>
-          {/* Connector 2 */}
-          <div className={`h-1 flex-grow rounded-full ${isReadyForPickup ? 'bg-primary' : 'bg-border-light dark:bg-border-dark'}`}></div>
-          {/* Step 3: Ready for Pickup */}
-          <div className="flex flex-col items-center gap-2 text-center">
-            <div className={`flex h-10 w-10 items-center justify-center rounded-full ${isReadyForPickup ? 'bg-primary text-white' : 'bg-border-light dark:bg-border-dark text-subtext-light dark:text-subtext-dark'}`}>
-              <span className="material-symbols-outlined">{isReadyForPickup ? 'check' : 'shopping_bag'}</span>
+            {/* Connector 2 */}
+            <div className={`h-1 flex-grow rounded-full ${isReadyForPickup ? 'bg-primary' : 'bg-border-light dark:bg-border-dark'}`}></div>
+            {/* Step 3: Ready for Pickup */}
+            <div className="flex flex-col items-center gap-2 text-center">
+              <div className={`flex h-10 w-10 items-center justify-center rounded-full ${isReadyForPickup ? 'bg-primary text-white' : 'bg-border-light dark:bg-border-dark text-subtext-light dark:text-subtext-dark'}`}>
+                <span className="material-symbols-outlined">{isReadyForPickup ? 'check' : 'shopping_bag'}</span>
+              </div>
+              <p className={`text-xs font-medium ${isReadyForPickup ? 'text-primary' : 'text-subtext-light dark:text-subtext-dark'}`}>
+                {t('orderStatus.stepReady')}
+              </p>
             </div>
-            <p className={`text-xs font-medium ${isReadyForPickup ? 'text-primary' : 'text-subtext-light dark:text-subtext-dark'}`}>
-              Ready for Pickup
-            </p>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Section Header */}
       <h3 className="px-0 pb-2 pt-8 text-lg font-bold leading-tight tracking-[-0.015em] text-text-light dark:text-text-dark">
-        Your Order
+        {t('orderStatus.yourOrder')}
       </h3>
 
       {/* Order Items List */}
       {order.items && order.items.length > 0 ? (
         <div className="flex flex-col gap-3">
           {order.items.map((item, index) => (
-            <div 
-              key={index} 
+            <div
+              key={index}
               className="flex items-center gap-4 rounded-lg bg-card-light dark:bg-card-dark p-4 shadow-sm"
             >
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/20 text-primary">
@@ -215,31 +265,68 @@ function OrderStatus({ onOrderLoad }) {
         </div>
       ) : (
         <div className="rounded-lg bg-card-light dark:bg-card-dark p-4 shadow-sm">
-          <p className="text-subtext-light dark:text-subtext-dark text-center">No hay items en este pedido</p>
+          <p className="text-subtext-light dark:text-subtext-dark text-center">{t('orderStatus.noItems')}</p>
         </div>
       )}
+
+      {/* Botón Cancelar Pedido - Solo si está pending */}
+      {order.status === 'pending' && !isCancelled && (
+        <div className="mt-6 flex justify-center">
+          <button
+            onClick={() => setCancelModal(true)}
+            disabled={isCancelling}
+            className="px-6 py-3 bg-red-500 text-white rounded-lg font-semibold hover:bg-red-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+          >
+            {isCancelling ? t('orderStatus.cancelling') : t('orderStatus.cancelOrder')}
+          </button>
+        </div>
+      )}
+
+      {/* Mensaje informativo para otros estados */}
+      {order.status !== 'pending' && !isCancelled && (
+        <div className="mt-6 flex justify-center">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            {order.status === 'cooking' ? t('orderStatus.infoPreparing') : ''}
+            {order.status === 'ready' ? t('orderStatus.infoReady') : ''}
+            {order.status === 'delivered' ? t('orderStatus.infoDelivered') : ''}
+          </p>
+        </div>
+      )}
+
+      {/* Modal de confirmación de cancelación */}
+      <OrderCancelModal
+        isOpen={cancelModal}
+        isCancelling={isCancelling}
+        error={cancelError}
+        onConfirm={handleCancelOrder}
+        onClose={() => {
+          setCancelModal(false);
+          setCancelError('');
+        }}
+      />
 
       {/* Modal: Pedido siendo preparado */}
       <NotificationModal
         isOpen={preparingModal}
-        type="warning"
-        title="¡Tu pedido está en preparación!"
-        message="La cocina está preparando tu pedido en este momento."
+        type="info"
+        title={t('orderStatus.preparingTitle')}
+        message={t('orderStatus.preparingMessage')}
         onAccept={handleAcceptPreparing}
-        acceptText="Entendido"
+        acceptText={t('orderStatus.gotIt')}
       />
 
-      {/* Modal: Pedido listo */}
+      {/* Modal: Order ready for pickup */}
       <NotificationModal
         isOpen={readyModal}
         type="success"
-        title="¡Tu pedido está listo!"
-        message="Tu pedido está listo para recoger. ¡Buen provecho!"
-        onAccept={handleAcceptReady}
-        acceptText="Recoger Pedido"
+        title={t('orderStatus.readyTitle')}
+        message={t('orderStatus.readyMessage')}
+        onAccept={handlePickUpOrder}
+        acceptText={t('orderStatus.pickUpOrder')}
+        onCancel={handleAddReview}
+        cancelText={t('orderStatus.addReview')}
       />
     </>
   );
 }
-
 export default OrderStatus;

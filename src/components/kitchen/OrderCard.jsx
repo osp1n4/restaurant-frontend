@@ -1,17 +1,19 @@
-import { 
-  formatTimeAgo, 
-  getStatusBadgeColor, 
-  getStatusText, 
+import {
+  formatTimeAgo,
+  getStatusBadgeColor,
+  getStatusText,
   getReferenceTime,
-  calculateOrderTotal 
+  calculateOrderTotal
 } from '../../utils/kitchenUtils';
+import { useTranslation } from 'react-i18next';
 
 /**
  * Componente de Tarjeta de Pedido
  */
 function OrderCard({ order, isProcessing, onStartPreparing, onMarkAsReady }) {
+  const { t } = useTranslation();
   const referenceTime = getReferenceTime(order);
-  const timeAgo = formatTimeAgo(referenceTime);
+  const timeAgo = formatTimeAgo(referenceTime, t);
   const total = calculateOrderTotal(order.items);
 
   return (
@@ -20,7 +22,7 @@ function OrderCard({ order, isProcessing, onStartPreparing, onMarkAsReady }) {
       <div className="flex items-start justify-between mb-3 sm:mb-4 flex-shrink-0">
         <div className="flex-1 min-w-0">
           <h3 className="text-lg sm:text-xl font-bold text-gray-900 truncate">
-            Order #{order.orderId ? String(order.orderId).slice(-4) : 'N/A'}
+            {t('kitchen.orderNumber')} {order.orderNumber || order.orderId || 'N/A'}
           </h3>
           <p className="text-gray-600 text-xs sm:text-sm mt-1 truncate">
             {order.customerName || 'N/A'}
@@ -64,7 +66,7 @@ function OrderCard({ order, isProcessing, onStartPreparing, onMarkAsReady }) {
           })}
         </ul>
       </div>
-      
+
       {/* Total Price */}
       {order.items && order.items.length > 0 && (
         <div className="mb-3 sm:mb-4 pt-2 border-t border-gray-100 flex-shrink-0">
@@ -84,26 +86,26 @@ function OrderCard({ order, isProcessing, onStartPreparing, onMarkAsReady }) {
             order.status
           )}`}
         >
-          {getStatusText(order.status)}
+          {getStatusText(order.status, t)}
         </span>
 
         {order.status === 'RECEIVED' && (
           <button
-            onClick={() => onStartPreparing(order.orderId)}
+            onClick={() => onStartPreparing(order.orderNumber || order.orderId)}
             disabled={isProcessing}
             className="px-3 py-1.5 sm:px-4 sm:py-2 bg-orange-500 text-white rounded-lg text-xs sm:text-sm font-medium hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
           >
-            {isProcessing ? 'Processing...' : 'Start Cooking'}
+            {isProcessing ? t('kitchen.processing') : t('kitchen.startCooking')}
           </button>
         )}
 
         {order.status === 'PREPARING' && (
           <button
-            onClick={() => onMarkAsReady(order.orderId)}
+            onClick={() => onMarkAsReady(order.orderNumber || order.orderId)}
             disabled={isProcessing}
             className="px-3 py-1.5 sm:px-4 sm:py-2 bg-orange-500 text-white rounded-lg text-xs sm:text-sm font-medium hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
           >
-            {isProcessing ? 'Processing...' : 'Mark as Ready'}
+            {isProcessing ? t('kitchen.processing') : t('kitchen.markAsReady')}
           </button>
         )}
 
@@ -112,7 +114,7 @@ function OrderCard({ order, isProcessing, onStartPreparing, onMarkAsReady }) {
             disabled
             className="px-3 py-1.5 sm:px-4 sm:py-2 bg-gray-300 text-gray-700 rounded-lg text-xs sm:text-sm font-medium cursor-not-allowed whitespace-nowrap"
           >
-            Completed
+            {t('kitchen.completed')}
           </button>
         )}
       </div>
@@ -121,4 +123,3 @@ function OrderCard({ order, isProcessing, onStartPreparing, onMarkAsReady }) {
 }
 
 export default OrderCard;
-

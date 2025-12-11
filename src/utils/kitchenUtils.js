@@ -7,7 +7,7 @@
  * @param {string} dateString - Fecha en formato ISO 8601
  * @returns {string} Tiempo formateado (ej: "2 min ago" o "40 sec ago")
  */
-export function formatTimeAgo(dateString) {
+export function formatTimeAgo(dateString, t) {
   if (!dateString) return '';
   
   const now = new Date();
@@ -17,9 +17,9 @@ export function formatTimeAgo(dateString) {
   const diffSecs = Math.floor((diffMs % 60000) / 1000);
   
   if (diffMins > 0) {
-    return `${diffMins} min ago`;
+    return t('kitchen.timeMinutesAgo', { count: diffMins });
   }
-  return `${diffSecs} sec ago`;
+  return t('kitchen.timeSecondsAgo', { count: diffSecs });
 }
 
 /**
@@ -45,14 +45,14 @@ export function getStatusBadgeColor(status) {
  * @param {string} status - Estado del pedido
  * @returns {string} Texto del estado
  */
-export function getStatusText(status) {
+export function getStatusText(status, t) {
   switch (status) {
     case 'RECEIVED':
-      return 'New order';
+      return t('kitchen.statusReceived');
     case 'PREPARING':
-      return 'Cooking';
+      return t('kitchen.statusPreparing');
     case 'READY':
-      return 'Ready';
+      return t('kitchen.statusReady');
     default:
       return status;
   }

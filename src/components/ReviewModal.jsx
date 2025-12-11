@@ -69,11 +69,13 @@ export default function ReviewModal({
 
       const reviewData = {
         orderId: orderData.orderId,
-        customerName: orderData.customerName,
-        customerEmail: orderData.customerEmail,
+        customerName: orderData.customerName || orderData.customer,
+        customerEmail: orderData.customerEmail || 'customer@example.com',
         ratings,
         comment: comment.trim()
       };
+
+
 
       const response = await fetch(`${API_BASE_URL}/reviews`, {
         method: 'POST',
@@ -83,26 +85,37 @@ export default function ReviewModal({
         body: JSON.stringify(reviewData)
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to submit review');
+        let errorMessage = 'Failed to submit review';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch {
+          // Si no hay JSON, usar mensaje por defecto
+          errorMessage = `Server error: ${response.status} ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
       }
+
+      const data = await response.json();
 
       // Mostrar mensaje de éxito
       setSubmitSuccess(true);
 
-      // Esperar 2 segundos y cerrar modal
+      // Esperar 2 segundos, cerrar modal y redirigir al home
       setTimeout(() => {
         setSubmitSuccess(false);
         resetForm();
         if (onSubmit) onSubmit(data.data);
         onClose();
+        // Redirigir al home con mensaje de agradecimiento
+        window.location.href = '/';
       }, 2000);
 
     } catch (error) {
       console.error('Error submitting review:', error);
-      setErrors({ submit: error.message || 'Failed to submit review. Please try again.' });
+      const errorMessage = error.message || 'Failed to submit review. Please try again.';
+      setErrors({ submit: errorMessage });
     } finally {
       setIsSubmitting(false);
     }
@@ -132,18 +145,20 @@ export default function ReviewModal({
         {/* Header */}
         <div className="bg-[#FF6B35] text-white px-6 py-4">
           <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-bold">Share Your Experience</h2>
             <button
               onClick={handleClose}
               disabled={isSubmitting}
-              className="text-white hover:text-[#F5F5F5] transition-colors text-3xl leading-none disabled:opacity-50"
-              aria-label="Close"
+              className="flex items-center gap-1 text-white hover:text-[#F5F5F5] transition-colors disabled:opacity-50"
+              aria-label="Back"
             >
-              ×
+              <span className="material-symbols-outlined">arrow_back</span>
+              <span className="font-medium">Back</span>
             </button>
+            <h2 className="text-xl font-bold">Share Your Experience</h2>
+            <div className="w-16"></div>
           </div>
           {orderData?.orderNumber && (
-            <p className="text-sm text-white/90 mt-1">
+            <p className="text-sm text-white/90 mt-2 text-center">
               Order #{orderData.orderNumber}
             </p>
           )}
@@ -160,10 +175,13 @@ export default function ReviewModal({
               </div>
             </div>
             <h3 className="text-2xl font-bold text-[#222222] mb-2">
-              Thank you for your review!
+              Thank You!
             </h3>
-            <p className="text-[#666666]">
-              Your feedback helps us improve our service.
+            <p className="text-[#666666] mb-1">
+              Your review has been submitted successfully
+            </p>
+            <p className="text-sm text-[#999999]">
+              Redirecting to home...
             </p>
           </div>
         ) : (

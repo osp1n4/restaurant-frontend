@@ -1,5 +1,7 @@
+
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 /**
  * Página principal - Landing page profesional del restaurante
@@ -7,8 +9,8 @@ import { useState, useEffect } from 'react';
 function Home() {
   const navigate = useNavigate();
   const [scrollY, setScrollY] = useState(0);
+  const { t, i18n } = useTranslation();
 
-  // Detectar scroll para efecto parallax
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY);
     window.addEventListener('scroll', handleScroll);
@@ -19,24 +21,39 @@ function Home() {
     navigate('/order');
   };
 
+  const handleLanguageChange = (e) => {
+    i18n.changeLanguage(e.target.value);
+  };
+
   return (
-    <div className="relative w-full bg-background-light dark:bg-background-dark">
+    <>
+      <div className="relative w-full bg-background-light dark:bg-background-dark">
       {/* Header Sticky */}
       <header className="sticky top-0 z-50 bg-white/95 dark:bg-background-dark/95 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="material-symbols-outlined text-3xl text-primary">restaurant</span>
-              <h1 className="text-xl font-bold text-[#181311] dark:text-white">
-                Delicious Kitchen
+              <h1 className="text-xl font-bold text-primary dark:text-primary">
+                {t('home.title')}
               </h1>
             </div>
-            <button
-              onClick={handleOrderNow}
-              className="bg-primary text-white font-semibold px-6 py-2 rounded-lg hover:bg-primary/90 transition-all"
-            >
-              Order Now
-            </button>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={handleOrderNow}
+                className="bg-primary text-white font-semibold px-6 py-2 rounded-lg hover:bg-primary/90 transition-all"
+              >
+                {t('home.orderNow')}
+              </button>
+              <select
+                value={i18n.language}
+                onChange={handleLanguageChange}
+                className="bg-primary text-white font-semibold px-6 py-2 rounded-lg hover:bg-primary/90 transition-all"
+              >
+                <option value="en">English</option>
+                <option value="es">Español</option>
+              </select>
+            </div>
           </div>
         </div>
       </header>
@@ -60,30 +77,29 @@ function Home() {
 
         <div className="relative z-10 max-w-4xl mx-auto px-4 text-center text-white">
           <h2
-            className="text-5xl md:text-7xl font-bold mb-6 animate-fade-in-up"
+            className="text-5xl md:text-7xl font-bold mb-6 animate-fade-in-up text-primary"
             style={{ animationDelay: '0.2s' }}
           >
-            Delicious Kitchen
+            {t('home.title')}
           </h2>
           <p
             className="text-xl md:text-2xl mb-8 text-gray-200 animate-fade-in-up"
             style={{ animationDelay: '0.4s' }}
           >
-            Freshly Made, Just for You
+            {t('home.heroSubtitle')}
           </p>
           <p
             className="text-lg mb-10 max-w-2xl mx-auto text-gray-300 animate-fade-in-up"
             style={{ animationDelay: '0.6s' }}
           >
-            Experience culinary excellence with our expertly crafted dishes,
-            made with the freshest locally sourced ingredients.
+            {t('home.heroDescription')}
           </p>
           <button
             onClick={handleOrderNow}
             className="bg-primary text-white font-bold px-10 py-4 rounded-xl text-lg shadow-2xl hover:bg-primary/90 hover:scale-105 transition-all animate-fade-in-up"
             style={{ animationDelay: '0.8s' }}
           >
-            Order Now
+            {t('home.orderNow')}
           </button>
         </div>
       </section>
@@ -93,13 +109,11 @@ function Home() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16 animate-fade-in-up">
             <h3 className="text-4xl md:text-5xl font-bold text-[#181311] dark:text-white mb-4">
-              Our Story
+              {t('home.ourStory')}
             </h3>
             <div className="w-20 h-1 bg-primary mx-auto mb-6"></div>
             <p className="text-lg text-[#896f61] dark:text-gray-400 max-w-3xl mx-auto leading-relaxed">
-              At Delicious Kitchen, we believe in the power of great food to bring people together.
-              Every dish is crafted with passion, using only the finest ingredients to create
-              unforgettable culinary experiences.
+              {t('home.aboutDescription')}
             </p>
           </div>
         </div>
@@ -110,11 +124,11 @@ function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h3 className="text-4xl md:text-5xl font-bold text-[#181311] dark:text-white mb-4">
-              Featured Dishes
+              {t('home.featuredDishes')}
             </h3>
             <div className="w-20 h-1 bg-primary mx-auto mb-6"></div>
             <p className="text-lg text-[#896f61] dark:text-gray-400">
-              Explore our signature creations
+              {t('home.featuredSubtitle')}
             </p>
           </div>
 
@@ -129,7 +143,7 @@ function Home() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <div className="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                    <h4 className="text-xl font-bold mb-2">Smash Burger</h4>
+                    <h4 className="text-xl font-bold mb-2 text-primary">Smash Burger</h4>
                     <p className="text-sm text-gray-200">
                       Juicy beef patty with melted cheese, fresh veggies, and our special sauce
                     </p>
@@ -152,7 +166,7 @@ function Home() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <div className="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                    <h4 className="text-xl font-bold mb-2">Creamy Carbonara</h4>
+                    <h4 className="text-xl font-bold mb-2 text-primary">Creamy Carbonara</h4>
                     <p className="text-sm text-gray-200">
                       Traditional Italian pasta with crispy bacon, eggs, and parmesan
                     </p>
@@ -175,7 +189,7 @@ function Home() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <div className="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                    <h4 className="text-xl font-bold mb-2">Caesar Salad</h4>
+                    <h4 className="text-xl font-bold mb-2 text-primary">Caesar Salad</h4>
                     <p className="text-sm text-gray-200">
                       Fresh greens with grilled chicken, lemon vinaigrette, and croutons
                     </p>
@@ -198,7 +212,7 @@ function Home() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <div className="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                    <h4 className="text-xl font-bold mb-2">Margherita Pizza</h4>
+                    <h4 className="text-xl font-bold mb-2 text-primary">Margherita Pizza</h4>
                     <p className="text-sm text-gray-200">
                       Classic pizza with fresh mozzarella, tomatoes, and basil
                     </p>
@@ -217,7 +231,7 @@ function Home() {
               onClick={handleOrderNow}
               className="bg-primary text-white font-bold px-8 py-3 rounded-lg hover:bg-primary/90 hover:scale-105 transition-all"
             >
-              View Full Menu
+              {t('home.viewFullMenu')}
             </button>
           </div>
         </div>
@@ -228,12 +242,11 @@ function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h3 className="text-4xl md:text-5xl font-bold text-[#181311] dark:text-white mb-4">
-              Expert Culinary Team
+              {t('home.expertTeam')}
             </h3>
             <div className="w-20 h-1 bg-primary mx-auto mb-6"></div>
             <p className="text-lg text-[#896f61] dark:text-gray-400 max-w-3xl mx-auto">
-              Our talented chefs bring years of experience and passion to every dish.
-              Trained in the finest culinary traditions, they create exceptional dining experiences.
+              {t('home.teamDescription')}
             </p>
           </div>
 
@@ -248,14 +261,13 @@ function Home() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent">
                   <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
-                    <h4 className="text-2xl font-bold mb-2">Expert Culinary Artists</h4>
+                    <h4 className="text-2xl font-bold mb-2 text-[#FF6B35]">{t('home.expertArtists')}</h4>
                     <p className="text-gray-200 mb-4">
-                      Our chefs master the art of flavor, combining traditional techniques
-                      with modern innovation to create unforgettable dishes.
+                      {t('home.expertArtistsDescription')}
                     </p>
                     <div className="flex items-center gap-2">
                       <span className="material-symbols-outlined text-primary">star</span>
-                      <span className="text-sm">Michelin-Trained Excellence</span>
+                      <span className="text-sm text-[#FF6B35]">{t('home.michelinExcellence')}</span>
                     </div>
                   </div>
                 </div>
@@ -272,14 +284,13 @@ function Home() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent">
                   <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
-                    <h4 className="text-2xl font-bold mb-2">Passionate Professionals</h4>
+                    <h4 className="text-2xl font-bold mb-2 text-[#FF6B35]">{t('home.passionateProfessionals')}</h4>
                     <p className="text-gray-200 mb-4">
-                      Dedicated to perfection, our team ensures every meal is crafted
-                      with precision, care, and the finest ingredients.
+                      {t('home.passionateProfessionalsDescription')}
                     </p>
                     <div className="flex items-center gap-2">
                       <span className="material-symbols-outlined text-primary">restaurant</span>
-                      <span className="text-sm">Award-Winning Team</span>
+                      <span className="text-sm text-[#FF6B35] ">{t('home.awardWinningTeam')}</span>
                     </div>
                   </div>
                 </div>
@@ -294,10 +305,10 @@ function Home() {
                 <span className="material-symbols-outlined text-3xl text-primary">verified</span>
               </div>
               <h4 className="text-xl font-bold text-[#181311] dark:text-white mb-2">
-                Certified Excellence
+                {t('home.certifiedExcellence')}
               </h4>
               <p className="text-[#896f61] dark:text-gray-400">
-                All our chefs are certified professionals with years of culinary expertise
+                {t('home.certifiedExcellenceDescription')}
               </p>
             </div>
 
@@ -306,10 +317,10 @@ function Home() {
                 <span className="material-symbols-outlined text-3xl text-primary">eco</span>
               </div>
               <h4 className="text-xl font-bold text-[#181311] dark:text-white mb-2">
-                Fresh Ingredients
+                {t('home.freshIngredients')}
               </h4>
               <p className="text-[#896f61] dark:text-gray-400">
-                We source only the finest local and organic ingredients daily
+                {t('home.freshIngredientsDescription')}
               </p>
             </div>
 
@@ -318,10 +329,10 @@ function Home() {
                 <span className="material-symbols-outlined text-3xl text-primary">favorite</span>
               </div>
               <h4 className="text-xl font-bold text-[#181311] dark:text-white mb-2">
-                Made with Love
+                {t('home.madeWithLove')}
               </h4>
               <p className="text-[#896f61] dark:text-gray-400">
-                Every dish is prepared with passion and attention to detail
+                {t('home.madeWithLoveDescription')}
               </p>
             </div>
           </div>
@@ -332,16 +343,16 @@ function Home() {
       <section className="py-20 bg-primary text-white">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h3 className="text-4xl md:text-5xl font-bold mb-6">
-            Ready to Experience Amazing Food?
+            {t('home.ctaTitle')}
           </h3>
           <p className="text-xl mb-10 text-white/90">
-            Order now and taste the difference that passion and quality make
+            {t('home.ctaText')}
           </p>
           <button
             onClick={handleOrderNow}
             className="bg-white text-primary font-bold px-12 py-4 rounded-xl text-lg shadow-2xl hover:bg-gray-100 hover:scale-105 transition-all"
           >
-            Order Now
+            {t('home.orderNow')}
           </button>
         </div>
       </section>
@@ -353,17 +364,17 @@ function Home() {
             <span className="material-symbols-outlined text-3xl text-[#FF6B35]">rate_review</span>
           </div>
           <h3 className="text-3xl font-bold text-[#181311] dark:text-white mb-4">
-            See What Our Customers Say
+            {t('home.seeReviews')}
           </h3>
           <p className="text-lg text-[#896f61] dark:text-gray-400 mb-8 max-w-2xl mx-auto">
-            Read authentic reviews from our satisfied customers and discover why they love dining with us
+            {t('home.reviewsDescription')}
           </p>
           <button
             onClick={() => navigate('/reviews')}
             className="bg-[#FF6B35] hover:bg-[#e55d2e] text-white font-semibold px-8 py-3 rounded-lg shadow-md hover:shadow-lg transition-all inline-flex items-center gap-2"
           >
-            <span className="material-symbols-outlined">star</span>
-            View Customer Reviews
+            <span className="material-symbols-outlined text-white">star</span>
+            {t('home.viewCustomerReviews')}
           </button>
         </div>
       </section>
@@ -375,7 +386,7 @@ function Home() {
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <span className="material-symbols-outlined text-3xl text-primary">restaurant</span>
-                <h4 className="text-xl font-bold">Delicious Kitchen</h4>
+                <h4 className="text-xl font-bold text-primary">Delicious Kitchen</h4>
               </div>
               <p className="text-gray-400">
                 Freshly Made, Just for You
@@ -383,25 +394,25 @@ function Home() {
             </div>
 
             <div>
-              <h4 className="text-lg font-bold mb-4">Contact</h4>
+              <h4 className="text-lg font-bold mb-4 text-primary">Contact</h4>
               <p className="text-gray-400 mb-2">Phone: +123-423-1261</p>
               <p className="text-gray-400">Email: info@deliciouskitchen.com</p>
             </div>
 
             <div>
-              <h4 className="text-lg font-bold mb-4">Hours</h4>
+              <h4 className="text-lg font-bold mb-4 text-primary">Hours</h4>
               <p className="text-gray-400 mb-2">Mon - Fri: 11am - 10pm</p>
               <p className="text-gray-400">Sat - Sun: 10am - 11pm</p>
             </div>
           </div>
 
-          <div className="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 Delicious Kitchen. All rights reserved.</p>
+          <div className="border-t border-gray-700 mt-8 pt-8 text-center">
+            <p className="text-gray-300">&copy; 2024 Delicious Kitchen. All rights reserved.</p>
           </div>
         </div>
       </footer>
-    </div>
+      </div>
+    </>
   );
 }
-
 export default Home;

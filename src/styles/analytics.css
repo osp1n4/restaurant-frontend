@@ -1,0 +1,161 @@
+/**
+ * Estilos específicos para el Dashboard de Analíticas
+ * Complementa las clases de Tailwind CSS
+ */
+
+/* Animaciones para gráficos */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.analytics-card {
+  animation: fadeInUp 0.4s ease-out;
+}
+
+/* Transiciones suaves para gráficos SVG */
+.chart-line,
+.chart-bar {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Hover effects para barras */
+.chart-bar:hover {
+  opacity: 0.8;
+}
+
+/* Gradient para line chart */
+.chart-gradient-stop-1 {
+  stop-color: #19e65e;
+  stop-opacity: 0.4;
+}
+
+.chart-gradient-stop-2 {
+  stop-color: #19e65e;
+  stop-opacity: 0;
+}
+
+/* Tooltip styles (futuro) */
+.analytics-tooltip {
+  @apply absolute z-50 px-3 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg shadow-lg;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.analytics-tooltip.show {
+  opacity: 1;
+}
+
+/* Loading shimmer effect */
+@keyframes shimmer {
+  0% {
+    background-position: -468px 0;
+  }
+  100% {
+    background-position: 468px 0;
+  }
+}
+
+.analytics-skeleton {
+  animation: shimmer 1.2s ease-in-out infinite;
+  background: linear-gradient(to right, #f0f0f0 8%, #e0e0e0 18%, #f0f0f0 33%);
+  background-size: 800px 104px;
+}
+
+.dark .analytics-skeleton {
+  background: linear-gradient(to right, #2d2d2d 8%, #3d3d3d 18%, #2d2d2d 33%);
+}
+
+/* Scrollbar personalizado para tabla */
+.analytics-table-container::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.analytics-table-container::-webkit-scrollbar-track {
+  @apply bg-gray-100 dark:bg-gray-800 rounded;
+}
+
+.analytics-table-container::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 dark:bg-gray-600 rounded;
+}
+
+.analytics-table-container::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-400 dark:bg-gray-500;
+}
+
+/* Estado de carga de botones */
+.btn-loading {
+  position: relative;
+  pointer-events: none;
+}
+
+.btn-loading::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  top: 50%;
+  left: 50%;
+  margin-left: -8px;
+  margin-top: -8px;
+  border: 2px solid transparent;
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Material Icons con relleno variable */
+.material-symbols-outlined.filled {
+  font-variation-settings:
+    'FILL' 1,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
+}
+
+/* Efectos de hover para stat cards */
+.stat-card {
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.dark .stat-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* Responsive grid helpers */
+@media (max-width: 640px) {
+  .analytics-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .analytics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1025px) {
+  .analytics-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}

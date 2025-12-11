@@ -3,7 +3,8 @@
  * Base URL: http://localhost:3000 (API Gateway)
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import { getEnvVar } from '../utils/getEnvVar';
+const API_BASE_URL = getEnvVar('VITE_API_URL') || 'http://localhost:3000';
 
 /**
  * Mapea los estados del backend a los estados del frontend
@@ -91,7 +92,7 @@ export async function getKitchenOrders(status) {
       ? `${API_BASE_URL}/kitchen/orders?status=${status}`
       : `${API_BASE_URL}/kitchen/orders`;
 
-    console.log('Fetching kitchen orders from:', url);
+
 
     const response = await fetch(url, {
       method: 'GET',
@@ -125,18 +126,32 @@ export async function getKitchenOrders(status) {
     }
 
     const data = await response.json();
+   
 
-    // El backend devuelve { success: true, data: [...], count: ... }
-    if (data.success && data.data) {
-      return data.data;
+    // El backend puede devolver estructuras anidadas
+    // Caso 1: { success: true, data: { success: true, data: { data: [...] } } }
+    if (data.success && data.data?.success && data.data?.data?.data) {
+      return Array.isArray(data.data.data.data) ? data.data.data.data : [];
     }
 
-    // Si no tiene success pero tiene data directamente
+    // Caso 2: { success: true, data: { data: [...] } }
+    if (data.success && data.data?.data) {
+      return Array.isArray(data.data.data) ? data.data.data : [];
+    }
+
+    // Caso 3: { success: true, data: [...] }
+    if (data.success && data.data) {
+      return Array.isArray(data.data) ? data.data : [];
+    }
+
+    // Caso 4: Array directo
     if (Array.isArray(data)) {
       return data;
     }
 
-    return data;
+    console.warn('⚠️ Estructura de datos no reconocida, retornando array vacío');
+    // Si data no es un array, retornar array vacío
+    return [];
   } catch (error) {
     // Si es un error de red (fetch falló completamente)
     if (error instanceof TypeError && error.message.includes('fetch')) {
@@ -355,6 +370,59 @@ export async function createOrder(orderData) {
   }
 }
 
+/**
+ * Cancela un pedido específico
+ * @param {string} orderId - ID del pedido a cancelar
+ * @returns {Promise<Object>} Datos del pedido actualizado
+ */
+export async function cancelOrder(orderId) {
+  try {
+    const url = `${API_BASE_URL}/orders/${orderId}/cancel`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      let errorMessage = `Error ${response.status}: ${response.statusText}`;
+      
+      try {
+        const errorData = await response.json();
+        if (errorData.message) {
+          errorMessage = errorData.message;
+        }
+      } catch (e) {
+        // Si no se puede parsear JSON, usar el statusText
+      }
+      
+      const error = new Error(errorMessage);
+      error.status = response.status;
+      throw error;
+    }
+
+    const data = await response.json();
+    
+    if (data.success && data.data) {
+      return normalizeOrderData(data.data);
+    }
+    
+    return normalizeOrderData(data);
+  } catch (error) {
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      const networkError = new Error(
+        `Error de conexión. Verifica que el API Gateway esté corriendo en ${API_BASE_URL}`
+      );
+      networkError.originalError = error;
+      throw networkError;
+    }
+    
+    console.error('Error en cancelOrder:', error);
+    throw error;
+  }
+}
+
 // ==================== REVIEW API FUNCTIONS ====================
 
 /**
@@ -504,6 +572,166 @@ export async function updateReviewStatus(reviewId, status) {
     return data;
   } catch (error) {
     console.error('Error en updateReviewStatus:', error);
+    throw error;
+  }
+}
+
+/**
+ * Obtiene las analíticas de ventas
+ * @param {Object} filters - Filtros para las analíticas
+ * @param {string} filters.from - Fecha inicial (YYYY-MM-DD)
+ * @param {string} filters.to - Fecha final (YYYY-MM-DD)
+ * @param {string} filters.groupBy - Agrupación (day|week|month|year)
+ * @param {number} [filters.top] - Top N productos (opcional)
+ * @returns {Promise<Object>} Datos de analíticas
+ */
+export async function getAnalytics(filters) {
+  try {
+    const params = new URLSearchParams({
+      from: filters.from,
+      to: filters.to,
+      groupBy: filters.groupBy
+    });
+
+    if (filters.top) {
+      params.append('top', filters.top);
+    }
+
+    const url = `${API_BASE_URL}/admin/analytics?${params.toString()}`;
+    
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      // Manejo especial para 204 (No Content)
+      if (response.status === 204) {
+        return {
+          message: 'No hay datos disponibles para el período seleccionado',
+          range: { from: filters.from, to: filters.to, groupBy: filters.groupBy },
+          summary: { totalOrders: 0, totalRevenue: 0, avgPrepTime: null },
+          series: [],
+          productsSold: [],
+          topNProducts: []
+        };
+      }
+
+      let errorMessage = `Error ${response.status}: ${response.statusText}`;
+      
+      try {
+        const errorData = await response.json();
+        if (errorData.message) {
+          errorMessage = errorData.message;
+        }
+      } catch (e) {
+        // Si no se puede parsear JSON, usar el statusText
+      }
+      
+      const error = new Error(errorMessage);
+      error.status = response.status;
+      throw error;
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      const networkError = new Error(
+        `Error de conexión. Verifica que el API Gateway esté corriendo en ${API_BASE_URL}`
+      );
+      networkError.originalError = error;
+      throw networkError;
+    }
+    
+    console.error('Error en getAnalytics:', error);
+    throw error;
+  }
+}
+
+/**
+ * Exporta las analíticas a CSV
+ * @param {Object} params - Parámetros para exportación
+ * @param {string} params.from - Fecha inicial (YYYY-MM-DD)
+ * @param {string} params.to - Fecha final (YYYY-MM-DD)
+ * @param {string} params.groupBy - Agrupación (day|week|month|year)
+ * @param {number} [params.top] - Top N productos (opcional)
+ * @param {Array<string>} [params.columns] - Columnas a exportar (opcional)
+ * @returns {Promise<void>} Descarga el archivo CSV
+ */
+export async function exportAnalyticsCSV(params) {
+  try {
+    const body = {
+      from: params.from,
+      to: params.to,
+      groupBy: params.groupBy
+    };
+
+    if (params.top) {
+      body.top = params.top;
+    }
+
+    if (params.columns && params.columns.length > 0) {
+      body.columns = params.columns;
+    }
+
+    const response = await fetch(`${API_BASE_URL}/admin/analytics/export`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      let errorMessage = `Error ${response.status}: ${response.statusText}`;
+      
+      try {
+        const errorData = await response.json();
+        if (errorData.message) {
+          errorMessage = errorData.message;
+        }
+      } catch (e) {
+        // Si no se puede parsear JSON, usar el statusText
+      }
+      
+      throw new Error(errorMessage);
+    }
+
+    // Crear blob y descargar
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    
+    // Extraer filename del header Content-Disposition si existe
+    const contentDisposition = response.headers.get('Content-Disposition');
+    let filename = 'analytics-export.csv';
+    if (contentDisposition) {
+      const filenameMatch = contentDisposition.match(/filename="?(.+)"?/);
+      if (filenameMatch && filenameMatch[1]) {
+        filename = filenameMatch[1];
+      }
+    }
+    
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  } catch (error) {
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      const networkError = new Error(
+        `Error de conexión. Verifica que el API Gateway esté corriendo en ${API_BASE_URL}`
+      );
+      networkError.originalError = error;
+      throw networkError;
+    }
+    
+    console.error('Error en exportAnalyticsCSV:', error);
     throw error;
   }
 }

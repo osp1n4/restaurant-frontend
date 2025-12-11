@@ -14,6 +14,10 @@ import StarRating from './StarRating';
  * - Colores de la paleta
  */
 export default function ReviewCard({ review }) {
+  // Manejar reviews con diferentes estructuras de datos
+  const overallRating = review.ratings?.overall || review.rating || 5;
+  const foodRating = review.ratings?.food || review.rating || 5;
+
   // Formatear fecha relativa (ej: "2 days ago")
   const formatRelativeDate = (dateString) => {
     const date = new Date(dateString);
@@ -43,11 +47,14 @@ export default function ReviewCard({ review }) {
 
         {/* Overall Rating Badge */}
         <div className="flex items-center gap-1 bg-[#FF6B35]/10 px-3 py-1 rounded-full">
-          <span className="material-symbols-outlined text-[#FF6B35] text-xl">
+          <span
+            className="material-symbols-outlined text-xl"
+            style={{ color: '#FF6B35' }}
+          >
             star
           </span>
           <span className="font-bold text-[#FF6B35]">
-            {review.ratings.overall}.0
+            {overallRating}.0
           </span>
         </div>
       </div>
@@ -57,7 +64,7 @@ export default function ReviewCard({ review }) {
         <div>
           <p className="text-xs font-medium text-[#666666] mb-1">Overall</p>
           <StarRating
-            rating={review.ratings.overall}
+            rating={overallRating}
             readonly={true}
             size="sm"
           />
@@ -65,7 +72,7 @@ export default function ReviewCard({ review }) {
         <div>
           <p className="text-xs font-medium text-[#666666] mb-1">Food Quality</p>
           <StarRating
-            rating={review.ratings.food}
+            rating={foodRating}
             readonly={true}
             size="sm"
           />

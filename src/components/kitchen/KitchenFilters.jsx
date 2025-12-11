@@ -1,12 +1,15 @@
 /**
  * Componente de Filtros para el Dashboard de Cocina
  */
+import { useTranslation } from 'react-i18next';
+
 function KitchenFilters({ filter, onFilterChange }) {
+  const { t } = useTranslation();
   const filters = [
-    { value: '', label: 'All' },
-    { value: 'RECEIVED', label: 'Received' },
-    { value: 'PREPARING', label: 'Preparing' },
-    { value: 'READY', label: 'Ready' },
+    { value: '', label: t('kitchen.filterAll') },
+    { value: 'RECEIVED', label: t('kitchen.filterReceived') },
+    { value: 'PREPARING', label: t('kitchen.filterPreparing') },
+    { value: 'READY', label: t('kitchen.filterReady') },
   ];
 
   return (

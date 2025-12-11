@@ -70,21 +70,57 @@ Por defecto el servidor de desarrollo corre en el puerto 5173. Abre http://local
    npx serve dist
    o configura tu servidor favorito (nginx, caddy, etc.) para apuntar a la carpeta `dist`.
 
-## Ejecutar con Docker
-El proyecto incluye un Dockerfile para construir y servir la aplicación. A continuación los comandos básicos:
 
-1. Construir la imagen Docker:
-   docker build -t restaurant-frontend .
+## Ejecutar con Docker o Podman
+El proyecto incluye un Dockerfile para construir y servir la aplicación. Puedes usar **Docker** o **Podman** de forma intercambiable, sin modificar la configuración del repositorio.
+
+### Comandos básicos (Docker o Podman)
+
+1. Construir la imagen:
+    - Docker:
+       ```sh
+       docker build -t restaurant-frontend .
+       ```
+    - Podman:
+       ```sh
+       podman build -t restaurant-frontend .
+       ```
 
 2. Ejecutar el contenedor y mapear el puerto 5173:
-   docker run --rm -p 5173:5173 restaurant-frontend
+    - Docker:
+       ```sh
+       docker run --rm -p 5173:5173 restaurant-frontend
+       ```
+    - Podman:
+       ```sh
+       podman run --rm -p 5173:5173 restaurant-frontend
+       ```
 
-Notas:
+#### Notas:
 - El comando anterior mapea el puerto 5173 del contenedor al puerto 5173 del host. Si se emplea otro puerto interno, ajusta el mapeo: `-p puertoHost:puertoContenedor`.
 - Para ejecutar en segundo plano (detached):
-   docker run -d --name restaurant-frontend -p 5173:5173 restaurant-frontend
+   - Docker:
+      ```sh
+      docker run -d --name restaurant-frontend -p 5173:5173 restaurant-frontend
+      ```
+   - Podman:
+      ```sh
+      podman run -d --name restaurant-frontend -p 5173:5173 restaurant-frontend
+      ```
 - Para pasar variables de entorno al contenedor:
-   docker run --rm -p 5173:5173 -e API_URL="https://api.ejemplo.com" restaurant-frontend
+   - Docker:
+      ```sh
+      docker run --rm -p 5173:5173 -e API_URL="https://api.ejemplo.com" restaurant-frontend
+      ```
+   - Podman:
+      ```sh
+      podman run --rm -p 5173:5173 -e API_URL="https://api.ejemplo.com" restaurant-frontend
+      ```
+
+> **Compatibilidad:**
+> - No es necesario modificar ningún archivo del proyecto para usar Podman.
+> - No subas archivos de configuración específicos de Podman al repositorio.
+> - Los comandos y archivos (`Dockerfile`, `docker-compose.yml`) funcionan igual para ambos motores.
 
 Si tu aplicación usa variables de Vite en tiempo de build, recuerda que deben tener el prefijo VITE_ (por ejemplo VITE_API_URL) y suelen inyectarse en tiempo de construcción. Para configuración en tiempo de ejecución considera un pequeño script que reemplace variables en un archivo served-config o el uso de un servidor que inyecte esas variables.
 

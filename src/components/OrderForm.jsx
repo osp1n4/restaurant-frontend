@@ -1,34 +1,55 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { createOrder } from '../services/api';
+import { useOrderFormValidation } from '../hooks/useOrderFormValidation';
+
 
 // Menú de items disponibles (precios en pesos colombianos)
-const MENU_ITEMS = [
-  { id: 1, name: 'Classic Margherita Pizza', price: 28000, icon: 'local_pizza' },
-  { id: 2, name: 'Cheeseburger', price: 20000, icon: 'lunch_dining' },
-  { id: 3, name: 'Creamy Carbonara', price: 30000, icon: 'restaurant_menu' },
-  { id: 4, name: 'Caesar Salad', price: 18000, icon: 'restaurant' },
-  { id: 5, name: 'Soft Drink', price: 6000, icon: 'local_cafe' },
+const RAW_MENU_ITEMS = [
+  { id: 1, key: 'margherita', price: 28000, icon: 'local_pizza' },
+  { id: 2, key: 'cheeseburger', price: 20000, icon: 'lunch_dining' },
+  { id: 3, key: 'carbonara', price: 30000, icon: 'restaurant_menu' },
+  { id: 4, key: 'caesar', price: 18000, icon: 'restaurant' },
+  { id: 5, key: 'drink', price: 6000, icon: 'local_cafe' },
 ];
 
 export default function OrderForm() {
+  const { i18n, t } = useTranslation();
   const navigate = useNavigate();
-  
+
+  // Navbar: cambio de idioma y atrás
+  const handleLanguageChange = () => {
+    i18n.changeLanguage(i18n.language === 'es' ? 'en' : 'es');
+  };
+  const handleBack = () => {
+    navigate(-1);
+  };
+
+
+  // Hook de validación (SRP: separa lógica de validación del UI)
+  const {
+    touched,
+    setTouched,
+    getEmailValidationState,
+    isFormValid
+  } = useOrderFormValidation();
+
   // Estado del formulario
   const [customerName, setCustomerName] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
   const [notes, setNotes] = useState('');
   const [quantities, setQuantities] = useState(
-    MENU_ITEMS.reduce((acc, item) => ({ ...acc, [item.id]: 0 }), {})
+    RAW_MENU_ITEMS.reduce((acc, item) => ({ ...acc, [item.id]: 0 }), {})
   );
-  
+
   // Estados de UI
   const [showModal, setShowModal] = useState(false);
   const [orderNumber, setOrderNumber] = useState('');
   const [orderId, setOrderId] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [touched, setTouched] = useState({ name: false, email: false });
 
   // Incrementar cantidad de un item
   const increment = (itemId) => {
@@ -37,33 +58,25 @@ export default function OrderForm() {
 
   // Decrementar cantidad de un item
   const decrement = (itemId) => {
-    setQuantities(prev => ({ 
-      ...prev, 
-      [itemId]: Math.max(0, prev[itemId] - 1) 
+    setQuantities(prev => ({
+      ...prev,
+      [itemId]: Math.max(0, prev[itemId] - 1)
     }));
   };
 
   // Calcular total del pedido
   const calculateTotal = () => {
-    return MENU_ITEMS.reduce((total, item) => {
+    return RAW_MENU_ITEMS.reduce((total, item) => {
       return total + (item.price * quantities[item.id]);
     }, 0);
-  };
-
-  // Validar formulario
-  const isFormValid = () => {
-    const hasItems = Object.values(quantities).some(qty => qty > 0);
-    const hasName = customerName.trim().length > 0;
-    const hasEmail = customerEmail.trim().length > 0;
-    return hasItems && hasName && hasEmail;
   };
 
   // Enviar pedido
   const handleSubmit = async () => {
     // Marcar campos como tocados al intentar enviar
     setTouched({ name: true, email: true });
-    
-    if (!isFormValid()) {
+
+    if (!isFormValid(customerName, customerEmail, quantities)) {
       setError('Please enter your name, email, and select at least one item');
       return;
     }
@@ -73,10 +86,10 @@ export default function OrderForm() {
 
     try {
       // Preparar items del pedido
-      const items = MENU_ITEMS
+      const items = RAW_MENU_ITEMS
         .filter(item => quantities[item.id] > 0)
         .map(item => ({
-          name: item.name,
+          name: t(`orderForm.menu.${item.key}`),
           quantity: quantities[item.id],
           price: item.price,
         }));
@@ -90,11 +103,11 @@ export default function OrderForm() {
       };
 
       const response = await createOrder(orderData);
-      
+
       // Guardar datos del pedido
       setOrderNumber(response.orderNumber);
       setOrderId(response.orderId);
-      
+
       // Mostrar modal de éxito
       setShowModal(true);
     } catch (err) {
@@ -108,208 +121,178 @@ export default function OrderForm() {
   // Cerrar modal y redireccionar
   const handleModalClose = () => {
     setShowModal(false);
-    navigate(`/orders/${orderId}`);
+    // ✅ USAR orderNumber (ORD-xxx) en lugar de orderId (MongoDB _id)
+    navigate(`/orders/${orderNumber}`);
   };
+
+
+  // Validación básica de email
+  function isValidEmail(email) {
+    return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
+  }
 
   const total = calculateTotal();
 
   return (
-    <div className="relative flex h-auto min-h-screen w-full flex-col bg-background-light dark:bg-background-dark pb-32">
-      {/* Header */}
-      <div className="flex items-center bg-white dark:bg-background-dark p-4 pb-2 justify-between sticky top-0 z-10">
-        <div className="text-[#181311] dark:text-white flex size-12 shrink-0 items-center justify-center">
-          <span className="material-symbols-outlined text-3xl">restaurant</span>
+    <div className="min-h-screen flex flex-col bg-background-light dark:bg-background-dark">
+      {/* Navbar superior */}
+      <nav className="w-full flex items-center justify-between px-6 py-4 bg-white dark:bg-background-dark border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleBack}
+            className="flex items-center gap-1 px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+          >
+            <span className="material-symbols-outlined text-base">arrow_back</span>
+            {t('orderForm.back', 'Back')}
+          </button>
         </div>
-        <h2 className="text-[#181311] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1">
-          Delicious Kitchen
-        </h2>
-      </div>
-
-      <main className="flex flex-col gap-4">
-        {/* Sección de detalles del cliente */}
-        <div className="bg-white dark:bg-background-dark pt-5">
-          <h2 className="text-[#181311] dark:text-white tracking-light text-[28px] font-bold leading-tight px-4 text-left pb-3">
-            Your Details
-          </h2>
-          
-          <div className="flex flex-col gap-4 px-4 py-3">
-            {/* Campo Nombre */}
-            <label className="flex flex-col">
-              <p className="text-[#181311] dark:text-gray-300 text-base font-medium leading-normal pb-2">
-                Your Name *
-              </p>
-              <input
-                type="text"
-                className={`form-input flex w-full resize-none overflow-hidden rounded-lg text-[#181311] dark:text-white focus:outline-0 focus:ring-0 border ${
-                  touched.name && customerName.trim().length === 0
-                    ? 'border-red-500 dark:border-red-500'
-                    : 'border-[#e6dfdb] dark:border-gray-600'
-                } bg-white dark:bg-gray-800 focus:border-primary dark:focus:border-primary h-14 placeholder:text-[#896f61] p-[15px] text-base font-normal leading-normal`}
-                placeholder="Enter your name"
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-                onBlur={() => setTouched(prev => ({ ...prev, name: true }))}
-              />
-              {touched.name && customerName.trim().length === 0 && (
-                <p className="text-red-500 text-sm mt-1">Name is required</p>
-              )}
-            </label>
-
-            {/* Campo Email */}
-            <label className="flex flex-col">
-              <p className="text-[#181311] dark:text-gray-300 text-base font-medium leading-normal pb-2">
-                Your Email *
-              </p>
-              <input
-                type="email"
-                className={`form-input flex w-full resize-none overflow-hidden rounded-lg text-[#181311] dark:text-white focus:outline-0 focus:ring-0 border ${
-                  touched.email && customerEmail.trim().length === 0
-                    ? 'border-red-500 dark:border-red-500'
-                    : 'border-[#e6dfdb] dark:border-gray-600'
-                } bg-white dark:bg-gray-800 focus:border-primary dark:focus:border-primary h-14 placeholder:text-[#896f61] p-[15px] text-base font-normal leading-normal`}
-                placeholder="your@email.com"
-                value={customerEmail}
-                onChange={(e) => setCustomerEmail(e.target.value)}
-                onBlur={() => setTouched(prev => ({ ...prev, email: true }))}
-              />
-              {touched.email && customerEmail.trim().length === 0 && (
-                <p className="text-red-500 text-sm mt-1">Email is required</p>
-              )}
-            </label>
-
-            {/* Campo Notas */}
-            <label className="flex flex-col">
-              <p className="text-[#181311] dark:text-gray-300 text-base font-medium leading-normal pb-2">
-                Special Notes (optional)
-              </p>
-              <textarea
-                className="form-input flex w-full resize-none overflow-hidden rounded-lg text-[#181311] dark:text-white focus:outline-0 focus:ring-0 border border-[#e6dfdb] dark:border-gray-600 bg-white dark:bg-gray-800 focus:border-primary dark:focus:border-primary placeholder:text-[#896f61] p-[15px] text-base font-normal leading-normal"
-                placeholder="Allergies, preferences, special instructions..."
-                rows="3"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-              />
-            </label>
+        <div className="flex items-center justify-end w-12 h-12">
+          <button
+            onClick={handleLanguageChange}
+            className="flex items-center justify-center w-10 h-10 rounded-full border border-primary text-xs font-semibold text-primary hover:bg-primary hover:text-white transition-colors"
+            aria-label={i18n.language === 'es' ? 'Switch to English' : 'Cambiar a Español'}
+          >
+            {i18n.language === 'es' ? 'EN' : 'ES'}
+          </button>
+        </div>
+      </nav>
+      <div className="w-full max-w-4xl mx-auto bg-white dark:bg-background-dark rounded-2xl shadow-xl p-12 md:p-16 flex flex-col gap-10">
+        {/* Header minimalista */}
+        <div className="flex items-center gap-3 mb-2">
+          <div className="flex items-center justify-center rounded-full size-10 bg-primary">
+            <span className="material-symbols-outlined text-2xl text-white">restaurant</span>
           </div>
+          <h2 className="text-[#181311] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">{t('home.title')}</h2>
+        </div>
+
+        {/* Sección de detalles del cliente */}
+        <div className="flex flex-col gap-4">
+          <label className="flex flex-col">
+            <span className="text-[#181311] dark:text-gray-300 text-base font-medium pb-2">{t('orderForm.nameLabel')}</span>
+            <input
+              type="text"
+              className={`form-input w-full rounded-lg text-[#181311] dark:text-white border ${
+                touched.name && customerName.trim().length === 0
+                  ? 'border-red-500 dark:border-red-500'
+                  : 'border-[#e6dfdb] dark:border-gray-600'
+              } bg-white dark:bg-gray-800 focus:border-primary h-12 px-4 text-base`}
+              placeholder={t('orderForm.namePlaceholder')}
+              value={customerName}
+              onChange={(e) => setCustomerName(e.target.value)}
+              onBlur={() => setTouched(prev => ({ ...prev, name: true }))}
+            />
+            {touched.name && customerName.trim().length === 0 && (
+              <span className="text-red-500 text-sm mt-1">{t('orderForm.nameRequired')}</span>
+            )}
+          </label>
+          <label className="flex flex-col">
+            <span className="text-[#181311] dark:text-gray-300 text-base font-medium pb-2">{t('orderForm.emailLabel')}</span>
+            <input
+              type="email"
+              className={`form-input w-full rounded-lg text-[#181311] dark:text-white border ${
+                getEmailValidationState(customerEmail) === 'error'
+                  ? 'border-red-500 dark:border-red-500'
+                  : getEmailValidationState(customerEmail) === 'invalid'
+                  ? 'border-yellow-500 dark:border-yellow-500'
+                  : getEmailValidationState(customerEmail) === 'valid'
+                  ? 'border-green-500 dark:border-green-500'
+                  : 'border-[#e6dfdb] dark:border-gray-600'
+              } bg-white dark:bg-gray-800 focus:border-primary h-12 px-4 text-base`}
+              placeholder={t('orderForm.emailPlaceholder')}
+              value={customerEmail}
+              onChange={(e) => setCustomerEmail(e.target.value)}
+              onBlur={() => setTouched(prev => ({ ...prev, email: true }))}
+            />
+              {touched.email && customerEmail.trim().length === 0 && (
+                <span className="text-red-500 text-sm mt-1">{t('orderForm.emailRequired')}</span>
+              )}
+              {touched.email && customerEmail.trim().length > 0 && !isValidEmail(customerEmail) && (
+                <span className="text-yellow-600 dark:text-yellow-500 text-sm mt-1">{t('orderForm.emailInvalid')}</span>
+              )}
+              {touched.email && customerEmail.trim().length > 0 && getEmailValidationState(customerEmail) === 'invalid' && (
+                <span className="text-yellow-600 dark:text-yellow-500 text-sm mt-1">Please enter a valid email format</span>
+              )}
+              {touched.email && isValidEmail(customerEmail) && (
+                <span className="text-green-600 dark:text-green-500 text-sm mt-1">{t('orderForm.emailValid')}</span>
+              )}
+            
+          </label>
+          <label className="flex flex-col">
+            <span className="text-[#181311] dark:text-gray-300 text-base font-medium pb-2">{t('orderForm.notesLabel')}</span>
+            <textarea
+              className="form-input w-full rounded-lg text-[#181311] dark:text-white border border-[#e6dfdb] dark:border-gray-600 bg-white dark:bg-gray-800 focus:border-primary px-4 py-2 text-base"
+              placeholder={t('orderForm.notesPlaceholder')}
+              rows="2"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+            />
+          </label>
         </div>
 
         {/* Sección del menú */}
-        <div className="bg-white dark:bg-background-dark pt-5">
-          <h2 className="text-[#181311] dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3">
-            What are you craving?
-          </h2>
-
-          {/* Lista de items del menú */}
-          {MENU_ITEMS.map((item) => (
-            <div
-              key={item.id}
-              className="flex items-center gap-4 bg-white dark:bg-background-dark px-4 min-h-[72px] py-2 justify-between"
-            >
-              <div className="flex items-center gap-4">
-                <div className="flex items-center justify-center rounded-lg bg-primary/20 shrink-0 size-12">
-                  <span className="material-symbols-outlined text-3xl text-primary">
-                    {item.icon}
-                  </span>
-                </div>
-                <div className="flex flex-col justify-center">
-                  <p className="text-[#181311] dark:text-white text-base font-medium leading-normal line-clamp-1">
-                    {item.name}
-                  </p>
-                  <p className="text-[#896f61] dark:text-gray-400 text-sm font-normal leading-normal line-clamp-2">
-                    ${item.price.toLocaleString('es-CO')}
-                  </p>
-                </div>
+        <div className="flex flex-col gap-3">
+          <span className="text-[#181311] dark:text-white text-base font-bold pb-2">{t('orderForm.menuLabel')}</span>
+          {RAW_MENU_ITEMS.map((item) => (
+            <div key={item.id} className="flex items-center justify-between gap-4 bg-background-light dark:bg-gray-900 rounded-lg px-3 py-2">
+              <div className="flex items-center gap-3">
+                <span className="material-symbols-outlined text-2xl text-primary bg-primary/20 rounded-lg p-2">{item.icon}</span>
+                <span className="text-[#181311] dark:text-white text-base font-medium">{t(`orderForm.menu.${item.key}`)}</span>
+                <span className="text-[#896f61] dark:text-gray-400 text-sm font-normal">${item.price.toLocaleString('es-CO')}</span>
               </div>
-
-              {/* Controles de cantidad */}
-              <div className="shrink-0">
-                <div className="flex items-center gap-2 text-[#181311] dark:text-white">
-                  <button
-                    onClick={() => decrement(item.id)}
-                    className="text-base font-medium leading-normal flex h-7 w-7 items-center justify-center rounded-full bg-background-light dark:bg-gray-700 cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
-                    disabled={quantities[item.id] === 0}
-                  >
-                    -
-                  </button>
-                  <input
-                    type="number"
-                    className="text-base font-medium leading-normal w-4 p-0 text-center bg-transparent focus:outline-0 focus:ring-0 focus:border-none border-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                    value={quantities[item.id]}
-                    readOnly
-                  />
-                  <button
-                    onClick={() => increment(item.id)}
-                    className="text-base font-medium leading-normal flex h-7 w-7 items-center justify-center rounded-full bg-background-light dark:bg-gray-700 cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
-                  >
-                    +
-                  </button>
-                </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => decrement(item.id)}
+                  className="h-7 w-7 flex items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-white font-bold text-lg disabled:bg-gray-100 disabled:text-gray-400"
+                  disabled={quantities[item.id] === 0}
+                >-
+                </button>
+                <span className="w-6 text-center">{quantities[item.id]}</span>
+                <button
+                  onClick={() => increment(item.id)}
+                  className="h-7 w-7 flex items-center justify-center rounded-full bg-primary text-white font-bold text-lg"
+                >+
+                </button>
               </div>
             </div>
           ))}
         </div>
 
-        {/* Mensaje de error */}
-        {error && (
-          <div className="px-4">
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 px-4 py-3 rounded-lg">
-              {error}
-            </div>
-          </div>
-        )}
-      </main>
-
-      {/* Footer fijo con resumen y botón */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow-lg px-4 py-3">
-        <div className="max-w-md mx-auto flex items-center justify-between gap-4">
-          <div className="flex flex-col">
-            <span className="text-sm text-gray-500 dark:text-gray-400">Total</span>
-            <span className="text-2xl font-bold text-[#181311] dark:text-white">
-              ${total.toLocaleString('es-CO')}
-            </span>
+        {/* Footer resumen y botón */}
+        <div className="flex flex-col gap-2 pt-4">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-gray-500 dark:text-gray-400">{t('orderForm.totalLabel')}</span>
+            <span className="text-xl font-bold text-[#181311] dark:text-white">${total.toLocaleString('es-CO')}</span>
           </div>
           <button
             onClick={handleSubmit}
-            disabled={!isFormValid() || isLoading}
-            className="bg-primary text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50 disabled:bg-gray-400 disabled:cursor-not-allowed w-48 transition-colors"
+            disabled={!isFormValid(customerName, customerEmail, quantities) || isLoading}
+            className="bg-primary text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50 disabled:bg-gray-400 disabled:cursor-not-allowed w-full transition-colors"
           >
-            {isLoading ? 'Processing...' : 'Place Order'}
+            {isLoading ? t('orderForm.processing') : t('orderForm.placeOrder')}
           </button>
         </div>
-      </div>
 
-      {/* Modal de éxito */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-background-dark w-full max-w-sm rounded-xl shadow-lg p-6 text-center flex flex-col items-center animate-fadeIn">
-            <div className="flex items-center justify-center size-16 bg-green-100 rounded-full mb-4">
-              <span className="material-symbols-outlined text-4xl text-green-600">
-                check_circle
-              </span>
+        {/* Modal de éxito */}
+        {showModal && (
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
+            <div className="bg-white dark:bg-background-dark w-full max-w-sm rounded-xl shadow-lg p-6 text-center flex flex-col items-center animate-fadeIn">
+              <div className="flex items-center justify-center size-16 bg-green-100 rounded-full mb-4">
+                <span className="material-symbols-outlined text-4xl text-green-600">check_circle</span>
+              </div>
+              <h3 className="text-xl font-bold text-[#181311] dark:text-white mb-2">{t('orderForm.successTitle')}</h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-4">{t('orderForm.successText')}</p>
+              <div className="bg-background-light dark:bg-gray-800 rounded-lg p-3 w-full">
+                <span className="text-sm text-gray-500 dark:text-gray-400">{t('orderForm.orderNumberLabel')}</span>
+                <p className="text-lg font-mono font-bold text-[#181311] dark:text-white tracking-wider">{orderNumber}</p>
+              </div>
+              <button
+                onClick={handleModalClose}
+                className="mt-6 bg-primary text-white font-bold py-3 px-6 rounded-lg w-full hover:bg-primary/90 transition-colors"
+              >{t('orderForm.viewOrderStatus')}</button>
             </div>
-            <h3 className="text-xl font-bold text-[#181311] dark:text-white mb-2">
-              Order Placed Successfully!
-            </h3>
-            <p className="text-gray-600 dark:text-gray-300 mb-4">
-              Your order is being prepared.
-            </p>
-            <div className="bg-background-light dark:bg-gray-800 rounded-lg p-3 w-full">
-              <span className="text-sm text-gray-500 dark:text-gray-400">
-                Your Order Number
-              </span>
-              <p className="text-lg font-mono font-bold text-[#181311] dark:text-white tracking-wider">
-                {orderNumber}
-              </p>
-            </div>
-            <button
-              onClick={handleModalClose}
-              className="mt-6 bg-primary text-white font-bold py-3 px-6 rounded-lg w-full hover:bg-primary/90 transition-colors"
-            >
-              View Order Status
-            </button>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
