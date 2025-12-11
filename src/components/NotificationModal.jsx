@@ -14,7 +14,7 @@ export default function NotificationModal({
   cancelText
 }) {
   // Log para debugging
-  console.log('🎭 NotificationModal render:', { isOpen, type, title });
+
   const { t } = useTranslation();
 
   if (!isOpen) return null;

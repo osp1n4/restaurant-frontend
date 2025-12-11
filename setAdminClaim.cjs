@@ -14,7 +14,6 @@ const uid = "vK9WOe6wvKYLRg0woDChXlsvqxy1";
 
 admin.auth().setCustomUserClaims(uid, { role: "ADMIN" })
   .then(() => {
-    console.log(`Custom claim 'ADMIN' asignado al usuario ${uid}`);
     process.exit(0);
   })
   .catch((error) => {

@@ -52,7 +52,7 @@ function Login() {
     const user = userCredential.user;
     const tokenResult = await user.getIdTokenResult(true);
     
-    console.log("Claims recibidos:", tokenResult.claims);
+
     
     return { user, tokenResult };
   };
@@ -65,8 +65,7 @@ function Login() {
     try {
       const { user, tokenResult } = await authenticateUser(email, password);
       const isAllowed = validateAllowedRole(tokenResult.claims);
-      
-      console.log("Rol permitido:", isAllowed);
+
 
       if (isAllowed) {
         handleSuccessfulLogin(user, tokenResult);
