@@ -16,6 +16,8 @@ import UserForm from './modules/users/UserForm';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from './components/MainLayout';
 import ProtectedRoute from './components/ProtectedRoute';
+import SessionAlert from './components/SessionAlert';
+import { SessionProvider } from './context/SessionContext';
 
 
 function App() {
@@ -25,8 +27,10 @@ function App() {
     return <Login {...props} navigate={navigate} />;
   }
   return (
-    <Router>
-      <Routes>
+    <SessionProvider>
+      <Router>
+        <SessionAlert />
+        <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/order" element={<OrderPage />} />
         <Route path="/orders/:orderId" element={<OrderStatusPage />} />
@@ -67,7 +71,8 @@ function App() {
           </ProtectedRoute>
         } />
       </Routes>
-    </Router>
+      </Router>
+    </SessionProvider>
   );
 }
 

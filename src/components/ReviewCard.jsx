@@ -33,27 +33,26 @@ export default function ReviewCard({ review }) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 p-6 border border-[#F5F5F5]">
+    <div className="bg-slate-800 rounded-lg shadow-xl hover:shadow-2xl transition-shadow duration-300 p-6 border border-slate-700">
       {/* Header: Nombre y Fecha */}
       <div className="flex justify-between items-start mb-4">
         <div>
-          <h3 className="text-lg font-bold text-[#222222]">
+          <h3 className="text-lg font-bold text-white">
             {review.customerName}
           </h3>
-          <p className="text-sm text-[#666666]">
+          <p className="text-sm text-gray-400">
             {formatRelativeDate(review.createdAt)}
           </p>
         </div>
 
         {/* Overall Rating Badge */}
-        <div className="flex items-center gap-1 bg-[#FF6B35]/10 px-3 py-1 rounded-full">
+        <div className="flex items-center gap-1 bg-primary/20 px-3 py-1 rounded-full">
           <span
-            className="material-symbols-outlined text-xl"
-            style={{ color: '#FF6B35' }}
+            className="material-symbols-outlined text-xl text-primary"
           >
             star
           </span>
-          <span className="font-bold text-[#FF6B35]">
+          <span className="font-bold text-primary">
             {overallRating}.0
           </span>
         </div>
@@ -62,7 +61,7 @@ export default function ReviewCard({ review }) {
       {/* Ratings Breakdown */}
       <div className="grid grid-cols-2 gap-4 mb-4">
         <div>
-          <p className="text-xs font-medium text-[#666666] mb-1">Overall</p>
+          <p className="text-xs font-medium text-gray-400 mb-1">Overall</p>
           <StarRating
             rating={overallRating}
             readonly={true}
@@ -70,7 +69,7 @@ export default function ReviewCard({ review }) {
           />
         </div>
         <div>
-          <p className="text-xs font-medium text-[#666666] mb-1">Food Quality</p>
+          <p className="text-xs font-medium text-gray-400 mb-1">Food Quality</p>
           <StarRating
             rating={foodRating}
             readonly={true}
@@ -81,8 +80,8 @@ export default function ReviewCard({ review }) {
 
       {/* Comment */}
       {review.comment && (
-        <div className="mt-4 pt-4 border-t border-[#F5F5F5]">
-          <p className="text-[#222222] leading-relaxed">
+        <div className="mt-4 pt-4 border-t border-slate-700">
+          <p className="text-gray-300 leading-relaxed">
             "{review.comment}"
           </p>
         </div>

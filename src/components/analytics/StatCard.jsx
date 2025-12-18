@@ -6,12 +6,12 @@ import PropTypes from 'prop-types';
  */
 function StatCard({ title, value, change, isPositive = true, icon, format = 'number' }) {
   const formattedValue = formatValue(value, format);
-  const changeColor = isPositive ? 'text-[#078829] dark:text-green-400' : 'text-[#e72a08] dark:text-red-400';
+  const changeColor = isPositive ? 'text-green-400' : 'text-red-400';
   
   return (
-    <div className="flex flex-col gap-2 rounded-xl p-6 border border-gray-200 dark:border-gray-800 bg-white dark:bg-background-dark/50 hover:shadow-lg transition-shadow">
+    <div className="flex flex-col gap-2 rounded-xl p-6 border border-slate-700 bg-slate-900 hover:shadow-xl transition-shadow">
       <div className="flex items-center justify-between">
-        <p className="text-[#63886f] dark:text-gray-400 text-base font-medium leading-normal">
+        <p className="text-gray-400 text-base font-medium leading-normal">
           {title}
         </p>
         {icon && (
@@ -20,7 +20,7 @@ function StatCard({ title, value, change, isPositive = true, icon, format = 'num
           </span>
         )}
       </div>
-      <p className="text-[#111813] dark:text-white tracking-light text-3xl font-bold leading-tight">
+      <p className="text-white tracking-light text-3xl font-bold leading-tight">
         {formattedValue}
       </p>
       {change !== null && change !== undefined && (

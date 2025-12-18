@@ -32,21 +32,20 @@ describe('NotificationModal', () => {
 
   it('muestra título y mensaje por defecto si no se pasan', () => {
     render(<NotificationModal isOpen />);
-    // Ambos elementos contienen "Notificación" (título y mensaje)
-    const notificacionElements = screen.getAllByText(/notificación/i);
-    expect(notificacionElements.length).toBeGreaterThanOrEqual(1);
-    // El mensaje por defecto también debe estar
-    expect(screen.getByText(/tienes una nueva notificación\./i)).toBeInTheDocument();
+    // Con el mock de i18n, se renderizan las keys directamente
+    expect(screen.getByText('notification.defaultTitle')).toBeInTheDocument();
+    expect(screen.getByText('notification.defaultMessage')).toBeInTheDocument();
   });
 
   it('renderiza solo botón aceptar si no hay onCancel', () => {
     const onAccept = jest.fn();
     render(<NotificationModal isOpen onAccept={onAccept} />);
-    const acceptBtn = screen.getByRole('button', { name: /aceptar/i });
+    // Con el mock de i18n, el texto del botón es la key
+    const acceptBtn = screen.getByRole('button', { name: 'notification.accept' });
     expect(acceptBtn).toBeInTheDocument();
     fireEvent.click(acceptBtn);
     expect(onAccept).toHaveBeenCalled();
-    expect(screen.queryByRole('button', { name: /cancelar/i })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'notification.cancel' })).toBeNull();
   });
 
   it('renderiza ambos botones si hay onCancel y responde a clicks', () => {
@@ -55,8 +54,9 @@ describe('NotificationModal', () => {
     render(
       <NotificationModal isOpen onAccept={onAccept} onCancel={onCancel} />
     );
-    const acceptBtn = screen.getByRole('button', { name: /aceptar/i });
-    const cancelBtn = screen.getByRole('button', { name: /cancelar/i });
+    // Con el mock de i18n, los textos de botones son las keys
+    const acceptBtn = screen.getByRole('button', { name: 'notification.accept' });
+    const cancelBtn = screen.getByRole('button', { name: 'notification.cancel' });
     expect(acceptBtn).toBeInTheDocument();
     expect(cancelBtn).toBeInTheDocument();
     fireEvent.click(acceptBtn);

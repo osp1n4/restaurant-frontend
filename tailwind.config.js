@@ -8,7 +8,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: '#FF6B35',
+        primary: '#ee5b2b',
         secondary: {
           DEFAULT: '#F5F5F5',
           light: '#FFFFFF',
@@ -21,8 +21,8 @@ export default {
           inactive: '#CCCCCC',
         },
         // Mantener claves anteriores si se usan en componentes
-        "background-light": "#F5F5F5",
-        "background-dark": "#221610",
+        "background-light": "#f8f6f6",
+        "background-dark": "#221510",
         "card-light": "#FFFFFF",
         "card-dark": "#2d1d14",
         "text-light": "#222222",
@@ -34,7 +34,7 @@ export default {
       },
       fontFamily: {
         sans: ['Inter', 'Roboto', 'Helvetica Neue', 'Segoe UI', 'system-ui', 'Arial', 'sans-serif'],
-        display: ['Inter', 'Roboto', 'Helvetica Neue', 'sans-serif'],
+        display: ['Plus Jakarta Sans', 'Noto Sans', 'Inter', 'Roboto', 'sans-serif'],
       },
       borderRadius: {
         DEFAULT: '0.5rem',

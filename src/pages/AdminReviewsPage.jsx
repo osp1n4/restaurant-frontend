@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import StarRating from '../components/StarRating';
 import Sidebar from '../components/analytics/Sidebar';
 import { useTranslation } from 'react-i18next';
+import { updateReviewStatus } from '../services/api';
 
 /**
  * AdminReviewsPage Component
@@ -9,7 +10,7 @@ import { useTranslation } from 'react-i18next';
  * Panel de administración para gestionar reseñas (aprobar/ocultar).
  *
  * Features:
- * - Fetch de todas las reseñas (pending/approved/hidden) desde GET /admin/reviews
+ * - Fetch de todas las reseñas (pending/approved/hidden)
  * - Acciones de moderación: Aprobar y Ocultar
  * - Modal de confirmación para acciones
  * - Badges de estado con colores semánticos
@@ -45,7 +46,7 @@ const AdminReviewsPage = () => {
 
     try {
       const response = await fetch(`${API_BASE_URL}/reviews/admin/reviews`);
-
+      
       if (!response.ok) {
         throw new Error('Error al cargar las reseñas');
       }
@@ -93,20 +94,7 @@ const AdminReviewsPage = () => {
     }
 
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/reviews/${reviewId}/status`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ status: newStatus }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Error al actualizar la reseña');
-      }
+      await updateReviewStatus(reviewId, newStatus);
 
       // Update local state
       setReviews((prev) =>
@@ -153,10 +141,10 @@ const AdminReviewsPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F5F5F5] flex items-center justify-center">
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF6B35] mx-auto mb-4"></div>
-          <p className="text-[#222222] text-lg">{t('reviews.loading', 'Loading reviews...')}</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-white text-lg">{t('reviews.loading', 'Loading reviews...')}</p>
         </div>
       </div>
     );
@@ -164,15 +152,15 @@ const AdminReviewsPage = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#F5F5F5] flex items-center justify-center">
-        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md mx-4">
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="bg-slate-800 rounded-lg shadow-xl p-8 max-w-md mx-4">
           <div className="text-center">
             <span className="material-symbols-outlined text-red-500 text-5xl mb-4">error</span>
-            <h2 className="text-2xl font-bold text-[#222222] mb-2">{t('reviews.error', 'Error')}</h2>
-            <p className="text-[#666666] mb-6">{error}</p>
+            <h2 className="text-2xl font-bold text-white mb-2">{t('reviews.error', 'Error')}</h2>
+            <p className="text-gray-400 mb-6">{error}</p>
             <button
               onClick={fetchReviews}
-              className="bg-[#FF6B35] hover:bg-[#e55d2e] text-white font-medium py-2 px-6 rounded-lg transition-colors"
+              className="bg-primary hover:bg-primary/90 text-white font-medium py-2 px-6 rounded-lg transition-colors"
             >
               {t('reviews.retry', 'Retry')}
             </button>
@@ -183,35 +171,35 @@ const AdminReviewsPage = () => {
   }
 
   return (
-    <div className="relative flex h-auto min-h-screen w-full flex-col bg-[#F5F5F5] dark:bg-background-dark group/design-root overflow-x-hidden">
+    <div className="fixed inset-0 bg-slate-950 overflow-auto">
       <div className="layout-container flex h-full grow flex-row">
         <Sidebar />
-        <main className="flex-1 p-8">
+        <main className="flex-1 p-8 ml-64 min-h-screen">
           <div className="max-w-6xl mx-auto">
             {/* Header */}
             <div className="mb-8">
-              <h1 className="text-4xl font-bold text-[#222222] mb-2">
+              <h1 className="text-4xl font-bold text-white mb-2">
                 {t('reviews.managementTitle', 'Review Management Panel')}
               </h1>
-              <p className="text-[#666666] text-lg">
+              <p className="text-gray-400 text-lg">
                 {t('reviews.managementSubtitle', 'Manage and moderate customer reviews')}
               </p>
             </div>
 
             {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <p className="text-[#666666] text-sm mb-1">{t('reviews.total', 'Total Reviews')}</p>
-                <p className="text-3xl font-bold text-[#222222]">{reviews.length}</p>
+              <div className="bg-slate-900 border border-slate-700 rounded-lg shadow-xl p-6">
+                <p className="text-gray-400 text-sm mb-1">{t('reviews.total', 'Total Reviews')}</p>
+                <p className="text-3xl font-bold text-white">{reviews.length}</p>
               </div>
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <p className="text-[#666666] text-sm mb-1">{t('reviews.status.pending', 'Pending')}</p>
+              <div className="bg-slate-900 border border-slate-700 rounded-lg shadow-xl p-6">
+                <p className="text-gray-400 text-sm mb-1">{t('reviews.status.pending', 'Pending')}</p>
                 <p className="text-3xl font-bold text-yellow-600">
                   {reviews.filter((r) => r.status === 'pending').length}
                 </p>
               </div>
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <p className="text-[#666666] text-sm mb-1">{t('reviews.status.approved', 'Approved')}</p>
+              <div className="bg-slate-900 border border-slate-700 rounded-lg shadow-xl p-6">
+                <p className="text-gray-400 text-sm mb-1">{t('reviews.status.approved', 'Approved')}</p>
                 <p className="text-3xl font-bold text-green-600">
                   {reviews.filter((r) => r.status === 'approved').length}
                 </p>
@@ -220,12 +208,12 @@ const AdminReviewsPage = () => {
 
             {/* Reviews List */}
             {reviews.length === 0 ? (
-              <div className="bg-white rounded-lg shadow-md p-12 text-center">
-                <span className="material-symbols-outlined text-[#CCCCCC] text-6xl mb-4">rate_review</span>
-                <h2 className="text-2xl font-bold text-[#222222] mb-2">
+              <div className="bg-slate-800 border border-slate-700 rounded-lg shadow-xl p-12 text-center">
+                <span className="material-symbols-outlined text-gray-600 text-6xl mb-4">rate_review</span>
+                <h2 className="text-2xl font-bold text-white mb-2">
                   {t('reviews.noReviews', 'No reviews')}
                 </h2>
-                <p className="text-[#666666]">
+                <p className="text-gray-400">
                   {t('reviews.noReviewsText', 'Reviews will appear here when customers submit them')}
                 </p>
               </div>
@@ -234,20 +222,20 @@ const AdminReviewsPage = () => {
                 {reviews.map((review) => (
                   <div
                     key={review.id || review._id}
-                    className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6"
+                    className="bg-slate-800 border border-slate-700 rounded-lg shadow-xl hover:shadow-2xl transition-shadow p-6"
                   >
                     <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <h3 className="text-lg font-bold text-[#222222]">
+                          <h3 className="text-lg font-bold text-white">
                             {review.customerName}
                           </h3>
                           {getStatusBadge(review.status)}
                         </div>
-                        <p className="text-sm text-[#666666] mb-1">
+                        <p className="text-sm text-gray-400 mb-1">
                           Order: {review.orderId}
                         </p>
-                        <p className="text-sm text-[#666666]">
+                        <p className="text-sm text-gray-400">
                           {formatDate(review.createdAt)}
                         </p>
                       </div>
@@ -258,8 +246,8 @@ const AdminReviewsPage = () => {
                           className={`
                             flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors
                             ${review.status === 'approved'
-                              ? 'bg-[#CCCCCC] cursor-not-allowed text-[#666666]'
-                              : 'bg-[#FF6B35] hover:bg-[#e55d2e] text-white'
+                              ? 'bg-slate-700 cursor-not-allowed text-gray-500'
+                              : 'bg-primary hover:bg-primary/90 text-white'
                             }
                           `}
                         >
@@ -272,8 +260,8 @@ const AdminReviewsPage = () => {
                           className={`
                             flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors
                             ${review.status === 'hidden'
-                              ? 'bg-[#CCCCCC] cursor-not-allowed text-[#666666]'
-                              : 'bg-gray-600 hover:bg-gray-700 text-white'
+                              ? 'bg-slate-700 cursor-not-allowed text-gray-500'
+                              : 'bg-slate-600 hover:bg-slate-700 text-white'
                             }
                           `}
                         >
@@ -285,19 +273,19 @@ const AdminReviewsPage = () => {
 
                     <div className="grid grid-cols-2 gap-4 mb-4">
                       <div>
-                        <p className="text-sm text-[#666666] mb-2">{t('reviews.overallRating', 'Overall Rating')}</p>
+                        <p className="text-sm text-gray-400 mb-2">{t('reviews.overallRating', 'Overall Rating')}</p>
                         <StarRating rating={review.ratings?.overall || review.rating || 5} readonly size="sm" />
                       </div>
                       <div>
-                        <p className="text-sm text-[#666666] mb-2">{t('reviews.foodQuality', 'Food Quality')}</p>
+                        <p className="text-sm text-gray-400 mb-2">{t('reviews.foodQuality', 'Food Quality')}</p>
                         <StarRating rating={review.ratings?.food || review.rating || 5} readonly size="sm" />
                       </div>
                     </div>
 
                     {review.comment && (
-                      <div className="border-t border-[#F5F5F5] pt-4">
-                        <p className="text-sm text-[#666666] mb-1 font-medium">{t('reviews.comment', 'Comment:')}</p>
-                        <p className="text-[#222222]">{review.comment}</p>
+                      <div className="border-t border-slate-700 pt-4">
+                        <p className="text-sm text-gray-400 mb-1 font-medium">{t('reviews.comment', 'Comment:')}</p>
+                        <p className="text-gray-300">{review.comment}</p>
                       </div>
                     )}
                   </div>
@@ -309,9 +297,9 @@ const AdminReviewsPage = () => {
           {/* Confirmation Modal */}
           {showConfirmModal && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-              <div className="bg-white rounded-lg shadow-2xl max-w-md w-full p-6">
-                <h3 className="text-2xl font-bold text-[#222222] mb-4">{t('reviews.confirmAction', 'Confirm Action')}</h3>
-                <p className="text-[#666666] mb-6">{t('reviews.confirmText', 'Are you sure you want to {{action}} this review from {{name}}?', {
+              <div className="bg-slate-900 border border-slate-700 rounded-lg shadow-2xl max-w-md w-full p-6">
+                <h3 className="text-2xl font-bold text-white mb-4">{t('reviews.confirmAction', 'Confirm Action')}</h3>
+                <p className="text-gray-400 mb-6">{t('reviews.confirmText', 'Are you sure you want to {{action}} this review from {{name}}?', {
                     action: t(`reviews.${actionType}`, actionType === 'approve' ? 'approve' : 'hide'),
                     name: selectedReview?.customerName
                   })}</p>
@@ -319,14 +307,14 @@ const AdminReviewsPage = () => {
                   <button
                     onClick={handleCloseConfirmModal}
                     disabled={processing}
-                    className="flex-1 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-[#222222] rounded-lg font-medium transition-colors disabled:opacity-50"
+                    className="flex-1 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
                   >
                     {t('reviews.cancel', 'Cancel')}
                   </button>
                   <button
                     onClick={handleConfirmAction}
                     disabled={processing}
-                    className="flex-1 px-4 py-2 bg-[#FF6B35] hover:bg-[#e55d2e] text-white rounded-lg font-medium transition-colors disabled:opacity-50"
+                    className="flex-1 px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
                   >
                     {processing ? t('reviews.processing', 'Processing...') : t('reviews.confirm', 'Confirm')}
                   </button>

@@ -33,20 +33,20 @@ export default function ReviewModal({
 
   if (!isOpen) return null;
 
-  // Validación del formulario
+  // Validación del formulario (US-022: Rating obligatorio entre 1-5)
   const validate = () => {
     const newErrors = {};
 
-    if (!ratings.overall || ratings.overall < 1) {
-      newErrors.overall = 'Overall rating is required';
+    if (!ratings.overall || ratings.overall < 1 || ratings.overall > 5) {
+      newErrors.overall = 'Overall rating is required (1-5)';
     }
 
-    if (!ratings.food || ratings.food < 1) {
-      newErrors.food = 'Food rating is required';
+    if (!ratings.food || ratings.food < 1 || ratings.food > 5) {
+      newErrors.food = 'Food rating is required (1-5)';
     }
 
-    if (comment && comment.length > 500) {
-      newErrors.comment = 'Comment must not exceed 500 characters';
+    if (comment && comment.length > 280) {
+      newErrors.comment = 'Comment must not exceed 280 characters';
     }
 
     setErrors(newErrors);
@@ -67,15 +67,22 @@ export default function ReviewModal({
     try {
       const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
+      // Sanitizar comentario (US-022: sin scripts)
+      const sanitizedComment = comment
+        .trim()
+        .replace(/<script[^>]*>.*?<\/script>/gi, '')
+        .replace(/<[^>]+>/g, '')
+        .replace(/javascript:/gi, '')
+        .replace(/on\w+\s*=/gi, '');
+
       const reviewData = {
         orderId: orderData.orderId,
-        customerName: orderData.customerName || orderData.customer,
-        customerEmail: orderData.customerEmail || 'customer@example.com',
-        ratings,
-        comment: comment.trim()
+        userName: orderData.customerName || orderData.customer || 'Anonymous',
+        userEmail: orderData.customerEmail || 'customer@example.com',
+        rating: ratings.overall,
+        foodQuality: ratings.food,
+        comment: sanitizedComment
       };
-
-
 
       const response = await fetch(`${API_BASE_URL}/reviews`, {
         method: 'POST',
@@ -136,8 +143,8 @@ export default function ReviewModal({
     }
   };
 
-  // Caracteres restantes del comentario
-  const remainingChars = 500 - comment.length;
+  // Caracteres restantes del comentario (máximo 280 según US-022)
+  const remainingChars = 280 - comment.length;
 
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50 animate-fadeIn">
@@ -221,12 +228,12 @@ export default function ReviewModal({
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 placeholder="Tell us about your experience..."
-                maxLength={500}
+                maxLength={280}
                 rows={4}
                 className="w-full px-4 py-3 border border-[#CCCCCC] rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#FF6B35] focus:border-transparent text-[#222222] placeholder-[#CCCCCC]"
               />
               <div className="flex justify-between items-center mt-1">
-                <p className={`text-xs ${remainingChars < 50 ? 'text-[#FF6B35]' : 'text-[#666666]'}`}>
+                <p className={`text-xs ${remainingChars < 30 ? 'text-[#FF6B35]' : 'text-[#666666]'}`}>
                   {remainingChars} characters remaining
                 </p>
                 {errors.comment && (

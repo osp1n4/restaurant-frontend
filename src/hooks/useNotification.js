@@ -1,7 +1,9 @@
 import { useEffect, useRef } from 'react';
 
 import { getEnvVar } from '../utils/getEnvVar';
-const NOTIFICATION_URL = getEnvVar('VITE_NOTIFICATION_URL') || 'http://localhost:3003/notifications/stream';
+// Usar API Gateway en lugar de conectarse directamente al notification-service
+const API_BASE_URL = getEnvVar('VITE_API_URL') || 'http://localhost:3000';
+const NOTIFICATION_URL = getEnvVar('VITE_NOTIFICATION_URL') || `${API_BASE_URL}/notifications/stream`;
 
 /**
  * Hook para conectar con el servicio de notificaciones SSE

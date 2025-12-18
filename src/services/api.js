@@ -9,19 +9,19 @@ const API_BASE_URL = getEnvVar('VITE_API_URL') || 'http://localhost:3000';
 /**
  * Mapea los estados del backend a los estados del frontend
  * @param {string} status - Estado del backend (PENDING, PREPARING, READY, DELIVERED, CANCELLED)
- * @returns {string} Estado del frontend (pending, cooking, ready, delivered, cancelled)
+ * @returns {string} Estado del frontend (pending, preparing, ready, delivered, cancelled)
  */
 function mapOrderStatus(status) {
   const statusMap = {
     'PENDING': 'pending',
-    'PREPARING': 'cooking',
+    'PREPARING': 'preparing',
     'READY': 'ready',
     'DELIVERED': 'delivered',
     'CANCELLED': 'cancelled',
     // También aceptar estados en minúsculas por si acaso
     'pending': 'pending',
-    'preparing': 'cooking',
-    'cooking': 'cooking',
+    'preparing': 'preparing',
+    'cooking': 'preparing',  // Por compatibilidad legacy
     'ready': 'ready',
     'delivered': 'delivered',
     'cancelled': 'cancelled'
@@ -371,6 +371,49 @@ export async function createOrder(orderData) {
 }
 
 /**
+ * Actualiza un pedido existente (items, notas, etc.)
+ * @param {string} orderId - ID del pedido a actualizar
+ * @param {Object} updateData - Datos a actualizar
+ * @param {Array} [updateData.items] - Nuevos items del pedido
+ * @param {string} [updateData.notes] - Nuevas notas
+ * @param {string} [updateData.customerEmail] - Nuevo email
+ * @returns {Promise<Object>} Datos del pedido actualizado
+ */
+export async function updateOrder(orderId, updateData) {
+  try {
+    const url = `${API_BASE_URL}/orders/${orderId}`;
+    const response = await fetch(url, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updateData),
+    });
+
+    if (!response.ok) {
+      let errorMessage = `Error ${response.status}: ${response.statusText}`;
+      
+      try {
+        const errorData = await response.json();
+        if (errorData.message) {
+          errorMessage = errorData.message;
+        }
+      } catch (e) {
+        // Si no se puede parsear JSON, usar el statusText
+      }
+      
+      throw new Error(errorMessage);
+    }
+
+    const data = await response.json();
+    return normalizeOrderData(data);
+  } catch (error) {
+    console.error('Error en updateOrder:', error);
+    throw error;
+  }
+}
+
+/**
  * Cancela un pedido específico
  * @param {string} orderId - ID del pedido a cancelar
  * @returns {Promise<Object>} Datos del pedido actualizado
@@ -553,7 +596,7 @@ export async function getReviewById(reviewId) {
 export async function updateReviewStatus(reviewId, status) {
   try {
     const response = await fetch(
-      `${API_BASE_URL}/reviews/${reviewId}/status`,
+      `${API_BASE_URL}/reviews/admin/${reviewId}/status`,
       {
         method: 'PATCH',
         headers: {

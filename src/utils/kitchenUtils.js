@@ -35,6 +35,8 @@ export function getStatusBadgeColor(status) {
       return 'bg-yellow-100 text-yellow-800';
     case 'READY':
       return 'bg-green-100 text-green-800';
+    case 'CANCELLED':
+      return 'bg-red-100 text-red-800';
     default:
       return 'bg-gray-100 text-gray-800';
   }
@@ -53,6 +55,8 @@ export function getStatusText(status, t) {
       return t('kitchen.statusPreparing');
     case 'READY':
       return t('kitchen.statusReady');
+    case 'CANCELLED':
+      return t('kitchen.statusCancelled');
     default:
       return status;
   }

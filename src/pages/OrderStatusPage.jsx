@@ -17,9 +17,9 @@ function OrderStatusPage() {
   const [showReviewModal, setShowReviewModal] = useState(false);
 
   return (
-    <div className="relative flex min-h-screen w-full flex-col group/design-root bg-background-light dark:bg-background-dark">
+    <div className="relative flex min-h-screen w-full flex-col group/design-root bg-slate-950">
       {/* Top App Bar */}
-      <div className="sticky top-0 z-10 flex items-center justify-between bg-background-light/80 dark:bg-background-dark/80 px-4 py-3 pb-2 backdrop-blur-sm border-b border-border-light dark:border-border-dark">
+      <div className="sticky top-0 z-10 flex items-center justify-between bg-slate-900/95 px-4 py-3 pb-2 backdrop-blur-sm border-b border-slate-700">
         {/* Botón atrás */}
         <div className="flex items-center justify-start w-12 h-12">
           <button
@@ -27,11 +27,11 @@ function OrderStatusPage() {
             className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-primary/10 transition-colors"
             aria-label={t('common.back', 'Atrás')}
           >
-            <span className="material-symbols-outlined text-text-light dark:text-text-dark text-2xl">arrow_back</span>
+            <span className="material-symbols-outlined text-white text-2xl">arrow_back</span>
           </button>
         </div>
         {/* Título */}
-        <h2 className="flex-1 text-center text-lg font-bold leading-tight tracking-[-0.015em] text-text-light dark:text-text-dark">
+        <h2 className="flex-1 text-center text-lg font-bold leading-tight tracking-[-0.015em] text-white">
           {t('orderStatus.trackOrder', 'Track Order')}
         </h2>
         {/* Botón cambio de idioma */}
@@ -61,8 +61,8 @@ function OrderStatusPage() {
         onRefresh={refreshFunction}
       />
 
-      {/* Review Modal */}
-      {showReviewModal && orderData && (
+      {/* Review Modal - US-022: Solo habilitado si pedido está ENTREGADO o RECOGIDO */}
+      {showReviewModal && orderData && ['delivered', 'ready'].includes(orderData.status) && (
         <ReviewModal
           key={i18n.language}
           isOpen={showReviewModal}
@@ -139,11 +139,11 @@ function OrderStatusFooter({ order, onRefresh }) {
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 border-t border-border-light dark:border-border-dark bg-background-light/80 dark:bg-background-dark/80 p-4 backdrop-blur-sm">
+    <div className="fixed bottom-0 left-0 right-0 border-t border-slate-700 bg-slate-900/95 p-4 backdrop-blur-sm">
       <div className="mx-auto max-w-md">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <p className="text-sm text-subtext-light dark:text-subtext-dark">{t('orderStatusFooter.estimatedTime')}</p>
+            <p className="text-sm text-gray-400">{t('orderStatusFooter.estimatedTime')}</p>
             <p className="text-2xl font-bold text-primary">{estimatedTime}</p>
           </div>
           <div className="flex gap-2">

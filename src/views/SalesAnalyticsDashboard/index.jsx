@@ -13,18 +13,19 @@ import DataTable from '../../components/analytics/DataTable';
  */
 function SalesAnalyticsDashboard() {
   const { t } = useTranslation();
-  const { data, loading, error, filters, updateFilters, refetch, exportToCSV } = useSalesAnalytics();
+  const { data, loading, error, filters, updateFilters, refetch, exportToXLSX } = useSalesAnalytics();
   const [exportLoading, setExportLoading] = useState(false);
 
   /**
-   * Handler para exportar CSV
+   * Handler para exportar XLSX (Excel)
+   * Implementa US-030: Exportar reportes a XLSX estandarizado
    */
-  const handleExport = async () => {
+  const handleExportXLSX = async () => {
     setExportLoading(true);
     try {
-      await exportToCSV();
-      // Notificación de éxito (puedes integrar con tu sistema de notificaciones)
-      alert(t('analytics.exportSuccess', 'CSV exportado exitosamente'));
+      await exportToXLSX();
+      // Notificación de éxito
+      alert(t('analytics.exportXlsxSuccess', 'XLSX exportado exitosamente'));
     } catch (err) {
       alert(t('analytics.exportError', 'Error al exportar: ') + err.message);
     } finally {
@@ -56,73 +57,39 @@ function SalesAnalyticsDashboard() {
   };
 
   /**
-   * Preparar datos para tabla combinando series y productos
+   * Preparar datos para tabla mostrando productos vendidos
+   * Cada fila muestra un producto con su cantidad e ingresos generados
    */
   const getTableData = () => {
-    if (!data?.series || !data?.productsSold) return [];
+    if (!data?.productsSold || data.productsSold.length === 0) return [];
 
-    // Filtrar periodos por rango seleccionado
-    const fromDate = new Date(filters.from);
-    const toDate = new Date(filters.to);
-
-    const tableRows = [];
-    data.series.forEach(seriesItem => {
-      // El periodo puede ser 'YYYY-MM-DD', 'YYYY-MM', etc. según groupBy
-      let periodDate;
-      if (filters.groupBy === 'day') {
-        periodDate = new Date(seriesItem.period);
-      } else if (filters.groupBy === 'month') {
-        // Parse 'YYYY-MM' as first day of month
-        const [year, month] = seriesItem.period.split('-');
-        periodDate = new Date(Number(year), Number(month) - 1, 1);
-      } else if (filters.groupBy === 'year') {
-        periodDate = new Date(Number(seriesItem.period), 0, 1);
-      } else if (filters.groupBy === 'week') {
-        // Parse 'YYYY-WW' as first day of ISO week
-        const [year, week] = seriesItem.period.split('-');
-        // ISO week: set to first day of week
-        const simple = new Date(Number(year), 0, 1 + (Number(week) - 1) * 7);
-        periodDate = simple;
-      } else {
-        periodDate = new Date(seriesItem.period);
-      }
-
-      if (periodDate >= fromDate && periodDate <= toDate) {
-        data.productsSold.forEach(product => {
-          tableRows.push({
-            period: seriesItem.period,
-            totalOrders: seriesItem.totalOrders,
-            totalRevenue: seriesItem.totalRevenue,
-            productId: product.productId,
-            productName: product.name,
-            quantity: product.quantity,
-            avgPrepTime: seriesItem.avgPrepTime
-          });
-        });
-      }
-    });
-
-    return tableRows;
+    // Crear una fila por cada producto vendido
+    return data.productsSold.map(product => ({
+      period: `${filters.from} - ${filters.to}`,
+      totalRevenue: product.revenue || 0, // Ingresos del producto
+      productName: product.name,
+      quantity: product.quantity
+    }));
   };
 
   return (
-    <div className="relative flex min-h-screen w-full flex-col bg-background-light dark:bg-background-dark">
+    <div className="relative flex min-h-screen w-full flex-col bg-slate-950">
       <div className="flex h-full w-full">
 
         {/* Main Content */}
-        <main className="flex-1 p-6 lg:p-8 overflow-auto">
+        <main className="flex-1 p-6 lg:p-8 overflow-auto ml-64">
           <div className="mx-auto max-w-7xl">
             {/* Page Heading */}
             <div className="flex flex-wrap justify-between gap-3 items-center">
               <div className="flex flex-col gap-2">
-                <p className="text-[#111813] dark:text-white text-4xl font-black leading-tight tracking-[-0.033em]">
+                <p className="text-white text-4xl font-black leading-tight tracking-[-0.033em]">
                   {t('analytics.title', 'Dashboard de Analíticas')}
                 </p>
-                <p className="text-[#63886f] dark:text-gray-400 text-base font-normal leading-normal">
+                <p className="text-gray-400 text-base font-normal leading-normal">
                   {t('analytics.subtitle', 'Reportes, métricas y exportaciones para la toma de decisiones.')}
                 </p>
               </div>
-              <span className="inline-flex items-center justify-center rounded-lg h-10 px-4 bg-primary/20 dark:bg-primary/30 text-[#111813] dark:text-white text-sm font-bold leading-normal tracking-[0.015em]">
+              <span className="inline-flex items-center justify-center rounded-lg h-10 px-4 bg-primary/30 text-white text-sm font-bold leading-normal tracking-[0.015em]">
                 {t('analytics.roleLabel', 'Manager / Admin')}
               </span>
             </div>
@@ -132,18 +99,18 @@ function SalesAnalyticsDashboard() {
               filters={filters}
               onFilterChange={updateFilters}
               onQuery={refetch}
-              onExport={handleExport}
+              onExportXLSX={handleExportXLSX}
               loading={loading || exportLoading}
             />
 
             {/* Error State */}
             {error && (
-              <div className="mt-8 p-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
+              <div className="mt-8 p-6 bg-red-900/20 border border-red-800 rounded-xl">
                 <div className="flex items-center gap-3">
-                  <span className="material-symbols-outlined text-3xl text-red-500 dark:text-red-400">error</span>
+                  <span className="material-symbols-outlined text-3xl text-red-400">error</span>
                   <div>
-                    <h3 className="text-lg font-bold text-red-700 dark:text-red-400">{t('analytics.errorTitle', 'Error al cargar datos')}</h3>
-                    <p className="text-sm text-red-600 dark:text-red-300 mt-1">{error}</p>
+                    <h3 className="text-lg font-bold text-red-400">{t('analytics.errorTitle', 'Error al cargar datos')}</h3>
+                    <p className="text-sm text-red-300 mt-1">{error}</p>
                   </div>
                 </div>
               </div>
@@ -154,7 +121,7 @@ function SalesAnalyticsDashboard() {
               <div className="mt-8 flex items-center justify-center p-12">
                 <div className="flex flex-col items-center gap-4">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-                  <p className="text-gray-500 dark:text-gray-400">{t('analytics.loading', 'Cargando analíticas...')}</p>
+                  <p className="text-gray-400">{t('analytics.loading', 'Cargando analíticas...')}</p>
                 </div>
               </div>
             )}
@@ -162,8 +129,8 @@ function SalesAnalyticsDashboard() {
             {/* Data Content */}
             {!loading && !error && data && (
               <>
-                {/* Stats Cards */}
-                <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {/* Stats Cards - Implementa US-031: Ver tiempo de preparación en reportes */}
+                <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
                   <StatCard
                     title={t('analytics.totalOrders', 'Total de órdenes')}
                     value={data.summary?.totalOrders || 0}
@@ -184,6 +151,13 @@ function SalesAnalyticsDashboard() {
                     change={data.summary?.totalProductsSoldChange ?? null}
                     icon="inventory_2"
                     format="number"
+                  />
+                  <StatCard
+                    title={t('analytics.avgPrepTime', 'Tiempo promedio de preparación')}
+                    value={data.summary?.avgPrepTime !== null ? `${data.summary.avgPrepTime} ${t('analytics.minutes', 'min')}` : 'N/A'}
+                    change={null}
+                    icon="schedule"
+                    format="text"
                   />
                   <StatCard
                     title={t('analytics.topProduct', 'Producto destacado')}

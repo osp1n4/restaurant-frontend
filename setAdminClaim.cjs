@@ -1,5 +1,7 @@
-// Script para asignar el custom claim 'role: ADMIN' a un usuario en Firebase Authentication
-// Ejecutar con Node.js en el backend o localmente (no en el frontend)
+// Script para asignar roles (ADMIN o KITCHEN) a usuarios en Firebase Authentication
+// Uso: node setAdminClaim.cjs [UID] [ROLE]
+// Ejemplo: node setAdminClaim.cjs HcyFZ67HYRYBHs5zr6FqBCypjdf1 ADMIN
+// Ejemplo: node setAdminClaim.cjs otro-uid-aqui KITCHEN
 
 const admin = require("firebase-admin");
 
@@ -9,14 +11,25 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
 });
 
-// Cambia este UID por el del usuario al que quieres asignar el rol ADMIN
-const uid = "vK9WOe6wvKYLRg0woDChXlsvqxy1";
+// Obtener argumentos de línea de comandos o usar valores por defecto
+const uid = process.argv[2] || "HcyFZ67HYRYBHs5zr6FqBCypjdf1"; // day@gmail.com
+const role = (process.argv[3] || "ADMIN").toUpperCase(); // ADMIN o KITCHEN
 
-admin.auth().setCustomUserClaims(uid, { role: "ADMIN" })
+// Validar rol
+if (role !== "ADMIN" && role !== "KITCHEN") {
+  console.error(`Error: El rol debe ser ADMIN o KITCHEN. Recibido: ${role}`);
+  process.exit(1);
+}
+
+console.log(`Asignando rol ${role} al usuario ${uid}...`);
+
+admin.auth().setCustomUserClaims(uid, { role: role })
   .then(() => {
+    console.log(`✅ Rol ${role} asignado exitosamente al usuario ${uid}`);
+    console.log(`⚠️  El usuario debe cerrar sesión y volver a iniciar para que el cambio tome efecto.`);
     process.exit(0);
   })
   .catch((error) => {
-    console.error("Error asignando custom claim:", error);
+    console.error("❌ Error asignando custom claim:", error);
     process.exit(1);
   });

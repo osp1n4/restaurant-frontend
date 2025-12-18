@@ -1,5 +1,5 @@
-import OrderForm from '../components/OrderForm';
+import OrderFormV2 from '../components/OrderFormV2';
 
 export default function OrderPage() {
-  return <OrderForm />;
+  return <OrderFormV2 />;
 }

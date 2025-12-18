@@ -162,5 +162,93 @@ export const analyticsService = {
       
       throw error;
     }
+  },
+
+  /**
+   * Exporta analíticas a XLSX (Excel)
+   * Implementa US-030: Exportar reportes a XLSX estandarizado
+   * Nombre automático: reporte_ventas_YYYY-MM-DD.xlsx
+   * 
+   * @param {Object} params - Parámetros de exportación
+   * @param {string} params.from - Fecha inicio
+   * @param {string} params.to - Fecha fin
+   * @param {string} params.groupBy - Agrupación
+   * @param {number} [params.top] - Top N
+   * @param {Array<string>} [params.columns] - Columnas a incluir
+   * @returns {Promise<void>} Descarga el archivo XLSX
+   */
+  async exportXLSX(params) {
+    try {
+      const body = {
+        from: params.from,
+        to: params.to,
+        groupBy: params.groupBy
+      };
+
+      if (params.top) {
+        body.top = params.top;
+      }
+
+      if (params.columns && params.columns.length > 0) {
+        body.columns = params.columns;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/admin/analytics/export-xlsx`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        let errorMessage = `Error ${response.status}: ${response.statusText}`;
+        
+        try {
+          const errorData = await response.json();
+          if (errorData.message) {
+            errorMessage = errorData.message;
+          }
+        } catch (e) {
+          // Ignorar error de parsing
+        }
+        
+        throw new Error(errorMessage);
+      }
+
+      // Crear blob y descargar archivo
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      
+      // Extraer nombre del archivo del header Content-Disposition
+      const contentDisposition = response.headers.get('Content-Disposition');
+      let filename = `reporte_ventas_${new Date().toISOString().split('T')[0]}.xlsx`;
+      
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename="?(.+)"?/);
+        if (match && match[1]) {
+          filename = match[1].replace(/"/g, '');
+        }
+      }
+      
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      
+      // Cleanup
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        throw new Error(
+          `Error de conexión. Verifica que el API Gateway esté corriendo en ${API_BASE_URL}`
+        );
+      }
+      
+      throw error;
+    }
   }
 };

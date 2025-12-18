@@ -47,4 +47,37 @@ export const handlers = [
       ctx.json([])
     );
   }),
+
+  // GET /api/menu -> devuelve menú de ejemplo para tests de orders
+  rest.get(`${API_BASE}/api/menu`, (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json([
+        { 
+          id: '1', 
+          name: 'Hamburguesa Clásica', 
+          description: 'Hamburguesa con queso y vegetales',
+          price: 15000, 
+          category: 'burgers',
+          available: true 
+        },
+        { 
+          id: '2', 
+          name: 'Pizza Margarita', 
+          description: 'Pizza con tomate y mozzarella',
+          price: 18000, 
+          category: 'pizzas',
+          available: true 
+        },
+        { 
+          id: '3', 
+          name: 'Ensalada César', 
+          description: 'Ensalada con pollo y aderezo césar',
+          price: 12000, 
+          category: 'salads',
+          available: true 
+        },
+      ])
+    );
+  }),
 ];

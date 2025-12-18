@@ -2,24 +2,28 @@ import React, { useState, useEffect } from "react";
 import { useTranslation } from 'react-i18next';
 import { createUser, getUsers, updateUser, deleteUser } from "./usersService";
 import { useNavigate, useParams } from "react-router-dom";
+import Sidebar from '../../components/analytics/Sidebar';
+import SelectListbox from '../../components/SelectListbox';
+import RoleIcon from '../../components/RoleIcon';
 
-const roles = [
-  { label: "Admin", value: "ADMIN" },
-  { label: "Kitchen", value: "KITCHEN" },
-  { label: "Waiter", value: "WAITER" },
-];
+// Las etiquetas se traducirán dentro del componente usando i18n
 
 const initialState = {
   name: "",
   email: "",
   password: "",
   confirmPassword: "",
-  role: "ADMIN",
+  role: "KITCHEN",
 };
 
 
 const UserForm = () => {
   const { t } = useTranslation();
+    const roles = [
+      { value: "ADMIN", key: "roleadmin", leftIcon: <RoleIcon role="ADMIN" /> },
+      { value: "KITCHEN", key: "rolekitchen", leftIcon: <RoleIcon role="KITCHEN" /> },
+      { value: "WAITER", key: "rolewaiter", leftIcon: <RoleIcon role="WAITER" /> },
+    ];
   const [form, setForm] = useState(initialState);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -110,20 +114,22 @@ const UserForm = () => {
     try {
       if (isEdit) {
         await updateUser(id, {
-          name: form.name,
+          displayName: form.name,
           role: form.role,
         });
         setSuccess(t('users.updateSuccess', 'Usuario actualizado exitosamente.'));
       } else {
         await createUser({
-          name: form.name,
+          displayName: form.name,
           email: form.email,
           password: form.password,
           role: form.role,
         });
         setSuccess(t('users.createSuccess', 'Usuario creado exitosamente.'));
       }
-      setTimeout(() => navigate("/users"), 1200);
+      // Emitir evento para que la lista de usuarios se refresque inmediatamente
+      window.dispatchEvent(new CustomEvent('users:changed'));
+      setTimeout(() => navigate("/users"), 600);
     } catch (err) {
       setError((isEdit ? t('users.updateError', 'Error al actualizar usuario. ') : t('users.createError', 'Error al crear usuario. ')) + (err.message || ""));
     } finally {
@@ -139,24 +145,36 @@ const UserForm = () => {
   };
 
   return (
-    <div className="layout-content-container flex flex-col w-full max-w-4xl mx-auto">
-      <header className="flex flex-col gap-1 mb-8">
-        <p className="text-[#222222] dark:text-white text-3xl font-bold leading-tight tracking-tight">{isEdit ? t('users.editTitle', 'Editar usuario') : t('users.addTitle', 'Agregar usuario')}</p>
-        <p className="text-[#666666] dark:text-gray-400 text-base font-normal leading-normal">{isEdit ? t('users.editSubtitle', 'Edita los datos del usuario.') : t('users.addSubtitle', 'Completa los datos para agregar un nuevo usuario.')}</p>
-      </header>
-      <div className="bg-white dark:bg-[#1C1411] p-8 rounded-lg shadow-md border border-gray-200 dark:border-gray-800">
+    <div className="fixed inset-0 bg-slate-950 overflow-auto">
+      <div className="layout-container flex h-full grow flex-row">
+        <Sidebar />
+        <main className="flex-1 p-8 ml-64 min-h-screen">
+          <div className="layout-content-container flex flex-col w-full max-w-4xl mx-auto">
+            <header className="flex flex-col gap-1 mb-8">
+              <p className="text-white text-3xl font-bold leading-tight tracking-tight">{isEdit ? t('users.editTitle', 'Editar usuario') : t('users.addTitle', 'Agregar usuario')}</p>
+              <p className="text-gray-400 text-base font-normal leading-normal">{isEdit ? t('users.editSubtitle', 'Edita los datos del usuario.') : t('users.addSubtitle', 'Completa los datos para agregar un nuevo usuario.')}</p>
+            </header>
+            <div className="bg-slate-900 p-8 rounded-xl shadow-xl border border-slate-700">
         <form className="space-y-6" onSubmit={handleSubmit}>
           <div>
-            <label className="block text-sm font-medium text-[#222222] dark:text-gray-300" htmlFor="name">{t('users.fullName', 'Nombre completo')}</label>
-            <div className="mt-2">
-              <input className="block w-full rounded-md border-0 py-2 px-3 text-[#222222] dark:text-white bg-[#F5F5F5] dark:bg-gray-800/50 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-700 placeholder:text-[#666666] focus:ring-2 focus:ring-inset focus:ring-primary" id="name" name="name" placeholder={t('users.fullNamePlaceholder', 'Ej: Juan Pérez')} type="text" value={form.name} onChange={handleChange} />
+            <label className="block text-sm font-medium text-gray-300 mb-2" htmlFor="name">{t('users.fullName', 'Nombre completo')}</label>
+            <div>
+              <input 
+                className="block w-full rounded-lg border-0 py-3 px-4 text-white bg-slate-800 shadow-sm ring-1 ring-inset ring-slate-700 placeholder:text-gray-500 focus:ring-2 focus:ring-inset focus:ring-primary transition-all" 
+                id="name" 
+                name="name" 
+                placeholder={t('users.fullNamePlaceholder', 'Ej: Juan Pérez')} 
+                type="text" 
+                value={form.name} 
+                onChange={handleChange} 
+              />
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#222222] dark:text-gray-300" htmlFor="email">{t('users.emailLabel', 'Correo electrónico')}</label>
-            <div className="mt-2">
+            <label className="block text-sm font-medium text-gray-300 mb-2" htmlFor="email">{t('users.emailLabel', 'Correo electrónico')}</label>
+            <div>
               <input
-                className="block w-full rounded-md border-0 py-2 px-3 text-[#222222] dark:text-white bg-[#F5F5F5] dark:bg-gray-800/50 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-700 placeholder:text-[#666666] focus:ring-2 focus:ring-inset focus:ring-primary"
+                className="block w-full rounded-lg border-0 py-3 px-4 text-white bg-slate-800 shadow-sm ring-1 ring-inset ring-slate-700 placeholder:text-gray-500 focus:ring-2 focus:ring-inset focus:ring-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 id="email"
                 name="email"
                 placeholder={t('users.emailPlaceholder', 'correo@ejemplo.com')}
@@ -170,39 +188,61 @@ const UserForm = () => {
           {!isEdit && (
             <>
               <div>
-                <label className="block text-sm font-medium text-[#222222] dark:text-gray-300" htmlFor="password">{t('users.passwordLabel', 'Contraseña')}</label>
-                <div className="mt-2">
-                  <input className="block w-full rounded-md border-0 py-2 px-3 text-[#222222] dark:text-white bg-[#F5F5F5] dark:bg-gray-800/50 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-700 placeholder:text-[#666666] focus:ring-2 focus:ring-inset focus:ring-primary" id="password" name="password" placeholder={t('users.passwordPlaceholder', 'Ingresa una contraseña segura')} type="password" value={form.password} onChange={handleChange} />
+                <label className="block text-sm font-medium text-gray-300 mb-2" htmlFor="password">{t('users.passwordLabel', 'Contraseña')}</label>
+                <div>
+                  <input 
+                    className="block w-full rounded-lg border-0 py-3 px-4 text-white bg-slate-800 shadow-sm ring-1 ring-inset ring-slate-700 placeholder:text-gray-500 focus:ring-2 focus:ring-inset focus:ring-primary transition-all" 
+                    id="password" 
+                    name="password" 
+                    placeholder={t('users.passwordPlaceholder', 'Ingresa una contraseña segura')} 
+                    type="password" 
+                    value={form.password} 
+                    onChange={handleChange} 
+                  />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-[#222222] dark:text-gray-300" htmlFor="confirmPassword">{t('users.confirmPasswordLabel', 'Confirmar contraseña')}</label>
-                <div className="mt-2">
-                  <input className="block w-full rounded-md border-0 py-2 px-3 text-[#222222] dark:text-white bg-[#F5F5F5] dark:bg-gray-800/50 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-700 placeholder:text-[#666666] focus:ring-2 focus:ring-inset focus:ring-primary" id="confirmPassword" name="confirmPassword" placeholder={t('users.confirmPasswordPlaceholder', 'Repite la contraseña')} type="password" value={form.confirmPassword} onChange={handleChange} />
+                <label className="block text-sm font-medium text-gray-300 mb-2" htmlFor="confirmPassword">{t('users.confirmPasswordLabel', 'Confirmar contraseña')}</label>
+                <div>
+                  <input 
+                    className="block w-full rounded-lg border-0 py-3 px-4 text-white bg-slate-800 shadow-sm ring-1 ring-inset ring-slate-700 placeholder:text-gray-500 focus:ring-2 focus:ring-inset focus:ring-primary transition-all" 
+                    id="confirmPassword" 
+                    name="confirmPassword" 
+                    placeholder={t('users.confirmPasswordPlaceholder', 'Repite la contraseña')} 
+                    type="password" 
+                    value={form.confirmPassword} 
+                    onChange={handleChange} 
+                  />
                 </div>
               </div>
             </>
           )}
           <div>
-            <label className="block text-sm font-medium text-[#222222] dark:text-gray-300" htmlFor="role">{t('users.roleLabel', 'Rol')}</label>
-            <div className="mt-2">
-              <select className="block w-full rounded-md border-0 py-2 px-3 text-[#222222] dark:text-white bg-[#F5F5F5] dark:bg-gray-800/50 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-700 focus:ring-2 focus:ring-inset focus:ring-primary" id="role" name="role" value={form.role} onChange={handleChange}>
-                {roles.map((r) => (
-                  <option key={r.value} value={r.value}>{t(r.labelKey)}</option>
-                ))}
-              </select>
+            <label className="block text-sm font-medium text-gray-300 mb-2" htmlFor="role">{t('users.roleLabel', 'Rol')}</label>
+            <div>
+              <SelectListbox
+                value={form.role}
+                onChange={(v) => setForm(f => ({ ...f, role: v }))}
+                options={roles.map(r => ({ value: r.value, label: t(`users.${r.key}`, r.key) }))}
+              />
             </div>
           </div>
           {(error || success) && (
-            <div className={`text-center text-sm ${error ? 'text-red-600' : 'text-green-600'}`}>{error || success}</div>
+            <div className={`p-4 rounded-lg text-center text-sm font-medium ${error ? 'bg-red-900/50 text-red-300 border border-red-800' : 'bg-green-900/50 text-green-300 border border-green-800'}`}>
+              {error || success}
+            </div>
           )}
-          <div className="flex items-center justify-end gap-4 pt-4 border-t border-gray-200 dark:border-gray-800">
-            <button className="flex min-w-[84px] items-center justify-center overflow-hidden rounded-md h-10 px-4 bg-[#F5F5F5] dark:bg-gray-700 text-[#222222] dark:text-gray-200 text-sm font-medium leading-normal tracking-[0.015em] hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors shadow-sm" type="button" onClick={handleCancel}>
+          <div className="flex items-center justify-end gap-4 pt-6 border-t border-slate-700">
+            <button 
+              className="flex min-w-[100px] items-center justify-center overflow-hidden rounded-lg h-11 px-5 bg-slate-800 text-gray-300 text-sm font-medium leading-normal tracking-[0.015em] hover:bg-slate-700 transition-all shadow-sm border border-slate-700" 
+              type="button" 
+              onClick={handleCancel}
+            >
               <span className="truncate">{t('users.cancel', 'Cancelar')}</span>
             </button>
             {isEdit && (
               <button
-                className="flex min-w-[84px] items-center justify-center overflow-hidden rounded-md h-10 px-4 bg-red-600 text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-red-700 transition-colors shadow-sm"
+                className="flex min-w-[100px] items-center justify-center overflow-hidden rounded-lg h-11 px-5 bg-red-600 text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-red-700 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 type="button"
                 onClick={handleDelete}
                 disabled={deleteLoading}
@@ -210,11 +250,18 @@ const UserForm = () => {
                 <span className="truncate">{deleteLoading ? t('users.deleting', 'Eliminando...') : t('users.delete', 'Eliminar')}</span>
               </button>
             )}
-            <button className="flex min-w-[84px] items-center justify-center overflow-hidden rounded-md h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-primary/90 transition-colors shadow-sm" type="submit" disabled={loading}>
+            <button 
+              className="flex min-w-[100px] items-center justify-center overflow-hidden rounded-lg h-11 px-5 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-primary/90 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed" 
+              type="submit" 
+              disabled={loading}
+            >
               <span className="truncate">{loading ? t('users.saving', 'Guardando...') : t('users.save', 'Guardar')}</span>
             </button>
           </div>
         </form>
+            </div>
+          </div>
+        </main>
       </div>
     </div>
   );

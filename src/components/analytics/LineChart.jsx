@@ -8,21 +8,21 @@ function LineChart({ data, title, subtitle, value, change }) {
   const points = generatePathPoints(data);
   
   return (
-    <div className="lg:col-span-3 flex flex-col gap-2 p-6 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-background-dark/50 hover:shadow-lg transition-shadow">
-      <p className="text-[#111813] dark:text-white text-lg font-medium leading-normal">
+    <div className="lg:col-span-3 flex flex-col gap-2 p-6 rounded-xl border border-slate-700 bg-slate-900 hover:shadow-xl transition-shadow">
+      <p className="text-white text-lg font-medium leading-normal">
         {title}
       </p>
       <div className="flex items-baseline gap-2">
-        <p className="text-[#111813] dark:text-white tracking-light text-[32px] font-bold leading-tight truncate">
+        <p className="text-white tracking-light text-[32px] font-bold leading-tight truncate">
           {value?.toLocaleString('es-CO') || '0'}
         </p>
         {change !== null && (
-          <p className={`${change >= 0 ? 'text-[#078829] dark:text-green-400' : 'text-[#e72a08] dark:text-red-400'} text-base font-medium leading-normal`}>
+          <p className={`${change >= 0 ? 'text-green-400' : 'text-red-400'} text-base font-medium leading-normal`}>
             {change >= 0 ? '+' : ''}{change}%
           </p>
         )}
       </div>
-      <p className="text-[#63886f] dark:text-gray-400 text-base font-normal leading-normal">
+      <p className="text-gray-400 text-base font-normal leading-normal">
         {subtitle}
       </p>
       <div className="flex min-h-[220px] flex-1 flex-col gap-8 py-4">

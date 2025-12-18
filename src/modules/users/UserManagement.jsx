@@ -3,9 +3,11 @@
 
 import React, { useEffect, useState } from "react";
 import { useTranslation } from 'react-i18next';
-import { deactivateUser } from "./usersService";
+import { deactivateUser, activateUser } from "./usersService";
 
 import DefaultUserAvatar from "./DefaultUserAvatar";
+import SelectListbox from '../../components/SelectListbox';
+import RoleIcon from '../../components/RoleIcon';
 import Pagination from "./Pagination";
 import { getUsers } from "./usersService";
 import { useNavigate } from "react-router-dom";
@@ -25,6 +27,9 @@ const UserManagement = () => {
   const [showDeactivateModal, setShowDeactivateModal] = useState(false);
   const [userToDeactivate, setUserToDeactivate] = useState(null);
   const [deactivating, setDeactivating] = useState(false);
+  const [showActivateModal, setShowActivateModal] = useState(false);
+  const [userToActivate, setUserToActivate] = useState(null);
+  const [activating, setActivating] = useState(false);
   const [roleFilter, setRoleFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   // TODO: agregar filtros y paginación real
@@ -42,11 +47,38 @@ const UserManagement = () => {
         setError("Error al cargar usuarios");
         setLoading(false);
       });
+    // Listener para refrescar usuarios cuando se emite un evento global
+    const onUsersChanged = () => {
+      setLoading(true);
+      getUsers().then((res) => {
+        const data = res.data || res.users || res;
+        setUsers(Array.isArray(data) ? data : []);
+        setLoading(false);
+      }).catch(() => {
+        setError('Error al recargar usuarios');
+        setLoading(false);
+      });
+    };
+    window.addEventListener('users:changed', onUsersChanged);
+    return () => window.removeEventListener('users:changed', onUsersChanged);
   }, []);
 
   const navigate = useNavigate();
   // Obtener roles y estados únicos
-  const allRoles = Array.from(new Set(users.map(u => u.role || u.customClaims?.role || '').filter(Boolean)));
+  const normalizeRole = (role) => {
+    if (!role) return '';
+    return String(role).trim().toLowerCase();
+  };
+
+  const getUserRole = (user) => {
+    // Si customClaims.admin es true, forzamos 'admin'
+    if (user?.customClaims?.admin) return 'admin';
+    // Prioriza customClaims.role, luego user.role
+    const raw = user?.customClaims?.role || user?.role || '';
+    return normalizeRole(raw);
+  };
+
+  const allRoles = Array.from(new Set(users.map(u => getUserRole(u)).filter(Boolean)));
   const allStatuses = Array.from(new Set(users.map(u => u.status || 'Active')));
 
   // Filtrar usuarios por nombre/correo, rol y estado
@@ -54,7 +86,7 @@ const UserManagement = () => {
     const term = search.trim().toLowerCase();
     const name = (user.displayName || user.name || "").toLowerCase();
     const email = (user.email || "").toLowerCase();
-    const role = (user.role || user.customClaims?.role || '').toLowerCase();
+    const role = getUserRole(user);
     const status = (user.status || 'Active').toLowerCase();
     let match = true;
     if (term) {
@@ -70,19 +102,19 @@ const UserManagement = () => {
   });
 
   return (
-    <div className="relative flex h-auto min-h-screen w-full flex-col bg-[#f8f6f4] dark:bg-background-dark group/design-root overflow-x-hidden">
+    <div className="relative flex h-auto min-h-screen w-full flex-col bg-slate-950 group/design-root overflow-x-hidden">
       <div className="layout-container flex h-full grow flex-row">  
-        <main className="flex-1 p-8">
+        <main className="flex-1 p-8 ml-64">
           <div className="layout-content-container flex flex-col w-full">
             {/* Header */}
             <header className="flex flex-wrap justify-between gap-4 items-center mb-6">
               <div className="flex flex-col gap-1">
-                <p className="text-[#181210] dark:text-white text-3xl font-bold leading-tight tracking-tight">{t('users.managementTitle', 'Gestión de usuarios')}</p>
-                <p className="text-[#8d6a5e] dark:text-gray-400 text-base font-normal leading-normal">{t('users.managementSubtitle', 'Gestiona todos los usuarios, sus roles y acceso al sistema.')}</p>
+                <p className="text-white text-3xl font-bold leading-tight tracking-tight">{t('users.managementTitle', 'Gestión de usuarios')}</p>
+                <p className="text-gray-400 text-base font-normal leading-normal">{t('users.managementSubtitle', 'Gestiona todos los usuarios, sus roles y acceso al sistema.')}</p>
               </div>
               <button
-                className="flex min-w-[84px] items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-orange-500 text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-orange-600 transition-colors shadow-sm"
                 onClick={() => navigate('/users/new')}
+                className="flex min-w-[84px] items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-primary/90 transition-colors shadow-sm"
               >
                 <span className="material-symbols-outlined mr-2">add</span>
                 <span className="truncate">{t('users.addNewUser', 'Agregar usuario')}</span>
@@ -93,12 +125,12 @@ const UserManagement = () => {
               {/* SearchBar */}
               <div className="flex-grow min-w-[20rem]">
                 <label className="flex flex-col min-w-40 h-12 w-full">
-                  <div className="flex w-full flex-1 items-stretch rounded-lg h-full bg-[#f5f1f0] dark:bg-[#2A1C16] shadow-sm">
-                    <div className="text-[#8d6a5e] dark:text-gray-400 flex items-center justify-center pl-4">
+                  <div className="flex w-full flex-1 items-stretch rounded-lg h-full bg-slate-800 shadow-sm">
+                    <div className="text-gray-400 flex items-center justify-center pl-4">
                       <span className="material-symbols-outlined">search</span>
                     </div>
                     <input
-                      className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden text-[#181210] dark:text-white focus:outline-0 focus:ring-0 border-none bg-transparent h-full placeholder:text-[#8d6a5e] dark:placeholder:text-gray-500 px-4 pl-2 text-sm font-normal leading-normal"
+                      className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden text-white focus:outline-0 focus:ring-0 border-none bg-transparent h-full placeholder:text-gray-500 px-4 pl-2 text-sm font-normal leading-normal"
                       placeholder={t('users.searchPlaceholder', 'Buscar por nombre o correo...')}
                       value={search}
                       onChange={e => setSearch(e.target.value)}
@@ -109,96 +141,129 @@ const UserManagement = () => {
               {/* Dropdowns */}
               <div className="flex gap-3">
                 {/* Filtro por rol */}
-                <select
-                  className="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-[#f5f1f0] dark:bg-[#2A1C16] px-4 shadow-sm text-[#181210] dark:text-gray-300 text-sm font-medium leading-normal hover:bg-gray-200 dark:hover:bg-gray-700/50 transition-colors"
-                  value={roleFilter}
-                  onChange={e => setRoleFilter(e.target.value)}
-                >
-                  <option value="">{t('users.role', 'Rol')}</option>
-                  {allRoles.map(role => (
-                    <option key={role} value={role}>{role}</option>
-                  ))}
-                </select>
+                <div className="w-48">
+                  <SelectListbox
+                    value={roleFilter}
+                    onChange={(v) => setRoleFilter(v)}
+                    options={[
+                      { value: '', label: t('users.role', 'Rol') },
+                      ...allRoles.map(r => ({ value: r, label: t(`users.role${r}`, r), leftIcon: <RoleIcon role={r} /> }))
+                    ]}
+                  />
+                </div>
                 {/* Filtro por estado */}
-                <select
-                  className="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-[#f5f1f0] dark:bg-[#2A1C16] px-4 shadow-sm text-[#181210] dark:text-gray-300 text-sm font-medium leading-normal hover:bg-gray-200 dark:hover:bg-gray-700/50 transition-colors"
-                  value={statusFilter}
-                  onChange={e => setStatusFilter(e.target.value)}
-                >
-                  <option value="">{t('users.status', 'Estado')}</option>
-                  {allStatuses.map(status => (
-                    <option key={status} value={status}>{status}</option>
-                  ))}
-                </select>
+                <div className="w-40">
+                  <SelectListbox
+                    value={statusFilter}
+                    onChange={(v) => setStatusFilter(v)}
+                    options={[{ value: '', label: t('users.status', 'Estado') }, ...allStatuses.map(status => ({ value: status, label: status }))]}
+                  />
+                </div>
               </div>
             </div>
             {/* Table */}
-            <div className="w-full rounded-xl border border-[#e7deda] dark:border-gray-800 bg-white dark:bg-[#1C1411] shadow-md overflow-hidden min-h-[200px]">
+            <div className="w-full rounded-xl border border-slate-700 bg-slate-900 shadow-xl overflow-hidden min-h-[200px]">
               {loading ? (
                 <div className="p-8 text-center text-gray-500">{t('users.loading', 'Cargando usuarios...')}</div>
               ) : error ? (
                 <div className="p-8 text-center text-red-500">{error}</div>
               ) : (
                 <table className="w-full">
-                  <thead className="bg-[#f5f1f0] dark:bg-[#2A1C16]">
+                  <thead className="bg-slate-800">
                     <tr>
-                      <th className="px-6 py-4 text-left text-[#181210] dark:text-gray-300 text-xs font-medium uppercase tracking-wider">{t('users.user', 'Usuario')}</th>
-                      <th className="px-6 py-4 text-left text-[#181210] dark:text-gray-300 text-xs font-medium uppercase tracking-wider">{t('users.email', 'Correo')}</th>
-                      <th className="px-6 py-4 text-left text-[#181210] dark:text-gray-300 text-xs font-medium uppercase tracking-wider">{t('users.role', 'Rol')}</th>
-                      <th className="px-6 py-4 text-left text-[#181210] dark:text-gray-300 text-xs font-medium uppercase tracking-wider">{t('users.status', 'Estado')}</th>
-                      <th className="px-6 py-4 text-left text-[#181210] dark:text-gray-300 text-xs font-medium uppercase tracking-wider">Actions</th>
+                      <th className="px-6 py-4 text-left text-gray-300 text-xs font-medium uppercase tracking-wider">{t('users.fullName', 'Nombre')}</th>
+                      <th className="px-6 py-4 text-left text-gray-300 text-xs font-medium uppercase tracking-wider">{t('users.email', 'Correo')}</th>
+                      <th className="px-6 py-4 text-left text-gray-300 text-xs font-medium uppercase tracking-wider">{t('users.role', 'Rol')}</th>
+                      <th className="px-6 py-4 text-left text-gray-300 text-xs font-medium uppercase tracking-wider">{t('users.status', 'Estado')}</th>
+                      <th className="px-6 py-4 text-left text-gray-300 text-xs font-medium uppercase tracking-wider">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#e7deda] dark:divide-gray-800">
+                  <tbody className="divide-y divide-slate-700">
                     {filteredUsers.length === 0 ? (
                       <tr>
                         <td colSpan={5} className="text-center py-8 text-gray-400">{t('users.noUsersFound', 'No users found')}</td>
                       </tr>
                     ) : (
-                      filteredUsers.map((user) => (
-                        <tr key={user.id || user.uid} className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
-                          <td className="px-6 py-4">
-                            <div className="flex items-center gap-3">
-                              {user.avatarUrl ? (
-                                <img src={user.avatarUrl} alt={user.displayName || user.name} className="rounded-full w-10 h-10 object-cover" />
-                              ) : (
-                                <DefaultUserAvatar />
-                              )}
-                              <span className="text-[#181210] dark:text-white text-sm font-medium">{user.displayName || user.name || user.email}</span>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 text-[#8d6a5e] dark:text-gray-400 text-sm font-normal">{user.email}</td>
-                          <td className="px-6 py-4 text-[#8d6a5e] dark:text-gray-400 text-sm font-normal">{user.role || user.customClaims?.role || "-"}</td>
-                          <td className="px-6 py-4">
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[user.status || "Active"]}`}>{user.status || "Active"}</span>
-                          </td>
-                          <td className="px-6 py-4 text-sm font-medium">
-                            <div className="flex items-center gap-2">
-                              {String(user.status || '').toLowerCase() !== 'desactivado' && (
-                                <>
+                      filteredUsers.map((user) => {
+                        // DEBUG: Mostrar el usuario en consola para depuración de roles
+                        console.log('USER_ROW', user);
+                        // Obtener rol del usuario (simplificado para mostrar siempre el rol)
+                        let userRole = null;
+                        
+                        // Prioridad: customClaims.admin > customClaims.role > user.role
+                        if (user.customClaims && user.customClaims.admin) {
+                          userRole = 'admin';
+                        } else if (user.customClaims && user.customClaims.role) {
+                          userRole = normalizeRole(user.customClaims.role);
+                        } else if (user.role) {
+                          userRole = normalizeRole(user.role);
+                        }
+                        
+                        // Mostrar nombre en la primera columna
+                        const displayName = user.displayName || user.name || user.email || '-';
+                        return (
+                          <tr key={user.id || user.uid} className="hover:bg-slate-800/50 transition-colors">
+                            <td className="px-6 py-4">
+                              <div className="flex items-center gap-3">
+                                <DefaultUserAvatar name={displayName} />
+                                <span className="text-white text-sm font-medium">{displayName}</span>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 text-gray-400 text-sm font-normal">{user.email}</td>
+                            <td className="px-6 py-4 text-gray-400 text-sm font-normal">
+                              <div className="flex items-center gap-2">
+                                {!userRole ? (
+                                  <span className="text-gray-500 italic">Sin rol asignado</span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1 mr-2">
+                                    <RoleIcon role={userRole} />
+                                    {t(`users.role${userRole}`, userRole.toUpperCase())}
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[user.status || "Active"]}`}>{user.status || "Active"}</span>
+                            </td>
+                            <td className="px-6 py-4 text-sm font-medium">
+                              <div className="flex items-center gap-2">
+                                {!user.disabled && String(user.status || '').toLowerCase() !== 'desactivado' ? (
+                                  <>
+                                    <button
+                                      className="p-2 rounded-md hover:bg-slate-800 transition-colors"
+                                      onClick={() => navigate(`/users/${user.id || user.uid}`)}
+                                      title="Editar usuario"
+                                    >
+                                      <span className="material-symbols-outlined text-lg text-white hover:text-gray-200">edit</span>
+                                    </button>
+                                    <button
+                                      className="p-2 rounded-md hover:bg-red-900/20 transition-colors"
+                                      onClick={() => {
+                                        setUserToDeactivate(user);
+                                        setShowDeactivateModal(true);
+                                      }}
+                                      title="Desactivar usuario"
+                                    >
+                                      <span className="material-symbols-outlined text-lg text-white hover:text-red-500">block</span>
+                                    </button>
+                                  </>
+                                ) : (
                                   <button
-                                    className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
-                                    onClick={() => navigate(`/users/${user.id || user.uid}`)}
-                                    title="Editar usuario"
-                                  >
-                                    <span className="material-symbols-outlined text-lg">edit</span>
-                                  </button>
-                                  <button
-                                    className="p-2 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-500 transition-colors"
+                                    className="p-2 rounded-md hover:bg-green-900/20 transition-colors"
                                     onClick={() => {
-                                      setUserToDeactivate(user);
-                                      setShowDeactivateModal(true);
+                                      setUserToActivate(user);
+                                      setShowActivateModal(true);
                                     }}
-                                    title="Desactivar usuario"
+                                    title="Activar usuario"
                                   >
-                                    <span className="material-symbols-outlined text-lg">delete</span>
+                                    <span className="material-symbols-outlined text-lg text-white hover:text-green-500">check_circle</span>
                                   </button>
-                                </>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      ))
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
                     )}
                   </tbody>
                 </table>
@@ -206,14 +271,28 @@ const UserManagement = () => {
             </div>
             {/* Footer: paginación y resultados */}
             <div className="flex justify-between items-center mt-6">
-              <p className="text-sm text-[#8d6a5e] dark:text-gray-400">
-                Showing <span className="font-medium text-[#181210] dark:text-white">1</span> to <span className="font-medium text-[#181210] dark:text-white">{users.length}</span> of <span className="font-medium text-[#181210] dark:text-white">{users.length}</span> results
+              <p className="text-sm text-gray-400">
+                Showing <span className="font-medium text-white">1</span> to <span className="font-medium text-white">{users.length}</span> of <span className="font-medium text-white">{users.length}</span> results
               </p>
               <div className="flex gap-2">
-                <button className="flex items-center justify-center h-10 px-4 rounded-lg bg-white dark:bg-[#1C1411] border border-[#e7deda] dark:border-gray-800 text-[#181210] dark:text-white text-sm font-medium hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                <button
+                  onClick={() => {
+                    setLoading(true);
+                    getUsers().then((res) => {
+                      const data = res.data || res.users || res;
+                      setUsers(Array.isArray(data) ? data : []);
+                      setLoading(false);
+                    }).catch(() => {
+                      setError('Error al recargar usuarios');
+                      setLoading(false);
+                    });
+                  }}
+                  className="flex items-center justify-center h-10 px-4 rounded-lg bg-slate-800 border border-slate-700 text-white text-sm font-medium hover:bg-slate-700 transition-colors"
+                >{t('users.refresh', 'Refrescar')}</button>
+                <button className="flex items-center justify-center h-10 px-4 rounded-lg bg-slate-800 border border-slate-700 text-white text-sm font-medium hover:bg-slate-700 transition-colors">
                   {t('users.previous', 'Anterior')}
                 </button>
-                <button className="flex items-center justify-center h-10 px-4 rounded-lg bg-white dark:bg-[#1C1411] border border-[#e7deda] dark:border-gray-800 text-[#181210] dark:text-white text-sm font-medium hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                <button className="flex items-center justify-center h-10 px-4 rounded-lg bg-slate-800 border border-slate-700 text-white text-sm font-medium hover:bg-slate-700 transition-colors">
                   {t('users.next', 'Siguiente')}
                 </button>
               </div>
@@ -222,12 +301,12 @@ const UserManagement = () => {
         {/* Modal de confirmación de desactivación */}
         {showDeactivateModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-            <div className="bg-white dark:bg-[#1C1411] rounded-lg shadow-lg p-8 w-full max-w-md">
-              <h2 className="text-xl font-bold mb-4 text-[#181210] dark:text-white">{t('users.deactivateTitle', '¿Desactivar usuario?')}</h2>
-              <p className="mb-6 text-[#8d6a5e] dark:text-gray-400">{t('users.deactivateConfirm', '¿Estás seguro de que deseas desactivar a')} <span className="font-semibold">{userToDeactivate?.displayName || userToDeactivate?.name || userToDeactivate?.email}</span>? {t('users.deactivateWarning', 'El usuario no podrá acceder al sistema.')}</p>
+            <div className="bg-slate-900 rounded-lg shadow-xl p-8 w-full max-w-md">
+              <h2 className="text-xl font-bold mb-4 text-white">{t('users.deactivateTitle', '¿Desactivar usuario?')}</h2>
+              <p className="mb-6 text-gray-400">{t('users.deactivateConfirm', '¿Estás seguro de que deseas desactivar a')} <span className="font-semibold">{userToDeactivate?.displayName || userToDeactivate?.name || userToDeactivate?.email}</span>? {t('users.deactivateWarning', 'El usuario no podrá acceder al sistema.')}</p>
               <div className="flex justify-end gap-4">
                 <button
-                  className="px-4 py-2 rounded-md bg-gray-200 dark:bg-gray-700 text-[#181210] dark:text-white font-medium hover:bg-gray-300 dark:hover:bg-gray-600"
+                  className="px-4 py-2 rounded-md bg-slate-700 text-white font-medium hover:bg-slate-600"
                   onClick={() => {
                     setShowDeactivateModal(false);
                     setUserToDeactivate(null);
@@ -240,7 +319,7 @@ const UserManagement = () => {
                     setDeactivating(true);
                     try {
                       await deactivateUser(userToDeactivate.id || userToDeactivate.uid);
-                      setUsers(users => users.map(u => (u.id === userToDeactivate.id || u.uid === userToDeactivate.uid) ? { ...u, status: 'Inactive' } : u));
+                      setUsers(users => users.map(u => (u.id === userToDeactivate.id || u.uid === userToDeactivate.uid) ? { ...u, status: 'Inactive', disabled: true } : u));
                       setShowDeactivateModal(false);
                       setUserToDeactivate(null);
                     } catch (err) {
@@ -251,6 +330,42 @@ const UserManagement = () => {
                   }}
                   disabled={deactivating}
                 >{deactivating ? t('users.deactivating', 'Desactivando...') : t('users.deactivateButton', 'Confirmar')}</button>
+              </div>
+            </div>
+          </div>
+        )}
+        {/* Modal de confirmación de activación */}
+        {showActivateModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+            <div className="bg-slate-900 rounded-lg shadow-xl p-8 w-full max-w-md">
+              <h2 className="text-xl font-bold mb-4 text-white">{t('users.activateTitle', '¿Activar usuario?')}</h2>
+              <p className="mb-6 text-gray-400">{t('users.activateConfirm', '¿Estás seguro de que deseas activar a')} <span className="font-semibold">{userToActivate?.displayName || userToActivate?.name || userToActivate?.email}</span>? {t('users.activateWarning', 'El usuario podrá acceder al sistema nuevamente.')}</p>
+              <div className="flex justify-end gap-4">
+                <button
+                  className="px-4 py-2 rounded-md bg-slate-700 text-white font-medium hover:bg-slate-600"
+                  onClick={() => {
+                    setShowActivateModal(false);
+                    setUserToActivate(null);
+                  }}
+                  disabled={activating}
+                >{t('users.activateCancel', 'Cancelar')}</button>
+                <button
+                  className="px-4 py-2 rounded-md bg-green-600 text-white font-bold hover:bg-green-700"
+                  onClick={async () => {
+                    setActivating(true);
+                    try {
+                      await activateUser(userToActivate.id || userToActivate.uid);
+                      setUsers(users => users.map(u => (u.id === userToActivate.id || u.uid === userToActivate.uid) ? { ...u, status: 'Active', disabled: false } : u));
+                      setShowActivateModal(false);
+                      setUserToActivate(null);
+                    } catch (err) {
+                      alert(t('users.activateError', 'Error al activar usuario'));
+                    } finally {
+                      setActivating(false);
+                    }
+                  }}
+                  disabled={activating}
+                >{activating ? t('users.activating', 'Activando...') : t('users.activateButton', 'Confirmar')}</button>
               </div>
             </div>
           </div>

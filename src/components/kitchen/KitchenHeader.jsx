@@ -7,7 +7,7 @@ function KitchenHeader({ onRefresh, loading }) {
       {/* Kitchen Icon */}
       <div className="p-2">
         <svg 
-          className="w-6 h-6 sm:w-7 sm:h-7 text-gray-700" 
+          className="w-6 h-6 sm:w-7 sm:h-7 text-white" 
           fill="currentColor" 
           viewBox="0 0 24 24"
         >
@@ -16,16 +16,16 @@ function KitchenHeader({ onRefresh, loading }) {
       </div>
 
       {/* Title */}
-      <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">Kitchen Dashboard</h1>
+      <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white">Kitchen Dashboard</h1>
 
       {/* Refresh Icon */}
       <button 
         onClick={onRefresh}
         disabled={loading}
-        className="p-2 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50"
+        className="p-2 hover:bg-slate-800 rounded-lg transition-colors disabled:opacity-50"
       >
         <svg 
-          className={`w-5 h-5 sm:w-6 sm:h-6 text-gray-700 ${loading ? 'animate-spin' : ''}`} 
+          className={`w-5 h-5 sm:w-6 sm:h-6 text-white ${loading ? 'animate-spin' : ''}`} 
           fill="none" 
           stroke="currentColor" 
           viewBox="0 0 24 24"
